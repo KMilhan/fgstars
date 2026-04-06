@@ -423,7 +423,7 @@ bool FITSStack::solverDone(const wcsprm * wcsHandle, const bool timedOut, const 
     struct wcsprm * wcsCopy = new struct wcsprm;
     wcsCopy->flag = -1; // Allocate space
     int status = 0;
-    if ((status = wcssub(1, wcsHandle, 0x0, 0x0, wcsCopy)) != 0)
+    if ((status = wcssub(1, wcsHandle, nullptr, nullptr, wcsCopy)) != 0)
     {
         m_StackImageData.last().status = PLATESOLVE_FAILED;
         qCDebug(KSTARS_FITS) << QString("wcssub error processing %1 %2").arg(status).arg(wcs_errmsg[status]);
@@ -2321,7 +2321,7 @@ void FITSStack::setWCSStackImage(const QSharedPointer<wcsprm> &wcs)
 
     // Deep copy the original WCS structure
     int status = 0;
-    if ((status = wcssub(1, wcs.get(), 0x0, 0x0, m_WCSStackImage)) != 0)
+    if ((status = wcssub(1, wcs.get(), nullptr, nullptr, m_WCSStackImage)) != 0)
     {
         qCDebug(KSTARS_FITS) << QString("%1 wcssub error processing %2").arg(__FUNCTION__).arg(status)
                              .arg(wcs_errmsg[status]);

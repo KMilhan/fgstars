@@ -622,6 +622,8 @@ class TestEkosHelper : public QObject
          */
         bool executeFocusing(int initialFocusPosition = 40000);
 
+        bool ensureCcdSimulatorStarsAvailable(QString *reason = nullptr);
+
         /**
          * @brief Helper function to stop focusing
          */

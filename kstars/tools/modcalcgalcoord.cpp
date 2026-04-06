@@ -215,7 +215,7 @@ void modCalcGalCoord::processLines(QTextStream &istream)
     QFile fOut(outputFileName);
     if (!fOut.open(QIODevice::WriteOnly))
     {
-        qWarning() << "Failed to open output file:" << outputFileName;
+        KSNotification::sorry(i18n("Could not open file %1 for writing.", fOut.fileName()), i18n("Could Not Open File"));
         return;
     }
     QTextStream ostream(&fOut);

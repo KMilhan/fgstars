@@ -12,10 +12,68 @@
 #include "ksalmanac.h"
 #include "Options.h"
 
+#include <cmath>
+
 #define MAX_FAILURE_ATTEMPTS 5
 
 namespace Ekos
 {
+namespace
+{
+double observatoryUtcOffsetHours(const GeoLocation *geo, const QDate &date, const QTime &time)
+{
+    if (geo == nullptr)
+        return 0.0;
+
+    double offsetHours = geo->TZ0();
+    const auto *rule = geo->tzrule();
+    if (rule != nullptr)
+    {
+        const KStarsDateTime localDateTime(date, time);
+        if (rule->isDSTActive(localDateTime))
+            offsetHours += rule->hourOffset();
+    }
+
+    return offsetHours;
+}
+
+int observatoryUtcOffsetSeconds(const GeoLocation *geo, const QDate &date, const QTime &time)
+{
+    return static_cast<int>(std::lround(observatoryUtcOffsetHours(geo, date, time) * 3600.0));
+}
+
+KStarsDateTime observatoryLocalDateTime(const GeoLocation *geo, const QDate &date, const QTime &time)
+{
+    KStarsDateTime localDateTime(date, time);
+    const int utcOffsetSeconds = observatoryUtcOffsetSeconds(geo, date, time);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    localDateTime.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utcOffsetSeconds));
+#else
+    localDateTime.setOffsetFromUtc(utcOffsetSeconds);
+#endif
+    return localDateTime;
+}
+
+KStarsDateTime observatoryLocalFromUtc(const GeoLocation *geo, const KStarsDateTime &ut)
+{
+    if (geo == nullptr)
+        return ut;
+
+    KStarsDateTime localDateTime = ut.addSecs(static_cast<int>(std::lround(geo->TZ0() * 3600.0)));
+    const auto *rule = geo->tzrule();
+    if (rule != nullptr && rule->isDSTActive(localDateTime))
+        localDateTime = ut.addSecs(static_cast<int>(std::lround((geo->TZ0() + rule->hourOffset()) * 3600.0)));
+
+    const int utcOffsetSeconds = observatoryUtcOffsetSeconds(geo, localDateTime.date(), localDateTime.time());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    localDateTime.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utcOffsetSeconds));
+#else
+    localDateTime.setOffsetFromUtc(utcOffsetSeconds);
+#endif
+    return localDateTime;
+}
+}
+
 // constants definition
 QDateTime SchedulerModuleState::m_Dawn, SchedulerModuleState::m_Dusk, SchedulerModuleState::m_PreDawnDateTime;
 GeoLocation *SchedulerModuleState::storedGeo = nullptr;
@@ -451,12 +509,11 @@ void SchedulerModuleState::calculateDawnDusk(const QDateTime &when, QDateTime &n
     if (!startup.isValid())
         startup = getLocalTime();
 
-    // Our local midnight - the KStarsDateTime date+time constructor is safe for local times
-    // Exact midnight seems unreliable--offset it by a minute.
-    // Use the geo's fixed UTC offset rather than the system timezone so this function
-    // produces the same result regardless of which timezone the machine is running in.
-    const QTimeZone geoTZ = QTimeZone(static_cast<int>(getGeo()->TZ() * 3600));
-    KStarsDateTime midnight(startup.date(), QTime(0, 1), geoTZ);
+    // Build midnight explicitly in the observatory's local timezone instead of
+    // reusing the incoming timestamp's time spec. The scheduler may pass in UTC
+    // or fixed-offset values during simulation, but KSAlmanac expects a local
+    // wall-clock midnight for the observatory date being evaluated.
+    KStarsDateTime midnight = observatoryLocalDateTime(getGeo(), startup.date(), QTime(0, 1));
 
     QDateTime dawn = startup, dusk = startup;
 
@@ -495,13 +552,17 @@ void SchedulerModuleState::calculateDawnDusk(const QDateTime &when, QDateTime &n
 
         // If dawn is in the past compared to this observation, fetch the next dawn
         if (dawn <= startup)
-            dawn = getGeo()->UTtoLT(ksal->getDate().addSecs((ksal->getDawnAstronomicalTwilight() * 24.0 + Options::dawnOffset()) *
-                                    3600.0));
+            dawn = observatoryLocalFromUtc(
+                       getGeo(),
+                       KStarsDateTime(ksal->getDate().addSecs((ksal->getDawnAstronomicalTwilight() * 24.0 + Options::dawnOffset()) *
+                               3600.0)));
 
         // If dusk is in the past compared to this observation, fetch the next dusk
         if (dusk <= startup)
-            dusk = getGeo()->UTtoLT(ksal->getDate().addSecs((ksal->getDuskAstronomicalTwilight() * 24.0 + Options::duskOffset()) *
-                                    3600.0));
+            dusk = observatoryLocalFromUtc(
+                       getGeo(),
+                       KStarsDateTime(ksal->getDate().addSecs((ksal->getDuskAstronomicalTwilight() * 24.0 + Options::duskOffset()) *
+                               3600.0)));
 #endif
     }
 

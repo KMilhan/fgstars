@@ -53,6 +53,16 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
 set(CMAKE_AUTOMOC ON)
 
+# Large static archives are linked by many test targets in parallel. Generate
+# the archive index as part of archive creation so dependents never observe an
+# intermediate, unindexed archive while the build graph fan-outs.
+if(UNIX AND NOT MSVC)
+    set(CMAKE_C_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> qcs <TARGET> <LINK_FLAGS> <OBJECTS>")
+    set(CMAKE_C_ARCHIVE_FINISH "${CMAKE_COMMAND} -E true")
+    set(CMAKE_CXX_ARCHIVE_FINISH "${CMAKE_COMMAND} -E true")
+endif()
+
 # Ccache support
 IF (ANDROID OR UNIX OR APPLE)
     FIND_PROGRAM(CCACHE_FOUND ccache)
@@ -250,6 +260,86 @@ endif ()
 MACRO_BOOL_TO_01(INDI_FOUND HAVE_INDI)
 set_package_properties(INDI PROPERTIES DESCRIPTION "Astronomical instrumentation control" URL "https://www.indilib.org" TYPE OPTIONAL PURPOSE "Support for controlling astronomical devices on Linux with KStars.")
 
+option(KSTARS_BUILD_VENDORED_INDI_TEST_RUNTIME "Build a vendored INDI server and simulator runtime for UI tests" ON)
+if(BUILD_TESTING AND UNIX AND NOT APPLE AND KSTARS_BUILD_VENDORED_INDI_TEST_RUNTIME
+   AND EXISTS "${CMAKE_SOURCE_DIR}/submodules/indi/CMakeLists.txt")
+    set(KSTARS_VENDORED_INDI_BINARY_DIR "${CMAKE_BINARY_DIR}/submodules/indi-runtime")
+    set(KSTARS_VENDORED_INDI_PREFIX "${KSTARS_VENDORED_INDI_BINARY_DIR}/install")
+    set(KSTARS_VENDORED_INDI_SERVER "${KSTARS_VENDORED_INDI_PREFIX}/bin/indiserver")
+
+    externalproject_add(kstars_indi_test_runtime
+        SOURCE_DIR "${CMAKE_SOURCE_DIR}/submodules/indi"
+        BINARY_DIR "${KSTARS_VENDORED_INDI_BINARY_DIR}"
+        CMAKE_ARGS
+            -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+            -DINDI_BUILD_SERVER=ON
+            -DINDI_BUILD_CLIENT=OFF
+            -DINDI_BUILD_QT_CLIENT=OFF
+            -DINDI_BUILD_DRIVERS=ON
+            -DINDI_BUILD_COMMON=ON
+            -DINDI_BUILD_UNITTESTS=OFF
+            -DINDI_BUILD_INTEGTESTS=OFF
+            -DINDI_BUILD_EXAMPLES=OFF
+            -DINDI_BUILD_SHARED=ON
+            -DINDI_BUILD_STATIC=OFF
+            -DINDI_INSTALL_UDEV_RULES=OFF
+        BUILD_COMMAND ${CMAKE_COMMAND} --build . --target
+            indiserver
+            indi_simulator_telescope
+            indi_simulator_ccd
+            indi_simulator_focus
+            indi_simulator_wheel
+            indi_simulator_guide
+            indi_simulator_weather
+            indi_simulator_rotator
+            indi_simulator_dome
+            indi_simulator_lightpanel
+        BUILD_BYPRODUCTS
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indiserver"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_telescope"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_ccd"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_focus"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_wheel"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_guide"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_weather"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_rotator"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_dome"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_lightpanel"
+        INSTALL_COMMAND
+            ${CMAKE_COMMAND} -E make_directory ${KSTARS_VENDORED_INDI_PREFIX}/bin
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/indiserver/indiserver
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indiserver
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/telescope/indi_simulator_telescope
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_telescope
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/ccd/indi_simulator_ccd
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_ccd
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/focuser/indi_simulator_focus
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_focus
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/filter_wheel/indi_simulator_wheel
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_wheel
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/ccd/indi_simulator_guide
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_guide
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/weather/indi_simulator_weather
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_weather
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/rotator/indi_simulator_rotator
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_rotator
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/dome/indi_simulator_dome
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_dome
+            COMMAND ${CMAKE_COMMAND} -E copy
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/auxiliary/indi_simulator_lightpanel
+                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_lightpanel
+    )
+endif()
+
 if (NOT ANDROID)
     find_package(StellarSolver REQUIRED 2.6)
 endif(NOT ANDROID)
@@ -413,6 +503,11 @@ IF (UNIX OR APPLE)
         SET(COMP_FLAGS "${COMP_FLAGS} -Werror")
     ENDIF ()
     # Omit problematic warnings
+    SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=pedantic")
+    SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=zero-as-null-pointer-constant")
+    SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=deprecated-declarations")
+    SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=format")
+    SET(COMP_FLAGS "${COMP_FLAGS} -Wno-deprecated-declarations")
     IF (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
         SET(COMP_FLAGS "${COMP_FLAGS} -Wno-unused-but-set-variable")
         SET(COMP_FLAGS "${COMP_FLAGS} -Wno-stringop-truncation")

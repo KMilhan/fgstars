@@ -832,7 +832,7 @@ void Scheduler::processFITSSelection(const QUrl &url)
     }
 
     status = 0;
-    if (fits_movabs_hdu(fptr, 1, IMAGE_HDU, &status))
+    if (fits_movabs_hdu(fptr, 1, nullptr, &status))
     {
         fits_report_error(stderr, status);
         fits_get_errstatus(status, error_status);

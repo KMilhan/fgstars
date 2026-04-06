@@ -11,7 +11,7 @@
 struct StretchParams1Channel
 {
     // Stretch algorithm parameters
-    float shadows;;
+    float shadows;
     float highlights;
     float midtones;
     // The extension parameters are not yet used.

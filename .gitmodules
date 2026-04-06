@@ -1,0 +1,6 @@
+[submodule "submodules/indi"]
+	path = submodules/indi
+	url = https://github.com/indilib/indi.git
+[submodule "submodules/indi-3rdparty"]
+	path = submodules/indi-3rdparty
+	url = https://github.com/indilib/indi-3rdparty.git

@@ -85,22 +85,24 @@ QString TestEkosSchedulerHelper::getSchedulerFile(const SkyObject *targetObject,
 
 QString TestEkosSchedulerHelper::getEsqContent(QVector<TestEkosSchedulerHelper::CaptureJob> jobs)
 {
-    QString result = QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><SequenceQueue version='2.1'><CCD>CCD Simulator</CCD>"
+    QString result = QString("<?xml version=\"1.0\" encoding=\"UTF-8\"?><SequenceQueue version='2.6'><CCD>CCD Simulator</CCD>"
                              "<FilterWheel>CCD Simulator</FilterWheel><GuideDeviation enabled='false'>2</GuideDeviation>"
-                             "<GuideStartDeviation enabled='false'>2</GuideStartDeviation><Autofocus enabled='false'>0</Autofocus>"
+                             "<GuideStartDeviation enabled='false'>2</GuideStartDeviation>"
+                             "<HFRCheck enabled='false'><HFRDeviation>0</HFRDeviation></HFRCheck>"
                              "<RefocusOnTemperatureDelta enabled='false'>1</RefocusOnTemperatureDelta>"
-                             "<RefocusEveryN enabled='false'>60</RefocusEveryN>");
+                             "<RefocusEveryN enabled='false'>60</RefocusEveryN>"
+                             "<RefocusOnMeridianFlip enabled='false'/>");
 
     for (QVector<CaptureJob>::iterator job_iter = jobs.begin(); job_iter !=  jobs.end(); job_iter++)
     {
-        result += QString("<Job><Exposure>%1</Exposure><Binning><X>1</X><Y>1</Y>"
+        result += QString("<Job><Exposure>%1</Exposure><Format>Mono</Format><Encoding>FITS</Encoding><Binning><X>1</X><Y>1</Y>"
                           "</Binning><Frame><X>0</X><Y>0</Y><W>1280</W><H>1024</H></Frame><Temperature force='false'>0</Temperature>"
-                          "<Filter>%3</Filter><Type>Light</Type><Prefix><RawPrefix></RawPrefix><FilterEnabled>1</FilterEnabled>"
-                          "<ExpEnabled>0</ExpEnabled><TimeStampEnabled>0</TimeStampEnabled></Prefix>"
-                          "<Count>%2</Count><Delay>0</Delay><FITSDirectory>%4</FITSDirectory><UploadMode>0</UploadMode>"
-                          "<Encoding>FITS</Encoding><Properties></Properties><Calibration><FlatSource><Type>Manual</Type>"
-                          "</FlatSource><FlatDuration><Type>ADU</Type><Value>15000</Value><Tolerance>1000</Tolerance></FlatDuration>"
-                          "<PreMountPark>False</PreMountPark><PreDomePark>False</PreDomePark></Calibration></Job>")
+                          "<Filter>%3</Filter><Type>Light</Type><Count>%2</Count><Delay>0</Delay><TargetName>scheduler_target</TargetName>"
+                          "<PlaceholderFormat>/%t/%T/%F/%t_%T_%F_%e_%D</PlaceholderFormat><PlaceholderSuffix>2</PlaceholderSuffix>"
+                          "<FITSDirectory>%4</FITSDirectory><UploadMode>0</UploadMode><Properties />"
+                          "<Calibration><PreAction><Type>0</Type></PreAction>"
+                          "<FlatDuration><Type>ADU</Type><Value>15000</Value><Tolerance>1000</Tolerance></FlatDuration>"
+                          "</Calibration></Job>")
                   .arg(job_iter->exposureTime).arg(job_iter->count).arg(job_iter->filterName).arg(job_iter->fitsDirectory);
     }
 

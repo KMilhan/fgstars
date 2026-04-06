@@ -218,7 +218,7 @@ bool TimeZoneRule::initDay(const QString &dy, int &Day, int &Week)
     return false;
 }
 
-int TimeZoneRule::findStartDay(const KStarsDateTime &d)
+int TimeZoneRule::findStartDay(const KStarsDateTime &d) const
 {
     // Determine the calendar date of StartDay for the month and year of the given date.
     QDate test;
@@ -249,7 +249,7 @@ int TimeZoneRule::findStartDay(const KStarsDateTime &d)
     return test.day();
 }
 
-int TimeZoneRule::findRevertDay(const KStarsDateTime &d)
+int TimeZoneRule::findRevertDay(const KStarsDateTime &d) const
 {
     // Determine the calendar date of RevertDay for the month and year of the given date.
     QDate test;
@@ -280,7 +280,7 @@ int TimeZoneRule::findRevertDay(const KStarsDateTime &d)
     return test.day();
 }
 
-bool TimeZoneRule::isDSTActive(const KStarsDateTime &date)
+bool TimeZoneRule::isDSTActive(const KStarsDateTime &date) const
 {
     // The empty rule always returns false
     if (isEmptyRule())

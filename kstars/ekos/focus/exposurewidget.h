@@ -31,7 +31,7 @@ class ExposureWidget : public QDoubleSpinBox
          * @brief Create an ExposureWidget
          * @param parent widget
          */
-        ExposureWidget(QWidget *parent = 0);
+        ExposureWidget(QWidget *parent = nullptr);
         ~ExposureWidget();
 
         /**

@@ -37,19 +37,9 @@ void TestEkosWizard::cleanup()
 void TestEkosWizard::testProfileWizard()
 {
     // Update our INDI installation specs
-    Options::setIndiDriversAreInternal(true);
-
-    // Locate INDI server - this is highly suspicious, but will cover most of the installation cases I suppose
-    if (QFile("/usr/local/bin/indiserver").exists())
-        Options::setIndiServer("/usr/local/bin/indiserver");
-    else if (QFile("/usr/bin/indiserver").exists())
-        Options::setIndiServer("/usr/bin/indiserver");
+    if (!KStarsUiTests::configureTestIndiRuntime())
+        QSKIP("INDI server binary not found; skipping TestEkosWizard.", SkipSingle);
     QVERIFY(QDir(Options::indiDriversDir()).exists());
-
-    // Locate INDI drivers - the XML list of drivers is the generic data path
-    QFile drivers(KSPaths::locate(QStandardPaths::AppLocalDataLocation, "indidrivers.xml"));
-    if (drivers.exists())
-        Options::setIndiDriversDir(QFileInfo(drivers).dir().path());
     QVERIFY(QDir(Options::indiDriversDir()).exists());
 
     // The Ekos new profile wizard opens when starting Ekos for the first time

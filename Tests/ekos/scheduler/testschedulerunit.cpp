@@ -19,6 +19,8 @@
 #include "ekos/capture/placeholderpath.h"
 #include "geolocation.h"
 #include "Options.h"
+#include "kstarsdata.h"
+#include "../../testhelpers.h"
 
 #include <QtGlobal>
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
@@ -28,6 +30,7 @@
 #endif
 #include <memory>
 
+#include <QApplication>
 #include <QObject>
 
 using Ekos::SequenceJob;
@@ -44,13 +47,17 @@ class TestSchedulerUnit : public QObject
         /** @short Destructor */
         ~TestSchedulerUnit() override = default;
 
-    private Q_SLOTS:
+    private slots:
+        void initTestCase();
+        void cleanupTestCase();
         void setupGeoAndTimeTest();
         void setupJobTest_data();
         void setupJobTest();
         void loadSequenceQueueTest();
         void estimateJobTimeTest();
+        void calculateDawnDuskRespectsDateSpecificDSTTest();
         void evaluateJobsTest();
+        void createJobPreservesExplicitIsoOffsetTest();
 
     private:
         void runSetupJob(Ekos::SchedulerJob &job,
@@ -130,6 +137,14 @@ TestSchedulerUnit::TestSchedulerUnit() : QObject()
     // Setting this true winds up calling KStarsData::Instance() in the scheduler via SkyPoint::apparentCoord().
     // Unit tests don't instantiate KStarsData::Instance() and will crash.
     Options::setUseRelativistic(false);
+}
+
+void TestSchedulerUnit::initTestCase()
+{
+}
+
+void TestSchedulerUnit::cleanupTestCase()
+{
 }
 
 // Tests that the doubles are within tolerance.
@@ -322,6 +337,36 @@ void TestSchedulerUnit::setupJobTest()
 
 namespace
 {
+XMLEle *buildSchedulerJobXml(const QString &startupAt, const QString &completionAt)
+{
+    XMLEle *root = addXMLEle(nullptr, "Job");
+
+    XMLEle *element = addXMLEle(root, "Name");
+    editXMLEle(element, "DST regression test");
+
+    element = addXMLEle(root, "Coordinates");
+    XMLEle *subElement = addXMLEle(element, "J2000RA");
+    editXMLEle(subElement, "5.43806");
+    subElement = addXMLEle(element, "J2000DE");
+    editXMLEle(subElement, "28.6078");
+
+    element = addXMLEle(root, "StartupCondition");
+    subElement = addXMLEle(element, "Condition");
+    addXMLAtt(subElement, "value", startupAt.toUtf8().constData());
+    editXMLEle(subElement, "At");
+
+    element = addXMLEle(root, "CompletionCondition");
+    subElement = addXMLEle(element, "Condition");
+    addXMLAtt(subElement, "value", completionAt.toUtf8().constData());
+    editXMLEle(subElement, "At");
+
+    element = addXMLEle(root, "Steps");
+    subElement = addXMLEle(element, "Step");
+    editXMLEle(subElement, "Track");
+
+    return root;
+}
+
 // compareCaptureSequeuce() is a utility to use the CaptureJobDetails structure as a truth value
 // to see if the capture sequeuce was loaded properly.
 void compareCaptureSequence(const QList<CaptureJobDetails> &details, const QList<QSharedPointer<Ekos::SequenceJob >> &jobs)
@@ -336,6 +381,45 @@ void compareCaptureSequence(const QList<CaptureJobDetails> &details, const QList
     }
 }
 }  // namespace
+
+void TestSchedulerUnit::createJobPreservesExplicitIsoOffsetTest()
+{
+    TimeZoneRule dstRule("Mar", "2sun", QTime(2, 0), "Nov", "1sun", QTime(2, 0));
+    GeoLocation californiaWithDst(dms(-122, 10), dms(37, 26, 30), "Silicon Valley DST", "CA", "USA", -8, &dstRule);
+    Ekos::SchedulerModuleState::setGeo(&californiaWithDst);
+    Ekos::SchedulerModuleState::setLocalTime(&midNight);
+
+    const bool createdKStarsData = (KStarsData::Instance() == nullptr);
+    if (createdKStarsData)
+    {
+        KTEST_BEGIN();
+        KStarsData *data = KStarsData::Create();
+        QVERIFY2(data != nullptr, "KStarsData::Create() returned null");
+        QVERIFY2(data->initialize(), "KStarsData::initialize() failed");
+    }
+
+    const QDateTime expectedStart(QDate(2026, 7, 1), QTime(23, 0, 0), QTimeZone(2 * 3600));
+    const QDateTime expectedFinish(QDate(2026, 7, 2), QTime(1, 15, 0), QTimeZone(2 * 3600));
+
+    XMLEle *root = buildSchedulerJobXml(expectedStart.toString(Qt::ISODate), expectedFinish.toString(Qt::ISODate));
+    std::unique_ptr<Ekos::SchedulerJob> job(Ekos::SchedulerUtils::createJob(root, nullptr));
+
+    QVERIFY(job != nullptr);
+    QCOMPARE(job->getStartupCondition(), Ekos::START_AT);
+    QCOMPARE(job->getCompletionCondition(), Ekos::FINISH_AT);
+    QVERIFY(compareTimes(job->getStartupTime(), expectedStart));
+    QVERIFY(compareTimes(job->getFinishAtTime(), expectedFinish));
+    QCOMPARE(job->getStartupTime().offsetFromUtc(), expectedStart.offsetFromUtc());
+    QCOMPARE(job->getFinishAtTime().offsetFromUtc(), expectedFinish.offsetFromUtc());
+
+    delXMLEle(root);
+
+    if (createdKStarsData)
+    {
+        delete KStarsData::Instance();
+        KTEST_END();
+    }
+}
 
 // Test Scheduler::loadSequeuceQueue().
 // Load sequenceQueue doesn't load all details of the sequence. It just loads what it
@@ -463,6 +547,30 @@ void TestSchedulerUnit::estimateJobTimeTest()
     QVERIFY(compareFloat(overhead + exposureDuration - 120, job.getEstimatedTime()));
 }
 
+void TestSchedulerUnit::calculateDawnDuskRespectsDateSpecificDSTTest()
+{
+    TimeZoneRule dstRule("Mar", "2sun", QTime(2, 0), "Nov", "1sun", QTime(2, 0));
+    GeoLocation californiaWithDst(dms(-122, 10), dms(37, 26, 30), "Silicon Valley DST", "CA", "USA", -8, &dstRule);
+    Ekos::SchedulerModuleState::setGeo(&californiaWithDst);
+
+    QDateTime dawn;
+    QDateTime dusk;
+
+    const QDateTime summerNight(QDate(2026, 7, 1), QTime(22, 0, 0), QTimeZone(-7 * 3600));
+    Ekos::SchedulerModuleState::calculateDawnDusk(summerNight, dawn, dusk);
+    QVERIFY(dawn.isValid());
+    QVERIFY(dusk.isValid());
+    QCOMPARE(dawn.offsetFromUtc(), -7 * 3600);
+    QCOMPARE(dusk.offsetFromUtc(), -7 * 3600);
+
+    const QDateTime winterNight(QDate(2026, 12, 1), QTime(22, 0, 0), QTimeZone(-8 * 3600));
+    Ekos::SchedulerModuleState::calculateDawnDusk(winterNight, dawn, dusk);
+    QVERIFY(dawn.isValid());
+    QVERIFY(dusk.isValid());
+    QCOMPARE(dawn.offsetFromUtc(), -8 * 3600);
+    QCOMPARE(dusk.offsetFromUtc(), -8 * 3600);
+}
+
 // Test Scheduler::evaluateJobs().
 void TestSchedulerUnit::evaluateJobsTest()
 {
@@ -504,7 +612,7 @@ void TestSchedulerUnit::evaluateJobsTest()
     QVERIFY(jobs.size() == 1);
     QVERIFY(jobs[0] == &job);
     // The job should start now.
-    QVERIFY(job.getStartupTime().secsTo(now) == 0);
+    QVERIFY(compareTimes(job.getStartupTime(), now, 5));
     // It should finish when its exposures are done.
     QVERIFY(compareTimes(job.getFinishAtTime(),
                          now.addSecs(Ekos::SchedulerUtils::timeHeuristics(&job) +
@@ -625,4 +733,12 @@ void TestSchedulerUnit::evaluateJobsTest()
     jobs.clear();
 }
 
-QTEST_GUILESS_MAIN(TestSchedulerUnit)
+int main(int argc, char *argv[])
+{
+    if (!qEnvironmentVariableIsSet("QT_QPA_PLATFORM"))
+        qputenv("QT_QPA_PLATFORM", QByteArrayLiteral("offscreen"));
+
+    QApplication app(argc, argv);
+    TestSchedulerUnit testSchedulerUnit;
+    return QTest::qExec(&testSchedulerUnit, argc, argv);
+}

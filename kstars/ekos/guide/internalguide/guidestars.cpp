@@ -712,7 +712,7 @@ bool GuideStars::getDrift(double oneStarDrift, double reticle_x, double reticle_
             auto ref = starCorrespondence.reference(getStarMap(i));
             ref.x += offset_x;
             ref.y += offset_y;
-            double driftRA, driftDEC;
+            double driftRA = 0, driftDEC = 0;
             computeStarDrift(star, ref, &driftRA, &driftDEC);
             if (getStarMap(i) == starCorrespondence.guideStar())
             {

@@ -73,7 +73,7 @@ class CatalogFilter : public QSortFilterProxyModel
 {
         Q_OBJECT
     public:
-        CatalogFilter(QObject* parent = 0);
+        CatalogFilter(QObject* parent = nullptr);
         bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
         bool lessThan ( const QModelIndex &left, const QModelIndex &right ) const override;
         void setMinHours(double hours);

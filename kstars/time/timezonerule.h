@@ -65,7 +65,7 @@ class TimeZoneRule
         /** Determine whether DST is in effect for the given DateTime, according to this rule
             	*@param date the date/time to test for DST
             	*/
-        bool isDSTActive(const KStarsDateTime &date);
+        bool isDSTActive(const KStarsDateTime &date) const;
 
         /** @return true if the rule is the "empty" TZ rule. */
         bool isEmptyRule() const
@@ -83,6 +83,11 @@ class TimeZoneRule
         double deltaTZ() const
         {
             return dTZ;
+        }
+
+        double hourOffset() const
+        {
+            return HourOffset;
         }
 
         /** Recalculate next dst change and if DST is active by a given local time with
@@ -151,13 +156,13 @@ class TimeZoneRule
             	*of the given KStarsDateTime.
             	*@param d the date containing the year to be tested
             	*@return the calendar date, an integer between 1 and 31. */
-        int findStartDay(const KStarsDateTime &d);
+        int findStartDay(const KStarsDateTime &d) const;
 
         /** Find the calendar date on which DST ends for the calendar year
             	*of the given KStarsDateTime.
             	*@param d the date containing the year to be tested
             	*@return the calendar date, an integer between 1 and 31. */
-        int findRevertDay(const KStarsDateTime &d);
+        int findRevertDay(const KStarsDateTime &d) const;
 
         int StartDay { 0 };
         int RevertDay { 0 };

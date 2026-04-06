@@ -95,8 +95,8 @@ class CatalogCSVImport : public QDialog
         inline const std::vector<CatalogObject> &get_objects() const
         {
             return m_objects;
-        };
-    private Q_SLOTS:
+        }
+    private slots:
         /** Selects a CSV file and opens it. Calls `init_mapping_selectors`. */
         void select_file();
 
@@ -132,7 +132,7 @@ class CatalogCSVImport : public QDialog
                 return default_val;
 
             return m_doc.GetCell<T>(config.first, row);
-        };
+        }
 
         template <typename T>
         T get_default(const column_pair &config, const T &default_val)

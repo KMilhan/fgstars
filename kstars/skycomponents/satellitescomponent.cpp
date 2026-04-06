@@ -23,9 +23,9 @@
 SatellitesComponent::SatellitesComponent(SkyComposite *parent) : SkyComponent(parent)
 {
 #if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
-    (void)QtConcurrent::run(&SatellitesComponent::loadData, this);
+    Q_UNUSED(QtConcurrent::run(&SatellitesComponent::loadData, this));
 #else
-    QtConcurrent::run(this, &SatellitesComponent::loadData);
+    Q_UNUSED(QtConcurrent::run(this, &SatellitesComponent::loadData));
 #endif
 }
 

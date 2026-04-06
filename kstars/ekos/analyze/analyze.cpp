@@ -2100,7 +2100,7 @@ bool textFits(const QString &string, QLineEdit *box)
     QStyleOptionFrame opt;
     opt.initFrom(box);
     opt.rect = box->rect();
-    opt.lineWidth = box->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, 0, box);
+    opt.lineWidth = box->style()->pixelMetric(QStyle::PM_DefaultFrameWidth, nullptr, box);
     opt.midLineWidth = 0;
     opt.state |= QStyle::State_Sunken; // Line edits are typically drawn as a sunken frame
     QRect contentsRect = box->style()->subElementRect(QStyle::SE_LineEditContents, &opt, box);
@@ -2450,7 +2450,7 @@ void Analyze::setLeftAxis(QCPAxis *axis)
         }
         axis->setVisible(true);
         activeYAxis = axis;
-        statsPlot->axisRect()->setRangeZoomAxes(0, axis);
+        statsPlot->axisRect()->setRangeZoomAxes(nullptr, axis);
         connect(axis, QOverload<const QCPRange &>::of(&QCPAxis::rangeChanged), this,
                 QOverload<const QCPRange &>::of(&Analyze::yAxisRangeChanged));
     }
@@ -2472,7 +2472,7 @@ void Analyze::startYAxisTool(QObject * key, const YAxisInfo &info)
 
 QCPAxis *Analyze::newStatsYAxis(const QString &label, double lower, double upper)
 {
-    QCPAxis *axis = statsPlot->axisRect()->addAxis(QCPAxis::atLeft, 0); // 0 means QCP creates the axis.
+    QCPAxis *axis = statsPlot->axisRect()->addAxis(QCPAxis::atLeft, nullptr);
     axis->setVisible(false);
     axis->setRange(lower, upper);
     axis->setLabel(label);

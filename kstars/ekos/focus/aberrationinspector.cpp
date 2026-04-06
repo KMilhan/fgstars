@@ -426,19 +426,17 @@ void AberrationInspector::fitCurves()
     curveFitting.reset(new CurveFitting());
 
     const double expected = 0.0;
-    int minPos, maxPos;
+    if (m_positions.isEmpty())
+        return;
+    int minPos = m_positions.first();
+    int maxPos = m_positions.first();
 
     QVector<bool> outliers;
     for (int i = 0; i < m_positions.count(); i++)
     {
         outliers.append(false);
-        if (i == 0)
-            minPos = maxPos = m_positions[i];
-        else
-        {
-            minPos = std::min(minPos, m_positions[i]);
-            maxPos = std::max(maxPos, m_positions[i]);
-        }
+        minPos = std::min(minPos, m_positions[i]);
+        maxPos = std::max(maxPos, m_positions[i]);
     }
 
     for (int tile = 0; tile < m_measures.count(); tile++)

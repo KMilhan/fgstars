@@ -228,7 +228,7 @@ void modCalcSidTime::processLines(QTextStream &istream)
     QFile fOut(OutputFileBatch->url().toLocalFile());
     if (!fOut.open(QIODevice::WriteOnly))
     {
-        qWarning() << "Failed to open output file:" << fOut.fileName();
+        KSNotification::sorry(i18n("Could not open file %1 for writing.", fOut.fileName()), i18n("Could Not Open File"));
         return;
     }
     QTextStream ostream(&fOut);
@@ -355,10 +355,7 @@ void modCalcSidTime::slotViewBatch()
 {
     QFile fOut(OutputFileBatch->url().toLocalFile());
     if (!fOut.open(QIODevice::ReadOnly))
-    {
-        qWarning() << "Failed to open output file for viewing:" << fOut.fileName();
         return;
-    }
     QTextStream istream(&fOut);
     QStringList text;
 

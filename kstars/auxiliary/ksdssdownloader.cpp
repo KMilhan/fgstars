@@ -27,7 +27,9 @@ KSDssDownloader::KSDssDownloader(QObject *parent) : QObject(parent)
                         << "quickv"
                         << "poss2ukstu_ir";
     if (!m_TempFile.open())
-        qWarning() << "Failed to create temporary file";
+    {
+        qWarning() << Q_FUNC_INFO << "Unable to open temporary file for DSS download";
+    }
 }
 
 KSDssDownloader::KSDssDownloader(const SkyPoint *const p, const QString &destFileName,
@@ -49,7 +51,10 @@ KSDssDownloader::KSDssDownloader(const SkyPoint *const p, const QString &destFil
                         << "quickv"
                         << "poss2ukstu_ir";
     if (!m_TempFile.open())
-        qWarning() << "Failed to create temporary file";
+    {
+        qWarning() << Q_FUNC_INFO << "Unable to open temporary file for DSS download";
+        return;
+    }
     connect(this, &KSDssDownloader::downloadComplete, slotDownloadReady);
     startDownload(p, destFileName);
 }
@@ -255,8 +260,8 @@ void KSDssDownloader::singleDownloadFinished()
 {
     if (!m_TempFile.open())
     {
-        qWarning() << "Failed to open temporary file";
-        Q_EMIT downloadComplete(false);
+        qWarning() << Q_FUNC_INFO << "Unable to reopen temporary file for DSS download";
+        emit downloadComplete(false);
         downloadJob->deleteLater();
         return;
     }
@@ -291,8 +296,8 @@ void KSDssDownloader::downloadAttemptFinished()
     {
         if (!m_TempFile.open())
         {
-            qWarning() << "Failed to open temporary file";
-            Q_EMIT downloadComplete(false);
+            qWarning() << Q_FUNC_INFO << "Unable to reopen temporary file for DSS download";
+            emit downloadComplete(false);
             deleteLater();
             downloadJob->deleteLater();
             return;

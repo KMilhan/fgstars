@@ -14,7 +14,7 @@
 #include <SpatialGeneral.h>
 
 #define SKIPLIST_MAXLEVEL 6 // maximum node level
-#define NIL               0 // invalid pointer
+#define NIL               nullptr // invalid pointer
 
 #ifdef _WIN32
 #define KEY_MAX _I64_MAX

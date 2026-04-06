@@ -234,7 +234,7 @@ void modCalcPlanets::processLines(QTextStream &istream)
     QFile fOut(outputFileName);
     if (!fOut.open(QIODevice::WriteOnly))
     {
-        qWarning() << "Failed to open output file:" << outputFileName;
+        KSNotification::sorry(i18n("Could not open file %1 for writing.", fOut.fileName()), i18n("Could Not Open File"));
         return;
     }
     QTextStream ostream(&fOut);
@@ -399,7 +399,8 @@ void modCalcPlanets::processLines(QTextStream &istream)
         }
         else
         {
-            kspb = new KSPlanet(i18n(pn.toLocal8Bit()), QString(), Qt::white, 1.0);
+            const QByteArray planetName = pn.toLocal8Bit();
+            kspb = new KSPlanet(i18n(planetName.constData()), QString(), Qt::white, 1.0);
         }
         kspb->findPosition(&num, &latB, &LST, &Earth);
         kspb->EquatorialToHorizontal(&LST, &latB);

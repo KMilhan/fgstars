@@ -13,8 +13,63 @@
 #include "kstarsdata.h"
 #include <ekos_scheduler_debug.h>
 
+#include <QRegularExpression>
+
+#include <cmath>
+
 namespace Ekos
 {
+namespace
+{
+double observatoryUtcOffsetHours(const QDate &date, const QTime &time)
+{
+    const auto *geo = SchedulerModuleState::getGeo();
+    if (geo == nullptr)
+        return 0.0;
+
+    double offsetHours = geo->TZ0();
+    const auto *rule = geo->tzrule();
+    if (rule != nullptr)
+    {
+        const KStarsDateTime localDateTime(date, time);
+        if (rule->isDSTActive(localDateTime))
+            offsetHours += rule->hourOffset();
+    }
+
+    return offsetHours;
+}
+
+int observatoryUtcOffsetSeconds(const QDate &date, const QTime &time)
+{
+    return static_cast<int>(std::lround(observatoryUtcOffsetHours(date, time) * 3600.0));
+}
+
+bool hasExplicitUtcOffset(const QString &value)
+{
+    static const QRegularExpression utcOffsetSuffix(QStringLiteral("(Z|[+-]\\d\\d:\\d\\d)$"));
+    return utcOffsetSuffix.match(value).hasMatch();
+}
+
+QDateTime parseObservatoryLocalDateTime(const char *value)
+{
+    const QString isoValue = QString::fromUtf8(value != nullptr ? value : "");
+    const QDateTime parsed = QDateTime::fromString(isoValue, Qt::ISODate);
+    if (!parsed.isValid())
+        return parsed;
+
+    if (hasExplicitUtcOffset(isoValue))
+        return parsed;
+
+    KStarsDateTime observatoryLocal(parsed.date(), parsed.time());
+    const int utcOffsetSeconds = observatoryUtcOffsetSeconds(parsed.date(), parsed.time());
+#if QT_VERSION >= QT_VERSION_CHECK(6, 0, 0)
+    observatoryLocal.setTimeZone(QTimeZone::fromSecondsAheadOfUtc(utcOffsetSeconds));
+#else
+    observatoryLocal.setOffsetFromUtc(utcOffsetSeconds);
+#endif
+    return observatoryLocal;
+}
+}
 
 SchedulerUtils::SchedulerUtils()
 {
@@ -86,8 +141,7 @@ SchedulerJob *SchedulerUtils::createJob(XMLEle *root, SchedulerJob *leadJob)
                 else if (!strcmp("At", pcdataXMLEle(subEP)))
                 {
                     startup = START_AT;
-                    startupTime = QDateTime::fromString(findXMLAttValu(subEP, "value"), Qt::ISODate);
-                    // Todo sterne-jaeger 2024-01-01: setting time spec from KStars necessary?
+                    startupTime = parseObservatoryLocalDateTime(findXMLAttValu(subEP, "value"));
                 }
             }
         }
@@ -131,7 +185,7 @@ SchedulerJob *SchedulerUtils::createJob(XMLEle *root, SchedulerJob *leadJob)
                 else if (!strcmp("At", pcdataXMLEle(subEP)))
                 {
                     completion = FINISH_AT;
-                    completionTime = QDateTime::fromString(findXMLAttValu(subEP, "value"), Qt::ISODate);
+                    completionTime = parseObservatoryLocalDateTime(findXMLAttValu(subEP, "value"));
                 }
             }
         }

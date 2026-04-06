@@ -1392,7 +1392,7 @@ void FITSData::stackFITSLoaded()
                 QString target;
                 if (getRecordValue("OBJECT", value, true))
                     target = value.toString();
-                double exposure;
+                double exposure = 0.0;
                 if (getRecordValue("EXPTIME", value, true))
                     exposure = value.toDouble();
                 initLiveStackMetadata(target, exposure);
@@ -1571,7 +1571,7 @@ void FITSData::solverDone(const bool timedOut, const bool success, const double 
         auto wcsStackAlign = new struct wcsprm;
         wcsStackAlign->flag = -1; // Allocate space
         int status = 0;
-        if ((status = wcssub(1, m_StackWCSHandle, 0x0, 0x0, wcsStackAlign)) != 0)
+        if ((status = wcssub(1, m_StackWCSHandle, nullptr, nullptr, wcsStackAlign)) != 0)
         {
             qCDebug(KSTARS_FITS) << QString("%1 wcssub error processing %1 %2")
                                  .arg(__FUNCTION__).arg(status)
@@ -1604,7 +1604,7 @@ void FITSData::solverDone(const bool timedOut, const bool success, const double 
         QString target;
         if (getRecordValue("OBJECT", value, true))
             target = value.toString();
-        double exposure;
+        double exposure = 0.0;
         if (getRecordValue("EXPTIME", value, true))
             exposure = value.toDouble();
         initLiveStackMetadata(target, exposure);
@@ -1800,7 +1800,7 @@ void FITSData::stackSetupWCS()
     m_WCSHandle = new struct wcsprm;
     m_WCSHandle->flag = -1; // Allocate space
     int status = 0;
-    if ((status = wcssub(1, wcsRef, 0x0, 0x0, m_WCSHandle)) != 0)
+    if ((status = wcssub(1, wcsRef, nullptr, nullptr, m_WCSHandle)) != 0)
     {
         qCDebug(KSTARS_FITS) << QString("%1 wcssub error processing %1 %2").arg(__FUNCTION__).arg(status)
                              .arg(wcs_errmsg[status]);
@@ -1984,7 +1984,7 @@ bool FITSData::loadFITSImage(const QByteArray &buffer, const bool isCompressed)
     }
 
     // Size probing may change current HDU; always continue from the first image HDU.
-    if (fits_movabs_hdu(fptr, 1, IMAGE_HDU, &status))
+    if (fits_movabs_hdu(fptr, 1, nullptr, &status))
     {
         status = 0;
         fits_close_file(fptr, &status);
@@ -2240,7 +2240,7 @@ bool FITSData::stackLoadFITSImage(QString filename, const bool isCompressed)
         }
     }
 
-    if (fits_movabs_hdu(m_Stackfptr, 1, IMAGE_HDU, &status))
+    if (fits_movabs_hdu(m_Stackfptr, 1, nullptr, &status))
     {
         qCDebug(KSTARS_FITS) << QString("Error %1 locating image HDU in %2").arg(fitsErrorToString(status)).arg(filename);
         return false;
