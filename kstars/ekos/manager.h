@@ -6,11 +6,7 @@
 
 #pragma once
 
-#ifdef USE_QT5_INDI
-#include <baseclientqt.h>
-#else
 #include <baseclient.h>
-#endif
 
 #include "ui_manager.h"
 

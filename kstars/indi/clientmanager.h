@@ -8,12 +8,8 @@
 
 #include <QPointer>
 
-#ifdef USE_QT5_INDI
-#include <baseclientqt.h>
-#else
 #include <baseclient.h>
 #include <QObject>
-#endif
 
 #include "blobmanager.h"
 
@@ -31,11 +27,7 @@ class ServerManager;
  * @author Jasem Mutlaq
  * @version 1.3
  */
-#ifdef USE_QT5_INDI
-class ClientManager : public INDI::BaseClientQt
-#else
 class ClientManager : public QObject, public INDI::BaseClient
-#endif
 {
         Q_OBJECT
 

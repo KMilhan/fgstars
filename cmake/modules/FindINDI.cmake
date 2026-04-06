@@ -8,8 +8,8 @@
 #  For other platforms
 #  INDI_LIBRARIES - Link to these for XML and INDI Common support (INDI < 1.4 only)
 #  INDI_CLIENT_LIBRARIES - Link to these to build INDI clients
-#  INDI_CLIENT_QT_LIBRARIES - Link to these to build INDI clients with Qt5 backend
-#  INDI_CLIENT_ANDROID_LIBRARIES - Link to these to build INDI clients with Qt5 backend on Android
+#  INDI_CLIENT_GUI_LIBRARIES - Link to these to build INDI clients with the GUI backend
+#  INDI_CLIENT_ANDROID_LIBRARIES - Link to these to build INDI clients with the Qt backend on Android
 # SPDX-FileCopyrightText: 2012-2017 Jasem Mutlaq <mutlaqja@ikarustech.com>
 # SPDX-FileCopyrightText: 2012 Pino Toscano <pino@kde.org>
 #
@@ -107,7 +107,7 @@ if(NOT INDI_FOUND)
                          ${GNUWIN32_DIR}/lib
                         )
 
-            find_library(INDI_CLIENT_QT_LIBRARIES NAMES indiclientqt
+            find_library(INDI_CLIENT_GUI_LIBRARIES NAMES indiclientqt
                          PATHS
                          ${PC_INDI_LIBRARY_DIRS}
                          ${_obLinkDir}
@@ -123,20 +123,20 @@ if(NOT INDI_FOUND)
             set(INDI_FOUND FALSE)
         endif()
     else(ANDROID)
-        if (INDI_INCLUDE_DIR AND (INDI_VERSION VERSION_GREATER "1.4" OR INDI_LIBRARIES) AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_QT_LIBRARIES) AND INDI_VERSION_OK)
+        if (INDI_INCLUDE_DIR AND (INDI_VERSION VERSION_GREATER "1.4" OR INDI_LIBRARIES) AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_GUI_LIBRARIES) AND INDI_VERSION_OK)
             # If INDI is found we need to make sure on WIN32 we have INDI Client Qt backend otherwise we can't use INDI
             if (WIN32)
-                if (INDI_CLIENT_QT_LIBRARIES)
+                if (INDI_CLIENT_GUI_LIBRARIES)
                     set(INDI_FOUND TRUE)
-                else(INDI_CLIENT_QT_LIBRARIES)
+                else(INDI_CLIENT_GUI_LIBRARIES)
                     set(INDI_FOUND FALSE)
-                endif(INDI_CLIENT_QT_LIBRARIES)
+                endif(INDI_CLIENT_GUI_LIBRARIES)
             else (WIN32)
                 set(INDI_FOUND TRUE)
             endif(WIN32)
-        else(INDI_INCLUDE_DIR AND (INDI_VERSION VERSION_GREATER "1.4" OR INDI_LIBRARIES) AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_QT_LIBRARIES) AND INDI_VERSION_OK)
+        else(INDI_INCLUDE_DIR AND (INDI_VERSION VERSION_GREATER "1.4" OR INDI_LIBRARIES) AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_GUI_LIBRARIES) AND INDI_VERSION_OK)
             set(INDI_FOUND FALSE)
-        endif(INDI_INCLUDE_DIR AND (INDI_VERSION VERSION_GREATER "1.4" OR INDI_LIBRARIES) AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_QT_LIBRARIES) AND INDI_VERSION_OK)
+        endif(INDI_INCLUDE_DIR AND (INDI_VERSION VERSION_GREATER "1.4" OR INDI_LIBRARIES) AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_GUI_LIBRARIES) AND INDI_VERSION_OK)
     endif(ANDROID)
 
     if (INDI_FOUND)
@@ -149,9 +149,9 @@ if(NOT INDI_FOUND)
             if (INDI_CLIENT_LIBRARIES)
                 message(STATUS "Found INDI Client Library: ${INDI_CLIENT_LIBRARIES}")
             endif (INDI_CLIENT_LIBRARIES)
-            if (INDI_CLIENT_QT_LIBRARIES)
-                message(STATUS "Found INDI Qt5 Client Library: ${INDI_CLIENT_QT_LIBRARIES}")
-            endif (INDI_CLIENT_QT_LIBRARIES)
+            if (INDI_CLIENT_GUI_LIBRARIES)
+                message(STATUS "Found INDI GUI Client Library: ${INDI_CLIENT_GUI_LIBRARIES}")
+            endif (INDI_CLIENT_GUI_LIBRARIES)
         endif(ANDROID)
         endif (NOT INDI_FIND_QUIETLY)
     else (INDI_FOUND)
@@ -164,9 +164,9 @@ if(NOT INDI_FOUND)
             mark_as_advanced(INDI_INCLUDE_DIR INDI_CLIENT_ANDROID_LIBRARIES)
     else(ANDROID)
             if (INDI_VERSION VERSION_LESS "1.4")
-                mark_as_advanced(INDI_INCLUDE_DIR INDI_LIBRARIES INDI_CLIENT_LIBRARIES INDI_CLIENT_QT_LIBRARIES)
+                mark_as_advanced(INDI_INCLUDE_DIR INDI_LIBRARIES INDI_CLIENT_LIBRARIES INDI_CLIENT_GUI_LIBRARIES)
             else(INDI_VERSION VERSION_LESS "1.4")
-                mark_as_advanced(INDI_INCLUDE_DIR INDI_CLIENT_LIBRARIES INDI_CLIENT_QT_LIBRARIES)
+                mark_as_advanced(INDI_INCLUDE_DIR INDI_CLIENT_LIBRARIES INDI_CLIENT_GUI_LIBRARIES)
             endif(INDI_VERSION VERSION_LESS "1.4")
     endif(ANDROID)
 endif(NOT INDI_FOUND)
@@ -180,12 +180,12 @@ if (INDI_INCLUDE_DIR)
             message(STATUS "Found INDI: ${INDI_CLIENT_ANDROID_LIBRARIES}")
         endif(INDI_CLIENT_ANDROID_LIBRARIES)
     else(ANDROID)
-        if (INDI_VERSION VERSION_LESS "1.4" AND INDI_LIBRARIES AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_QT_LIBRARIES))
+        if (INDI_VERSION VERSION_LESS "1.4" AND INDI_LIBRARIES AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_GUI_LIBRARIES))
             set(INDI_FOUND ${INDI_VERSION_OK})
             message(STATUS "Found INDI: ${INDI_LIBRARIES}, ${INDI_CLIENT_LIBRARIES}, ${INDI_INCLUDE_DIR}")
-        elseif (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_QT_LIBRARIES)
+        elseif (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_GUI_LIBRARIES)
             set(INDI_FOUND ${INDI_VERSION_OK})
             message(STATUS "Found INDI: ${INDI_CLIENT_LIBRARIES}, ${INDI_INCLUDE_DIR}")
-        endif(INDI_VERSION VERSION_LESS "1.4" AND INDI_LIBRARIES AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_QT_LIBRARIES))
+        endif(INDI_VERSION VERSION_LESS "1.4" AND INDI_LIBRARIES AND (INDI_CLIENT_LIBRARIES OR INDI_CLIENT_GUI_LIBRARIES))
     endif(ANDROID)
 endif(INDI_INCLUDE_DIR)
