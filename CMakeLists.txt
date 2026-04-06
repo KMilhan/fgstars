@@ -89,6 +89,19 @@ include(KDECompilerSettings NO_POLICY_SCOPE)
 include(KDECMakeSettings)
 include(FeatureSummary)
 
+# KStars and some required third-party headers still rely on a few legacy Qt
+# conveniences. KDECompilerSettings enables opt-out macros for them, but that
+# currently prevents this tree from compiling at all. Disable only the specific
+# opt-outs that are known to break the build so the rest of the strict Qt checks
+# remain enabled.
+remove_definitions(
+    -DQT_NO_KEYWORDS
+    -DQT_NO_FOREACH
+    -DQT_NO_CAST_FROM_ASCII
+    -DQT_NO_CAST_FROM_BYTEARRAY
+    -DQT_NO_NARROWING_CONVERSIONS_IN_CONNECT
+)
+
 if(BUILD_KSTARS_LITE)
     find_package(Qt6 ${QT_MIN_VERSION} REQUIRED COMPONENTS
         Gui
@@ -457,8 +470,10 @@ IF (UNIX OR APPLE)
         SET(COMP_FLAGS "${COMP_FLAGS} -Werror")
     ENDIF ()
     # Omit problematic warnings
+    SET(COMP_FLAGS "${COMP_FLAGS} -Wno-deprecated")
     SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=pedantic")
     SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=zero-as-null-pointer-constant")
+    SET(COMP_FLAGS "${COMP_FLAGS} -Wno-zero-as-null-pointer-constant")
     SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=deprecated-declarations")
     SET(COMP_FLAGS "${COMP_FLAGS} -Wno-error=format")
     SET(COMP_FLAGS "${COMP_FLAGS} -Wno-deprecated-declarations")
@@ -508,9 +523,11 @@ IF (UNIX OR APPLE)
         ENDIF ()
     ENDIF ()
 
-    # Apply the flags
+    # Apply the flags. Strip any previously cached C++-only warning options from
+    # C flags so re-configuring an existing build directory stays clean.
+    string(REPLACE "-Wno-deprecated-literal-operator" "" CMAKE_C_FLAGS "${CMAKE_C_FLAGS}")
     SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${COMP_FLAGS}")
-    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMP_FLAGS}")
+    SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${COMP_FLAGS} -Wno-deprecated-literal-operator")
     SET(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${LINKER_FLAGS}")
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${LINKER_FLAGS}")
 ENDIF ()

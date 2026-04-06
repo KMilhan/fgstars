@@ -220,7 +220,7 @@ void StellarSolverProfileEditor::loadOptionsProfile()
     {
         SSolver::Parameters editorOptions = getSettingsFromUI();
         SSolver::Parameters currentProfile = optionsList.at(openOptionsProfileNum);
-        if(!(editorOptions == currentProfile) || editorOptions.description != currentProfile.description)
+        if(!editorOptions.operator==(currentProfile) || editorOptions.description != currentProfile.description)
         {
             editorOptions.listName = currentProfile.listName;
             optionsList.replace(openOptionsProfileNum, editorOptions);
@@ -584,7 +584,7 @@ void StellarSolverProfileEditor::slotApply()
     if (index >= 0 && index < optionsList.count())
     {
         SSolver::Parameters savedParams = optionsList.at(index);
-        if(!(currentParams == savedParams) || currentParams.description != savedParams.description)
+        if(!currentParams.operator==(savedParams) || currentParams.description != savedParams.description)
         {
             currentParams.listName = savedParams.listName;
             optionsList.replace(index, currentParams);
