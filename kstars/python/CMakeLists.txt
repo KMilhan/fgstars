@@ -1,5 +1,4 @@
 find_package(pybind11)
-set(PYBIND11_CPP_STANDARD -std=c++11)
 
 # Include KStars Headers
 include_directories(
@@ -11,13 +10,13 @@ include_directories(
     ${kstars_SOURCE_DIR}/kstars/catalogsdb
     )
 
-find_package(Qt5 REQUIRED COMPONENTS Core Sql)
+find_package(Qt6 REQUIRED COMPONENTS Core Sql)
 # Set libraries to link against
 SET(PY_LIBRARIES
   htmesh
   KStarsLib
-  Qt5::Sql
-  Qt5::Core
+  Qt6::Sql
+  Qt6::Core
   )
 
 # remove --no-undefined because that does not make sense here

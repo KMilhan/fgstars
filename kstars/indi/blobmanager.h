@@ -6,12 +6,8 @@
 
 #pragma once
 
-#ifdef USE_QT5_INDI
-#include <baseclientqt.h>
-#else
 #include <baseclient.h>
 #include <QObject>
-#endif
 
 class DeviceInfo;
 class DriverInfo;
@@ -26,11 +22,7 @@ class ServerManager;
  * @author Jasem Mutlaq
  * @version 1.0
  */
-#ifdef USE_QT5_INDI
-class BlobManager : public INDI::BaseClientQt
-#else
 class BlobManager : public QObject, public INDI::BaseClient
-#endif
 {
         Q_OBJECT
         Q_PROPERTY(QString device MEMBER m_Device)

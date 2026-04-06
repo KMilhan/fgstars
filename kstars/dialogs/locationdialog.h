@@ -161,7 +161,7 @@ class LocationDialog : public QDialog
          */
         bool updateCity(LocationDialog::CityOperation operation);
 
-        // FIXME Disable this until Qt5 works with Geoclue2
+        // FIXME Re-enable this after the Geoclue2 issue is resolved
 #ifdef HAVE_GEOCLUE_2
         /**
          * @brief getNameFromCoordinates Given the current latitude and longitude, use Google Location API services to reverse lookup
@@ -179,7 +179,7 @@ class LocationDialog : public QDialog
         void slotOk();
 
     protected slots:
-        // FIXME Disable this until Qt5 works with Geoclue2
+        // FIXME Re-enable this after the Geoclue2 issue is resolved
 #ifdef HAVE_GEOCLUE_2
         void processLocationNameData(QNetworkReply *rep);
         void requestUpdate();
