@@ -96,3 +96,12 @@ unitybuild_*.cpp
 
 # Test folder
 /Testing/
+
+# Local eval/test artifacts
+/.artifacts/headless-ui/
+/.artifacts/eval-tests/build-*.log
+/.artifacts/eval-tests/build-full-*.log
+/.artifacts/eval-tests/configure-*.log
+/.artifacts/eval-tests/ctest-*.log
+/build_cov/
+/Kocab/
