@@ -1628,6 +1628,10 @@ void TestEkosCaptureWorkflow::initTestCase()
     QVERIFY(destination->autoRemove());
     // wait for all module settings updated
     m_CaptureHelper->waitForSettingsUpdated = true;
+
+    QString reason;
+    if (!m_CaptureHelper->ensureCcdSimulatorStarsAvailable(&reason))
+        QSKIP(qPrintable(reason));
 }
 
 void TestEkosCaptureWorkflow::cleanupTestCase()

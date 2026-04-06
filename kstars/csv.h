@@ -171,7 +171,7 @@ class OwningStdIOByteSourceBase : public ByteSourceBase
         explicit OwningStdIOByteSourceBase(FILE *file) : file(file)
         {
             // Tell the std library that we want to do the buffering ourself.
-            std::setvbuf(file, 0, _IONBF, 0);
+            std::setvbuf(file, nullptr, _IONBF, 0);
         }
 
         int read(char *buffer, int size) override
@@ -376,7 +376,7 @@ class LineReader
             // We open the file in binary mode as it makes no difference under *nix
             // and under Windows we handle \r\n newlines ourself.
             FILE *file = std::fopen(file_name, "rb");
-            if (file == 0)
+            if (file == nullptr)
             {
                 int x = errno; // store errno as soon as possible, doing it after
                 // constructor call can fail.
@@ -1488,4 +1488,3 @@ class CSVReader
 };
 } // namespace io
 #endif
-

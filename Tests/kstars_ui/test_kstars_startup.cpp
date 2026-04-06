@@ -16,7 +16,11 @@
 #include <QTest>
 #endif
 
+#include <QDir>
 #include <QDialogButtonBox>
+#include <QFile>
+#include <QApplication>
+#include <QStandardPaths>
 #include <QtConcurrent>
 
 #include "Options.h"
@@ -27,7 +31,6 @@
 #include "kstars_ui_tests.h"
 #include "test_kstars_startup.h"
 
-
 struct TestKStarsStartup::_InitialConditions const TestKStarsStartup::m_InitialConditions;
 
 TestKStarsStartup::TestKStarsStartup(QObject *parent) : QObject(parent)
@@ -36,15 +39,28 @@ TestKStarsStartup::TestKStarsStartup(QObject *parent) : QObject(parent)
 
 void TestKStarsStartup::initTestCase()
 {
+#if defined(HAVE_INDI)
+    if (!KStarsUiTests::configureTestIndiRuntime())
+        QSKIP("INDI server binary not found; skipping TestKStarsStartup.", SkipAll);
+#endif
+
     if (KStars::Instance() != nullptr)
         KTRY_SHOW_KSTARS();
 }
 
 void TestKStarsStartup::cleanupTestCase()
 {
-    foreach (QDialog * d, KStars::Instance()->findChildren<QDialog*>())
-        if (d->isVisible())
-            d->hide();
+    auto const app = qobject_cast<QApplication *>(QCoreApplication::instance());
+    if (app == nullptr || app->closingDown())
+        return;
+
+    for (QWidget *widget : app->topLevelWidgets())
+    {
+        QDialog * const d = qobject_cast<QDialog *>(widget);
+        if (!d || !d->isVisible())
+            continue;
+        d->hide();
+    }
 }
 
 void TestKStarsStartup::init()
@@ -59,16 +75,10 @@ void TestKStarsStartup::createInstanceTest()
 {
 #if defined(HAVE_INDI)
     QWARN("INDI driver registry is unexpectedly required before we start the KStars wizard");
-
-    // Locate INDI drivers like drivermanager.cpp does
-    Options::setIndiDriversDir(
-        QStandardPaths::locate(QStandardPaths::GenericDataLocation, "indi", QStandardPaths::LocateDirectory));
-    QVERIFY(QDir(Options::indiDriversDir()).exists());
-
-    // Look for the second usual place - developer install - OSX should be there too?
-    if (QFile("/usr/local/bin/indiserver").exists())
-        Options::setIndiServer("/usr/local/bin/indiserver");
-    QVERIFY(QFile(Options::indiServer()).exists());
+    if (!KStarsUiTests::configureTestIndiRuntime())
+        QSKIP("INDI server binary not found; skipping TestKStarsStartup.", SkipAll);
+    if (!QDir(Options::indiDriversDir()).exists())
+        QWARN(qPrintable(QString("INDI driver directory not found: %1").arg(Options::indiDriversDir())));
 #endif
 
     // Prepare to close the wizard pages when the KStars instance will start - we could just use the following to bypass
@@ -106,7 +116,7 @@ void TestKStarsStartup::createInstanceTest()
             QVERIFY(nullptr != buttons);
 
             // search the "Done" button
-            QAbstractButton *doneButton;
+            QAbstractButton *doneButton = nullptr;
             for (QAbstractButton *button : buttons->buttons())
             {
                 if (button->text().toStdString() == "Done")
@@ -117,7 +127,7 @@ void TestKStarsStartup::createInstanceTest()
 
             installWizardDone = true;
         };
-        QTimer::singleShot(500, KStars::Instance(), closeWizard);
+        QTimer::singleShot(500, qApp, closeWizard);
     }
     else
     {

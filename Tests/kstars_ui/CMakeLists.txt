@@ -1,7 +1,8 @@
-
 SET(KSTARS_UI_TESTS_SRC
     kstars_ui_tests.cpp
-    test_kstars_startup.cpp)
+    kstars_ui_tests.h
+    test_kstars_startup.cpp
+    test_kstars_startup.h)
 
 include_directories(${CFITSIO_INCLUDE_DIR})
 
@@ -24,7 +25,16 @@ ecm_qt_declare_logging_category(KSTARS_UI_TESTS_SRC HEADER test_ekos_debug.h IDE
 IF (INDI_FOUND)
 
 INCLUDE_DIRECTORIES(${INDI_INCLUDE_DIR})
-SET(KSTARS_UI_EKOS_SRC ${KSTARS_UI_TESTS_SRC} test_ekos_wizard.cpp)
+if(TARGET kstars_indi_test_runtime)
+    add_compile_definitions(
+        KSTARS_TEST_VENDORED_INDI_SERVER="${KSTARS_VENDORED_INDI_SERVER}"
+        KSTARS_TEST_VENDORED_INDI_DRIVERS_DIR="${CMAKE_SOURCE_DIR}/submodules/indi"
+    )
+    set(KSTARS_UI_TEST_ENVIRONMENT
+        "KSTARS_TEST_INDI_SERVER=${KSTARS_VENDORED_INDI_SERVER};KSTARS_TEST_INDI_DRIVERS_DIR=${CMAKE_SOURCE_DIR}/submodules/indi"
+    )
+endif()
+SET(KSTARS_UI_EKOS_SRC ${KSTARS_UI_TESTS_SRC} test_ekos_wizard.cpp test_ekos_wizard.h)
 SET(KSTARS_UI_EKOS_LIBS ${TEST_LIBRARIES} ${CFITSIO_LIBRARIES} ${INDI_CLIENT_LIBRARIES} ${NOVA_LIBRARIES} z)
 
 SET(KSTARS_UI_MOCK_SRC mockmodules.cpp)
@@ -52,37 +62,57 @@ ENDIF()
 # ADD_TEST(NAME TestEkosProfiles COMMAND test_ekos)
 # SET_TESTS_PROPERTIES( TestEkosProfiles PROPERTIES LABELS "stable;ui")
 
-ADD_EXECUTABLE(test_ekos_simulator ${KSTARS_UI_EKOS_SRC} test_ekos_simulator.cpp)
+ADD_EXECUTABLE(test_ekos_simulator ${KSTARS_UI_EKOS_SRC} test_ekos_simulator.cpp test_ekos_simulator.h)
 TARGET_LINK_LIBRARIES(test_ekos_simulator ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosSimulator COMMAND test_ekos_simulator)
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_simulator kstars_indi_test_runtime)
+    set_tests_properties(TestEkosSimulator PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 # SET_TESTS_PROPERTIES( TestEkosSimulator PROPERTIES LABELS "stable;ui")
 
-ADD_EXECUTABLE(test_ekos_focus ${KSTARS_UI_EKOS_SRC} test_ekos_focus.cpp  test_ekos_helper.cpp)
+ADD_EXECUTABLE(test_ekos_focus ${KSTARS_UI_EKOS_SRC} test_ekos_focus.cpp test_ekos_focus.h test_ekos_helper.cpp test_ekos_helper.h)
 TARGET_LINK_LIBRARIES(test_ekos_focus ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosFocus COMMAND test_ekos_focus)
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_focus kstars_indi_test_runtime)
+    set_tests_properties(TestEkosFocus PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 # SET_TESTS_PROPERTIES( TestEkosFocus PROPERTIES LABELS "stable;ui")
 
-ADD_EXECUTABLE(test_ekos_capture ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_capture_helper.cpp test_ekos_capture.cpp)
+ADD_EXECUTABLE(test_ekos_capture ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_capture.cpp test_ekos_capture.h)
 TARGET_LINK_LIBRARIES(test_ekos_capture ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosCapture COMMAND test_ekos_capture)
 SET_TESTS_PROPERTIES( TestEkosCapture PROPERTIES LABELS "stable;ui" TIMEOUT 600)
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_capture kstars_indi_test_runtime)
+    set_tests_properties(TestEkosCapture PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
-ADD_EXECUTABLE(test_ekos_filterwheel ${KSTARS_UI_EKOS_SRC} test_ekos_filterwheel.cpp test_ekos_helper.cpp)
+ADD_EXECUTABLE(test_ekos_filterwheel ${KSTARS_UI_EKOS_SRC} test_ekos_filterwheel.cpp test_ekos_filterwheel.h test_ekos_helper.cpp test_ekos_helper.h)
 TARGET_LINK_LIBRARIES(test_ekos_filterwheel ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosFilterWheel COMMAND test_ekos_filterwheel)
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_filterwheel kstars_indi_test_runtime)
+    set_tests_properties(TestEkosFilterWheel PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
-ADD_EXECUTABLE(test_ekos_capture_count ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_capture_helper.cpp test_ekos_capture_count.cpp)
+ADD_EXECUTABLE(test_ekos_capture_count ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_capture_count.cpp test_ekos_capture_count.h)
 TARGET_LINK_LIBRARIES(test_ekos_capture_count ${KSTARS_UI_EKOS_LIBS})
 # Exculded as this is flakey: December 8, 2022
 #ADD_TEST(NAME TestEkosCaptureCount COMMAND test_ekos_capture_count)
 #SET_TESTS_PROPERTIES( TestEkosCaptureCount PROPERTIES LABELS "stable;ui" TIMEOUT 1200 )
 
-ADD_EXECUTABLE(test_ekos_capture_workflow ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_capture_helper.cpp test_ekos_capture_workflow.cpp)
+ADD_EXECUTABLE(test_ekos_capture_workflow ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_capture_workflow.cpp test_ekos_capture_workflow.h)
 TARGET_LINK_LIBRARIES(test_ekos_capture_workflow ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosCaptureWorkflow COMMAND test_ekos_capture_workflow)
 SET_TESTS_PROPERTIES(TestEkosCaptureWorkflow PROPERTIES LABELS "stable;ui" TIMEOUT 600 RESOURCE_LOCK "kstars-ui")
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_capture_workflow kstars_indi_test_runtime)
+    set_tests_properties(TestEkosCaptureWorkflow PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
-ADD_EXECUTABLE(test_ekos_align ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_capture_helper.cpp test_ekos_scheduler_helper.cpp test_ekos_align.cpp)
+ADD_EXECUTABLE(test_ekos_align ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_scheduler_helper.cpp test_ekos_align.cpp test_ekos_align.h)
 TARGET_LINK_LIBRARIES(test_ekos_align ${KSTARS_UI_EKOS_LIBS})
 ADD_CUSTOM_COMMAND( TARGET test_ekos_align POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
@@ -93,7 +123,7 @@ ADD_CUSTOM_COMMAND( TARGET test_ekos_align POST_BUILD
 # ADD_TEST(NAME TestEkosAlign COMMAND test_ekos_align)
 # SET_TESTS_PROPERTIES( TestEkosAlign PROPERTIES LABELS "unstable;ui" TIMEOUT 600 )
 
-ADD_EXECUTABLE(test_ekos_meridianflip ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_capture_helper.cpp test_ekos_meridianflip_base.cpp test_ekos_meridianflip.cpp)
+ADD_EXECUTABLE(test_ekos_meridianflip ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_meridianflip_base.cpp test_ekos_meridianflip_base.h test_ekos_meridianflip.cpp test_ekos_meridianflip.h)
 TARGET_LINK_LIBRARIES(test_ekos_meridianflip ${KSTARS_UI_EKOS_LIBS})
 # excluded to avoid CI timelimit failure
 # ADD_TEST(NAME TestEkosMeridianFlip COMMAND test_ekos_meridianflip)
@@ -103,7 +133,7 @@ ADD_CUSTOM_COMMAND( TARGET test_ekos_meridianflip POST_BUILD
             ${CMAKE_CURRENT_SOURCE_DIR}/phd2_Simulators_mf.PHDGuidingV2
             ${CMAKE_CURRENT_BINARY_DIR}/.PHDGuidingV2_mf)
 
-ADD_EXECUTABLE(test_ekos_meridianflip_specials ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_capture_helper.cpp test_ekos_meridianflip_base.cpp test_ekos_meridianflip_specials.cpp)
+ADD_EXECUTABLE(test_ekos_meridianflip_specials ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_meridianflip_base.cpp test_ekos_meridianflip_base.h test_ekos_meridianflip_specials.cpp test_ekos_meridianflip_specials.h)
 TARGET_LINK_LIBRARIES(test_ekos_meridianflip_specials ${KSTARS_UI_EKOS_LIBS})
 ADD_CUSTOM_COMMAND( TARGET test_ekos_meridianflip_specials POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
@@ -113,12 +143,16 @@ ADD_CUSTOM_COMMAND( TARGET test_ekos_meridianflip_specials POST_BUILD
 # ADD_TEST(NAME TestEkosMeridianFlipSpecials COMMAND test_ekos_meridianflip_specials)
 # SET_TESTS_PROPERTIES( TestEkosMeridianFlipSpecials PROPERTIES LABELS "unstable;ui" TIMEOUT 600 )
 
-ADD_EXECUTABLE( test_ekos_meridianflipstate ${KSTARS_UI_EKOS_SRC}  test_ekos_helper.cpp test_ekos_meridianflipstate.cpp)
+ADD_EXECUTABLE( test_ekos_meridianflipstate ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_meridianflipstate.cpp test_ekos_meridianflipstate.h)
 TARGET_LINK_LIBRARIES( test_ekos_meridianflipstate ${TEST_LIBRARIES})
 ADD_TEST( NAME TestEkosMeridianFlipState COMMAND test_ekos_meridianflipstate )
 SET_TESTS_PROPERTIES( TestEkosMeridianFlipState PROPERTIES LABELS "stable;ui" TIMEOUT 120 )
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_meridianflipstate kstars_indi_test_runtime)
+    set_tests_properties(TestEkosMeridianFlipState PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
-ADD_EXECUTABLE(test_ekos_scheduler ${KSTARS_UI_EKOS_SRC} test_ekos_scheduler.cpp)
+ADD_EXECUTABLE(test_ekos_scheduler ${KSTARS_UI_EKOS_SRC} test_ekos_scheduler.cpp test_ekos_scheduler.h)
 TARGET_LINK_LIBRARIES(test_ekos_scheduler ${KSTARS_UI_EKOS_LIBS})
 ADD_CUSTOM_COMMAND( TARGET test_ekos_scheduler POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
@@ -129,9 +163,13 @@ ADD_CUSTOM_COMMAND( TARGET test_ekos_scheduler POST_BUILD
             ${CMAKE_CURRENT_SOURCE_DIR}/../ekos/scheduler/1x1s_RGBLumRGB.esq
             ${CMAKE_CURRENT_BINARY_DIR}/1x1s_RGBLumRGB.esq)
 ADD_TEST(NAME TestEkosScheduler COMMAND test_ekos_scheduler)
-SET_TESTS_PROPERTIES( TestEkosScheduler PROPERTIES LABELS "stable;ui" TIMEOUT 120 )
+SET_TESTS_PROPERTIES( TestEkosScheduler PROPERTIES LABELS "stable;ui" TIMEOUT 600 )
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_scheduler kstars_indi_test_runtime)
+    set_tests_properties(TestEkosScheduler PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
-ADD_EXECUTABLE(test_ekos_scheduler_ops ${KSTARS_UI_EKOS_SRC} ${KSTARS_UI_MOCK_SRC} test_ekos_helper.cpp test_ekos_scheduler_helper.cpp test_ekos_scheduler_ops.cpp)
+ADD_EXECUTABLE(test_ekos_scheduler_ops ${KSTARS_UI_EKOS_SRC} ${KSTARS_UI_MOCK_SRC} mockmodules.h test_ekos_helper.cpp test_ekos_helper.h test_ekos_scheduler_helper.cpp test_ekos_scheduler_ops.cpp test_ekos_scheduler_ops.h)
 TARGET_LINK_LIBRARIES(test_ekos_scheduler_ops ${KSTARS_UI_EKOS_LIBS})
 ADD_CUSTOM_COMMAND( TARGET test_ekos_scheduler_ops POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
@@ -147,12 +185,30 @@ ADD_CUSTOM_COMMAND( TARGET test_ekos_scheduler_ops POST_BUILD
             ${CMAKE_CURRENT_BINARY_DIR})
 
 ADD_TEST(NAME TestEkosSchedulerOps COMMAND test_ekos_scheduler_ops)
-SET_TESTS_PROPERTIES( TestEkosSchedulerOps PROPERTIES LABELS "stable;ui" TIMEOUT 200 )
+SET_TESTS_PROPERTIES(
+    TestEkosSchedulerOps
+    PROPERTIES
+        LABELS "stable;ui"
+        TIMEOUT 1200
+        ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=1200000"
+)
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_scheduler_ops kstars_indi_test_runtime)
+    set_tests_properties(
+        TestEkosSchedulerOps
+        PROPERTIES
+            ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=1200000;${KSTARS_UI_TEST_ENVIRONMENT}"
+    )
+endif()
 
-ADD_EXECUTABLE(test_artificial_horizon ${KSTARS_UI_EKOS_SRC} test_artificial_horizon.cpp)
+ADD_EXECUTABLE(test_artificial_horizon ${KSTARS_UI_EKOS_SRC} test_artificial_horizon.cpp test_artificial_horizon.h)
 TARGET_LINK_LIBRARIES(test_artificial_horizon ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestArtificialHorizon COMMAND test_artificial_horizon)
 SET_TESTS_PROPERTIES( TestArtificialHorizon PROPERTIES LABELS "stable;ui" TIMEOUT 600 )
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_artificial_horizon kstars_indi_test_runtime)
+    set_tests_properties(TestArtificialHorizon PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
 # JM 2021-10.16 PHD2 test often fails in CI so it is excluded now until it is fixed.
 #ADD_EXECUTABLE(test_ekos_guide ${KSTARS_UI_EKOS_SRC} test_ekos_guide.cpp)
@@ -164,12 +220,16 @@ SET_TESTS_PROPERTIES( TestArtificialHorizon PROPERTIES LABELS "stable;ui" TIMEOU
 #ADD_TEST(NAME TestEkosGuide COMMAND test_ekos_guide)
 #SET_TESTS_PROPERTIES( TestEkosGuide PROPERTIES LABELS "unstable;ui" TIMEOUT 600 )
 
-ADD_EXECUTABLE(test_ekos_mount ${KSTARS_UI_EKOS_SRC} test_ekos_mount.cpp)
+ADD_EXECUTABLE(test_ekos_mount ${KSTARS_UI_EKOS_SRC} test_ekos_mount.cpp test_ekos_mount.h)
 TARGET_LINK_LIBRARIES(test_ekos_mount ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosMount COMMAND test_ekos_mount)
 SET_TESTS_PROPERTIES( TestEkosMount PROPERTIES LABELS "no-xvfb;ui" TIMEOUT 600 )
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_mount kstars_indi_test_runtime)
+    set_tests_properties(TestEkosMount PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
-ADD_EXECUTABLE(test_catalog_download ${KSTARS_UI_EKOS_SRC} test_catalog_download.cpp)
+ADD_EXECUTABLE(test_catalog_download ${KSTARS_UI_EKOS_SRC} test_catalog_download.cpp test_catalog_download.h)
 TARGET_LINK_LIBRARIES(test_catalog_download ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestCatalogDownload COMMAND test_catalog_download)
 SET_TESTS_PROPERTIES( TestCatalogDownload PROPERTIES
@@ -177,6 +237,10 @@ SET_TESTS_PROPERTIES( TestCatalogDownload PROPERTIES
     TIMEOUT 600
     ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=600000"
 )
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_catalog_download kstars_indi_test_runtime)
+    set_tests_properties(TestCatalogDownload PROPERTIES ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=600000;${KSTARS_UI_TEST_ENVIRONMENT}")
+endif()
 
 # These UI tests share global resources (KStars instance, INDI simulators, DBus services) and are not safe to run in parallel.
 set_tests_properties(

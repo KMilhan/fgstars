@@ -571,11 +571,19 @@ void SchedulerProcess::wakeUpScheduler()
                 moduleState()->disablePreemptiveShutdown();
                 // Clear job
                 moduleState()->setActiveJob(nullptr);
+                // Keep driving the shutdown state machine instead of returning to RUN_WAKEUP.
+                // Otherwise a subsequent wakeup iteration can switch the scheduler back to
+                // normal job execution before the hard-shutdown completes.
+                moduleState()->setupNextIteration(RUN_SHUTDOWN);
                 // Arm weather monitoring so that completeShutdown() enters monitoring
                 // mode (instead of calling stop()) after Ekos/INDI are torn down.
                 // Without this flag, completeShutdown() falls through to stop() and
-                // the scheduler fully dies — unable to auto-restart when weather clears.
+                // the scheduler fully dies, unable to auto-restart when weather clears.
                 moduleState()->setWeatherShutdownMonitoring(true);
+                // Keep driving the shutdown state machine instead of returning to RUN_WAKEUP.
+                // Otherwise a subsequent wakeup iteration can switch the scheduler back to
+                // normal job execution before the hard-shutdown completes.
+                moduleState()->setupNextIteration(RUN_SHUTDOWN);
                 // Proceed to remaining shutdown stages
                 checkShutdownState();
                 return;
@@ -653,9 +661,15 @@ void SchedulerProcess::wakeUpScheduler()
                 if (m_queueManager->loadQueue(queueFile) && m_queueManager->count() > 0)
                 {
                     appendLogText(i18n("Executing post-startup tasks from %1 after safety recovery...", queueFile));
-                    moduleState()->setStartupState(STARTUP_POST_DEVICES_RUNNING);
-                    m_queueExecutor->start();
-                    return; // queueExecutionCompleted() → STARTUP_COMPLETE → execute()
+                    if (m_queueExecutor->start())
+                    {
+                        moduleState()->setStartupState(STARTUP_POST_DEVICES_RUNNING);
+                        return; // queueExecutionCompleted() → STARTUP_COMPLETE → execute()
+                    }
+
+                    appendLogText(i18n("Post-startup tasks could not start yet. Retrying..."));
+                    moduleState()->setStartupState(STARTUP_POST_DEVICES);
+                    return;
                 }
                 else
                 {
@@ -2017,8 +2031,14 @@ bool SchedulerProcess::checkStartupState()
                     if (m_queueManager->count() > 0)
                     {
                         appendLogText(i18n("Executing post-startup tasks from %1...", queueFile));
-                        moduleState()->setStartupState(STARTUP_POST_DEVICES_RUNNING);
-                        m_queueExecutor->start();
+                        if (m_queueExecutor->start())
+                        {
+                            moduleState()->setStartupState(STARTUP_POST_DEVICES_RUNNING);
+                            return false;
+                        }
+
+                        appendLogText(i18n("Post-startup tasks could not start yet. Retrying..."));
+                        moduleState()->setStartupState(STARTUP_POST_DEVICES);
                         return false;
                     }
                 }

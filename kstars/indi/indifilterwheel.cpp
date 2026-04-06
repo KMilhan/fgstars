@@ -29,14 +29,15 @@ bool FilterWheel::setPosition(uint8_t index)
 bool FilterWheel::setLabels(const QStringList &names)
 {
     auto tvp = getText("FILTER_NAME");
+    const int labelCount = static_cast<int>(tvp.count());
 
     if (!tvp.isValid())
         return false;
 
-    if (static_cast<size_t>(names.count()) != tvp.count())
+    if (names.size() != labelCount)
         return false;
 
-    for (uint8_t i = 0; i < tvp.count(); i++)
+    for (int i = 0; i < labelCount; i++)
         tvp[i].setText(names[i].toLatin1().constData());
 
     sendNewProperty(tvp);

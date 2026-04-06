@@ -346,10 +346,10 @@ void TestEkosCapture::testCaptureDarkFlats()
         }
     });
 
-    QTRY_VERIFY_WITH_TIMEOUT(!startB->icon().name().compare("media-playback-start"), 120000);
-
-    // Verify the proper number of FITS file were created
-    QTRY_COMPARE_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count(), 10, 1000);
+    // In the full capture suite, the button widget can be recreated while the
+    // sequence is running. Wait on the files the test cares about instead of a
+    // raw widget pointer so we still verify end-to-end completion safely.
+    QTRY_COMPARE_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count(), 10, 120000);
 
     // Verify dark flat job (3) matches flat job (1) time
     queueTable->selectRow(0);

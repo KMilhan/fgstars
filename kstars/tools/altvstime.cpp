@@ -946,112 +946,69 @@ void AltVsTime::slotUpdateDateLoc()
     for (int i = 0; i < pList.count(); ++i)
     {
         SkyObject *o = pList.at(i);
-        if (o)
+        if (!o)
+            continue;
+
+        //If the object is in the solar system, recompute its position for the given date
+        if (o->isSolarSystem())
         {
-            //If the object is in the solar system, recompute its position for the given date
-            if (o->isSolarSystem())
-            {
-                oldNum = new KSNumbers(data->ut().djd());
-                o->updateCoords(num, true, geo->lat(), &LST, true);
-            }
-
-            //precess coords to target epoch
-            o->updateCoordsNow(num);
-
-            //update pList entry
-            pList.replace(i, o);
-
-            // We are creating a new data set (time, altitude) for the new date:
-            QVector<double> time_dataSet, altitude_dataSet;
-            double point_altitudeValue, point_timeValue;
-            // compute the new graph values:
-            // time range: 24h
-            int offset = 3;
-            for (double h = -12.0, i = 0; h <= 12.0; h += 0.25, i++)
-            {
-                point_altitudeValue = findAltitude(o, h);
-                altitude_dataSet.push_back(point_altitudeValue);
-                if (point_altitudeValue > maxAlt)
-                    maxAlt = point_altitudeValue;
-                if (point_altitudeValue < minAlt)
-                    minAlt = point_altitudeValue;
-                point_timeValue = i * 900 + 43200;
-                time_dataSet.push_back(point_timeValue);
-            }
-
-            // Replace graph data set:
-            avtUI->View->graph(i)->setData(time_dataSet, altitude_dataSet);
-
-            // Go into initial state: without Zoom/Pan
-            avtUI->View->xAxis->setRange(43200, 129600);
-            avtUI->View->xAxis2->setRange(61200, 147600);
-
-            // Center the altitude axis in 0 value:
-            if (abs(minAlt) > maxAlt)
-                maxAlt = abs(minAlt);
-            else
-                minAlt = -maxAlt;
-            avtUI->View->yAxis->setRange(minAlt - offset, maxAlt + offset);
-
-            // Update background coordinates:
-            background->topLeft->setCoords(avtUI->View->xAxis->range().lower, avtUI->View->yAxis->range().upper);
-            background->bottomRight->setCoords(avtUI->View->xAxis->range().upper, avtUI->View->yAxis->range().lower);
-
-            // Redraw the plot:
-            avtUI->View->replot();
-
-            //restore original position
-            if (o->isSolarSystem())
-            {
-                o->updateCoords(oldNum, true, data->geo()->lat(), data->lst());
-                delete oldNum;
-                oldNum = nullptr;
-            }
-            o->EquatorialToHorizontal(data->lst(), data->geo()->lat());
+            oldNum = new KSNumbers(data->ut().djd());
+            o->updateCoords(num, true, geo->lat(), &LST, true);
         }
-        else //assume unfound object is a custom object
+
+        //precess coords to target epoch
+        o->updateCoordsNow(num);
+
+        //update pList entry
+        pList.replace(i, o);
+
+        // We are creating a new data set (time, altitude) for the new date:
+        QVector<double> time_dataSet, altitude_dataSet;
+        double point_altitudeValue, point_timeValue;
+        // compute the new graph values:
+        // time range: 24h
+        int offset = 3;
+        for (double h = -12.0, i = 0; h <= 12.0; h += 0.25, i++)
         {
-            pList.at(i)->updateCoordsNow(num); //precess to desired epoch
-
-            // We are creating a new data set (time, altitude) for the new date:
-            QVector<double> time_dataSet, altitude_dataSet;
-            double point_altitudeValue, point_timeValue;
-            // compute the new graph values:
-            // time range: 24h
-            int offset = 3;
-            for (double h = -12.0, i = 0; h <= 12.0; h += 0.25, i++)
-            {
-                point_altitudeValue = findAltitude(pList.at(i), h);
-                altitude_dataSet.push_back(point_altitudeValue);
-                if (point_altitudeValue > maxAlt)
-                    maxAlt = point_altitudeValue;
-                if (point_altitudeValue < minAlt)
-                    minAlt = point_altitudeValue;
-                point_timeValue = i * 900 + 43200;
-                time_dataSet.push_back(point_timeValue);
-            }
-
-            // Replace graph data set:
-            avtUI->View->graph(i)->setData(time_dataSet, altitude_dataSet);
-
-            // Go into initial state: without Zoom/Pan
-            avtUI->View->xAxis->setRange(43200, 129600);
-            avtUI->View->xAxis2->setRange(61200, 147600);
-
-            // Center the altitude axis in 0 value:
-            if (abs(minAlt) > maxAlt)
-                maxAlt = abs(minAlt);
-            else
-                minAlt = -maxAlt;
-            avtUI->View->yAxis->setRange(minAlt - offset, maxAlt + offset);
-
-            // Update background coordinates:
-            background->topLeft->setCoords(avtUI->View->xAxis->range().lower, avtUI->View->yAxis->range().upper);
-            background->bottomRight->setCoords(avtUI->View->xAxis->range().upper, avtUI->View->yAxis->range().lower);
-
-            // Redraw the plot:
-            avtUI->View->replot();
+            point_altitudeValue = findAltitude(o, h);
+            altitude_dataSet.push_back(point_altitudeValue);
+            if (point_altitudeValue > maxAlt)
+                maxAlt = point_altitudeValue;
+            if (point_altitudeValue < minAlt)
+                minAlt = point_altitudeValue;
+            point_timeValue = i * 900 + 43200;
+            time_dataSet.push_back(point_timeValue);
         }
+
+        // Replace graph data set:
+        avtUI->View->graph(i)->setData(time_dataSet, altitude_dataSet);
+
+        // Go into initial state: without Zoom/Pan
+        avtUI->View->xAxis->setRange(43200, 129600);
+        avtUI->View->xAxis2->setRange(61200, 147600);
+
+        // Center the altitude axis in 0 value:
+        if (abs(minAlt) > maxAlt)
+            maxAlt = abs(minAlt);
+        else
+            minAlt = -maxAlt;
+        avtUI->View->yAxis->setRange(minAlt - offset, maxAlt + offset);
+
+        // Update background coordinates:
+        background->topLeft->setCoords(avtUI->View->xAxis->range().lower, avtUI->View->yAxis->range().upper);
+        background->bottomRight->setCoords(avtUI->View->xAxis->range().upper, avtUI->View->yAxis->range().lower);
+
+        // Redraw the plot:
+        avtUI->View->replot();
+
+        //restore original position
+        if (o->isSolarSystem())
+        {
+            o->updateCoords(oldNum, true, data->geo()->lat(), data->lst());
+            delete oldNum;
+            oldNum = nullptr;
+        }
+        o->EquatorialToHorizontal(data->lst(), data->geo()->lat());
     }
 
     if (getDate().time().hour() > 12)

@@ -36,19 +36,129 @@
 #endif
 
 #include <QDateTime>
-#include <QStandardPaths>
 #include <QFileInfo>
+#include <QStandardPaths>
 
 #include <ctime>
 #include <unistd.h>
 
 QSystemTrayIcon * KStarsUiTests::m_Notifier { nullptr };
+
+namespace
+{
+QtMessageHandler previousUiTestMessageHandler = nullptr;
+bool uiTestMessageHandlerInstalled = false;
+
+QString existingPathFromEnv(const char *name)
+{
+    const QString path = qEnvironmentVariable(name);
+    return QFileInfo::exists(path) ? path : QString{};
+}
+
+bool isKnownUiTestNoise(const QString &message)
+{
+    return message.contains("Pass a QTimeZone instead of Qt::TimeZone")
+           || message.startsWith("QLayout: Attempting to add QLayout \"\" to MinimizeWidget")
+           || (message.contains("QObject::connect(") && message.contains("invalid nullptr parameter"));
+}
+
+void suppressKnownUiTestNoise(QtMsgType type, const QMessageLogContext &ctx, const QString &message)
+{
+    if (type == QtWarningMsg && isKnownUiTestNoise(message))
+        return;
+
+    if (previousUiTestMessageHandler != nullptr)
+        previousUiTestMessageHandler(type, ctx, message);
+}
+}
+
+void install_ui_test_message_handler()
+{
+    if (uiTestMessageHandlerInstalled)
+        return;
+
+    previousUiTestMessageHandler = qInstallMessageHandler(suppressKnownUiTestNoise);
+    uiTestMessageHandlerInstalled = true;
+}
+
+void restore_ui_test_message_handler()
+{
+    if (!uiTestMessageHandlerInstalled)
+        return;
+
+    qInstallMessageHandler(previousUiTestMessageHandler);
+    previousUiTestMessageHandler = nullptr;
+    uiTestMessageHandlerInstalled = false;
+}
+
+QString KStarsUiTests::indiServerPath()
+{
+    const QString fromEnv = existingPathFromEnv("KSTARS_TEST_INDI_SERVER");
+    if (!fromEnv.isEmpty())
+        return fromEnv;
+
+#ifdef KSTARS_TEST_VENDORED_INDI_SERVER
+    if (QFileInfo::exists(QStringLiteral(KSTARS_TEST_VENDORED_INDI_SERVER)))
+        return QStringLiteral(KSTARS_TEST_VENDORED_INDI_SERVER);
+#endif
+
+    const QString fromPath = QStandardPaths::findExecutable("indiserver");
+    if (!fromPath.isEmpty())
+        return fromPath;
+
+    const QString localPath = QStringLiteral("/usr/local/bin/indiserver");
+    if (QFileInfo::exists(localPath))
+        return localPath;
+
+    const QString systemPath = QStringLiteral("/usr/bin/indiserver");
+    return QFileInfo::exists(systemPath) ? systemPath : QString{};
+}
+
+QString KStarsUiTests::indiDriversDir()
+{
+    const QString fromEnv = existingPathFromEnv("KSTARS_TEST_INDI_DRIVERS_DIR");
+    if (!fromEnv.isEmpty())
+        return fromEnv;
+
+#ifdef KSTARS_TEST_VENDORED_INDI_DRIVERS_DIR
+    if (QFileInfo::exists(QStringLiteral(KSTARS_TEST_VENDORED_INDI_DRIVERS_DIR) + QStringLiteral("/drivers.xml")))
+        return QStringLiteral(KSTARS_TEST_VENDORED_INDI_DRIVERS_DIR);
+#endif
+
+    const QString dataDir = QStandardPaths::locate(QStandardPaths::GenericDataLocation, "indi", QStandardPaths::LocateDirectory);
+    if (!dataDir.isEmpty())
+        return dataDir;
+
+    return {};
+}
+
+bool KStarsUiTests::configureTestIndiRuntime()
+{
+    const QString serverPath = indiServerPath();
+    if (serverPath.isEmpty())
+        return false;
+
+    Options::setIndiServerIsInternal(false);
+    Options::setIndiServer(serverPath);
+
+    const QString driversPath = indiDriversDir();
+    if (!driversPath.isEmpty())
+    {
+        Options::setIndiDriversAreInternal(false);
+        Options::setIndiDriversDir(driversPath);
+    }
+
+    return true;
+}
+
 void KStarsUiTests::notifierBegin()
 {
     if (!QSystemTrayIcon::isSystemTrayAvailable())
         return;
+    if (KStars::Instance() == nullptr)
+        return;
     if (!m_Notifier)
-        m_Notifier = new QSystemTrayIcon(QIcon::fromTheme("kstars_stars"), Ekos::Manager::Instance());
+        m_Notifier = new QSystemTrayIcon(QIcon::fromTheme("kstars_stars"), KStars::Instance());
     if (m_Notifier)
         KStarsUiTests::m_Notifier->show();
 }
@@ -86,6 +196,10 @@ void prepare_tests()
     QApplication::instance()->setAttribute(Qt::AA_Use96Dpi, true);
     QTEST_SET_MAIN_SOURCE_PATH
     QApplication::processEvents();
+
+    const bool hasIndiRuntime = KStarsUiTests::configureTestIndiRuntime();
+    if (!hasIndiRuntime)
+        qWarning() << "INDI runtime not configured: indiserver path not found for UI tests.";
 
     // Prepare our KStars configuration
     const QByteArray seedEnv = qgetenv("KSTARS_TEST_RANDOM_SEED");

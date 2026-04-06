@@ -60,8 +60,8 @@ class Manager::Private
 
         Private()
             : defaultThemeName(i18nc("default theme name", "Default")),
-              themeMenuActionGroup(0),
-              themeMenuAction(0)
+              themeMenuActionGroup(nullptr),
+              themeMenuAction(nullptr)
         {
         }
 

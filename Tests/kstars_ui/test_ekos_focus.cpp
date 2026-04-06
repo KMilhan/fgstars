@@ -187,7 +187,16 @@ void TestEkosFocus::cleanup()
 {
     if (Ekos::Manager::Instance())
         if (Ekos::Manager::Instance()->focusModule())
+        {
             Ekos::Manager::Instance()->focusModule()->mainFocuser()->abort();
+            auto *captureB = Ekos::Manager::Instance()->focusModule()->mainFocuser().get()->findChild<QPushButton *>("captureB");
+            auto *stopFocusB = Ekos::Manager::Instance()->focusModule()->mainFocuser().get()->findChild<QPushButton *>("stopFocusB");
+
+            if (captureB != nullptr)
+                QTRY_VERIFY_WITH_TIMEOUT(captureB->isEnabled(), 10000);
+            if (stopFocusB != nullptr)
+                QTRY_VERIFY_WITH_TIMEOUT(!stopFocusB->isEnabled(), 10000);
+        }
     KTELL_HIDE();
 }
 

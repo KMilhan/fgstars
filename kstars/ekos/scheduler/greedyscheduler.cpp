@@ -149,6 +149,11 @@ bool GreedyScheduler::checkJob(const QList<SchedulerJob *> &jobs,
     if (currentJob && currentJob->getStateTime().secsTo(now) < 5)
         return true;
 
+    // If the last greedy evaluation already decided this job's slot ended, don't
+    // keep it alive past that handoff point.
+    if (currentJob && currentJob->getStopTime().isValid() && currentJob->getStopTime() <= now)
+        return false;
+
     QDateTime startTime;
 
     // Simulating in checkJob() is only done to update the schedule which is a GUI convenience.

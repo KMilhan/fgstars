@@ -38,6 +38,8 @@ class KStars;
 extern void prepare_tests();
 extern int run_wizards(int argc, char **argv);
 extern void execute_tests();
+extern void install_ui_test_message_handler();
+extern void restore_ui_test_message_handler();
 
 #define QTEST_KSTARS_MAIN(klass) \
     int main(int argc, char *argv[]) { \
@@ -49,6 +51,7 @@ extern void execute_tests();
         app->setStyle("Fusion"); \
         KLocalizedString::setApplicationDomain("kstars"); \
         KTEST_BEGIN(); \
+        install_ui_test_message_handler(); \
         prepare_tests(); \
         int failure = 0; \
         QTimer::singleShot(1000, app, [&] { \
@@ -63,6 +66,7 @@ extern void execute_tests();
             app->quit(); \
         }); \
         execute_tests(); \
+        restore_ui_test_message_handler(); \
         KTEST_END(); \
         return failure; }
 
@@ -86,6 +90,7 @@ extern void execute_tests();
         QApplication* app = new QApplication(argc, argv); \
         KLocalizedString::setApplicationDomain("kstars"); \
         KTEST_BEGIN(); \
+        install_ui_test_message_handler(); \
         prepare_tests(); \
         int failure = 0; \
         QTimer::singleShot(1000, app, [&] { \
@@ -99,6 +104,7 @@ extern void execute_tests();
             qDebug("Tests are done."); \
             app->quit(); }); \
         execute_tests(); \
+        restore_ui_test_message_handler(); \
         KTEST_END(); \
         return failure; }
 
@@ -117,6 +123,9 @@ class KStarsUiTests : public QObject
 
     public:
         static QSystemTrayIcon * m_Notifier;
+        static QString indiServerPath();
+        static QString indiDriversDir();
+        static bool configureTestIndiRuntime();
         static void notifierBegin();
         static void notifierHide();
         static void notifierMessage(QString, QString);

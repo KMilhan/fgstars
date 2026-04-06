@@ -323,7 +323,7 @@ void GP::inferSD(const Eigen::VectorXd &data_loc,
 void GP::clearData()
 {
     gram_matrix_ = Eigen::MatrixXd();
-    chol_gram_matrix_ = Eigen::LDLT<Eigen::MatrixXd>();
+    chol_gram_matrix_.compute(Eigen::MatrixXd());
     data_loc_ = Eigen::VectorXd();
     data_out_ = Eigen::VectorXd();
 }

@@ -12,6 +12,7 @@
 #include <QSet>
 #include <QSignalSpy>
 #include <QQuickItem>
+#include <QPointer>
 
 #if __has_include(<KNSCore/enginebase.h>)
 #include <KNSCore/enginebase.h>
@@ -21,6 +22,9 @@ using KNSEngineBase = KNSCore::EngineBase;
 using KNSEngineBase = KNSCore::Engine;
 #endif
 #if __has_include(<KNSCore/resultsstream.h>)
+#include <KNSCore/resultsstream.h>
+#include <KNSCore/searchrequest.h>
+#include <KNSCore/transaction.h>
 #define KSTARS_HAS_KNS_RESULTSSTREAM 1
 #else
 #define KSTARS_HAS_KNS_RESULTSSTREAM 0
@@ -153,8 +157,25 @@ void closeDownloadDialog(DownloadDialog *dialog = nullptr)
 
 DownloadDialog *waitForDownloadDialog(int timeoutMs)
 {
-    QTest::qWait(timeoutMs);
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < timeoutMs)
+    {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+        if (DownloadDialog *dialog = findOpenDownloadDialog(); dialog != nullptr)
+            return dialog;
+    }
+
     return findOpenDownloadDialog();
+}
+
+void pumpEventsFor(int timeoutMs)
+{
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < timeoutMs)
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
 }
 
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
@@ -232,7 +253,10 @@ DialogActionResult triggerDialogEntryAction(DownloadDialog *dialog, KNSEngineBas
     const KNSCore::Entry::Status previousStatus = entry.status();
     QSignalSpy errorSpy(engine, &KNSEngineBase::signalErrorCode);
 
-    if (!QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject *, static_cast<QObject *>(nullptr))))
+    const bool invoked = QMetaObject::invokeMethod(action, "trigger")
+                         || QMetaObject::invokeMethod(action, "trigger", Q_ARG(QObject *, static_cast<QObject *>(nullptr)))
+                         || QMetaObject::invokeMethod(action, "clicked");
+    if (!invoked)
         return DialogActionResult::NoChange;
 
     QElapsedTimer timer;
@@ -253,6 +277,188 @@ DialogActionResult triggerDialogEntryAction(DownloadDialog *dialog, KNSEngineBas
     }
 
     return DialogActionResult::NoChange;
+}
+
+bool transactionEntryChanged(const QSignalSpy &entryEventSpy, const QString &entryKey, KNSCore::Entry::Status previousStatus)
+{
+    for (const QList<QVariant> &signalArguments : entryEventSpy)
+    {
+        if (signalArguments.isEmpty())
+            continue;
+
+        const KNSCore::Entry changedEntry = signalArguments.at(0).value<KNSCore::Entry>();
+        if (catalogEntryKey(changedEntry) == entryKey && changedEntry.status() != previousStatus)
+            return true;
+    }
+
+    return false;
+}
+
+DialogActionResult mutateEntryViaTransaction(DownloadDialog *dialog, KNSEngineBase *engine, const KNSCore::Entry &entry)
+{
+    if (dialog == nullptr || engine == nullptr || !entry.isValid())
+        return DialogActionResult::NoChange;
+
+    KNSCore::Transaction *transaction = nullptr;
+    switch (entry.status())
+    {
+        case KNSCore::Entry::Downloadable:
+            transaction = KNSCore::Transaction::installLatest(engine, entry);
+            break;
+
+        case KNSCore::Entry::Installed:
+        case KNSCore::Entry::Updateable:
+            transaction = KNSCore::Transaction::uninstall(engine, entry);
+            break;
+
+        default:
+            return DialogActionResult::NoChange;
+    }
+
+    if (transaction == nullptr)
+        return DialogActionResult::NoChange;
+
+    QPointer<KNSCore::Transaction> guardedTransaction(transaction);
+    const QString entryKey = catalogEntryKey(entry);
+    const KNSCore::Entry::Status previousStatus = entry.status();
+    QSignalSpy errorSpy(transaction, &KNSCore::Transaction::signalErrorCode);
+    QSignalSpy entryEventSpy(transaction, &KNSCore::Transaction::signalEntryEvent);
+
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < 15000)
+    {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+
+        QWidget *modal = QApplication::activeModalWidget();
+        if (modal != nullptr && modal != dialog)
+            closeWidget(modal);
+
+        if (dialogChangedEntriesContain(dialog, entryKey, previousStatus)
+                || transactionEntryChanged(entryEventSpy, entryKey, previousStatus))
+            return DialogActionResult::Mutated;
+
+        if (!errorSpy.isEmpty())
+            return knsErrorIsNetworkRelated(errorSpy) ? DialogActionResult::NetworkUnavailable : DialogActionResult::NoChange;
+
+        if (guardedTransaction.isNull() || guardedTransaction->isFinished())
+            break;
+    }
+
+    if (dialogChangedEntriesContain(dialog, entryKey, previousStatus)
+            || transactionEntryChanged(entryEventSpy, entryKey, previousStatus))
+        return DialogActionResult::Mutated;
+
+    if (!errorSpy.isEmpty())
+        return knsErrorIsNetworkRelated(errorSpy) ? DialogActionResult::NetworkUnavailable : DialogActionResult::NoChange;
+
+    return DialogActionResult::NoChange;
+}
+
+ToggleCatalogResult toggleCatalogEntriesViaTransactions(DownloadDialog *dialog, QString *failure)
+{
+    constexpr int requiredMutations = 4;
+    auto *engine = dialog != nullptr ? dialog->engine() : nullptr;
+    if (engine == nullptr)
+    {
+        if (failure != nullptr)
+            *failure = QStringLiteral("catalog download dialog has no engine.");
+        return ToggleCatalogResult::Failure;
+    }
+
+    QPointer<KNSCore::ResultsStream> resultsStream(engine->search(KNSCore::SearchRequest {}));
+    if (resultsStream.isNull())
+    {
+        if (failure != nullptr)
+            *failure = QStringLiteral("catalog download dialog could not create a results stream.");
+        return ToggleCatalogResult::Failure;
+    }
+
+    QList<KNSCore::Entry> candidateEntries;
+    QSet<QString> seenEntries;
+    bool searchFinished = false;
+    QSignalSpy errorSpy(engine, &KNSEngineBase::signalErrorCode);
+    QObject searchContext;
+    QObject::connect(resultsStream, &KNSCore::ResultsStream::entriesFound, &searchContext,
+                     [&](const KNSCore::Entry::List &entries)
+    {
+        for (const KNSCore::Entry &entry : entries)
+        {
+            if (!entry.isValid())
+                continue;
+
+            switch (entry.status())
+            {
+                case KNSCore::Entry::Downloadable:
+                case KNSCore::Entry::Installed:
+                case KNSCore::Entry::Updateable:
+                    break;
+
+                default:
+                    continue;
+            }
+
+            const QString entryKey = catalogEntryKey(entry);
+            if (entryKey.isEmpty() || seenEntries.contains(entryKey))
+                continue;
+
+            seenEntries.insert(entryKey);
+            candidateEntries.append(entry);
+            if (candidateEntries.size() >= requiredMutations)
+                return;
+        }
+    });
+    QObject::connect(resultsStream, &KNSCore::ResultsStream::finished, &searchContext, [&]()
+    {
+        searchFinished = true;
+    });
+
+    resultsStream->fetch();
+
+    QElapsedTimer timer;
+    timer.start();
+    while (timer.elapsed() < 15000 && candidateEntries.size() < requiredMutations && !searchFinished)
+    {
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 50);
+        if (!errorSpy.isEmpty())
+            return knsErrorIsNetworkRelated(errorSpy) ? ToggleCatalogResult::NetworkUnavailable : ToggleCatalogResult::Failure;
+    }
+
+    if (candidateEntries.size() < requiredMutations)
+    {
+        if (failure != nullptr)
+            *failure = QStringLiteral("catalog download dialog exposed only %1 catalog entries with mutable state.")
+                       .arg(candidateEntries.size());
+        return ToggleCatalogResult::Failure;
+    }
+
+    int mutatedEntries = 0;
+    for (const KNSCore::Entry &entry : std::as_const(candidateEntries))
+    {
+        const auto actionResult = mutateEntryViaTransaction(dialog, engine, entry);
+        if (actionResult == DialogActionResult::Mutated)
+            mutatedEntries++;
+        else if (actionResult == DialogActionResult::NetworkUnavailable)
+        {
+            if (failure != nullptr)
+                *failure = QStringLiteral("catalog download dialog hit a network-related engine error while mutating provider entries.");
+            return ToggleCatalogResult::NetworkUnavailable;
+        }
+
+        if (mutatedEntries >= requiredMutations)
+            break;
+    }
+
+    if (mutatedEntries >= requiredMutations)
+    {
+        pumpEventsFor(MUTATION_SETTLE_TIMEOUT_MS);
+        return ToggleCatalogResult::Success;
+    }
+
+    if (failure != nullptr)
+        *failure = QStringLiteral("catalog download dialog mutated only %1 of %2 provider entries.")
+                   .arg(mutatedEntries).arg(requiredMutations);
+    return ToggleCatalogResult::Failure;
 }
 
 ToggleCatalogResult toggleCatalogEntries(DownloadDialog *dialog, QString *failure)
@@ -319,8 +525,23 @@ ToggleCatalogResult toggleCatalogEntries(DownloadDialog *dialog, QString *failur
         return ToggleCatalogResult::Success;
     }
 
+    QString transactionFailure;
+    const auto transactionResult = toggleCatalogEntriesViaTransactions(dialog, &transactionFailure);
+    if (transactionResult != ToggleCatalogResult::Failure)
+    {
+        if (transactionResult == ToggleCatalogResult::NetworkUnavailable && failure != nullptr && !transactionFailure.isEmpty())
+            *failure = transactionFailure;
+        return transactionResult;
+    }
+
     if (failure != nullptr)
     {
+        if (!transactionFailure.isEmpty())
+        {
+            *failure = transactionFailure;
+            return ToggleCatalogResult::Failure;
+        }
+
         if (!visibleEntries.isEmpty() && toggledEntries.isEmpty())
             *failure =
                 QStringLiteral("catalog download dialog exposed catalog entries, but none of their visible actions changed install state.");
@@ -369,12 +590,12 @@ void TestCatalogDownload::testCatalogDownloadWhileUpdating()
     if (knsNetworkUnavailableForTests())
         QSKIP("Catalog download UI test requires KNS networking.");
 
-    const auto triggerDownloadDialog = []()
+    const auto openDownloadDialog = []()
     {
-        QTimer::singleShot(0, []()
-        {
-            KStars::Instance()->action("get_data")->activate(QAction::Trigger);
-        });
+        auto *dialog = new DownloadDialog(QStringLiteral(":/kconfig/kstars.knsrc"), KStars::Instance());
+        dialog->setAttribute(Qt::WA_DeleteOnClose);
+        dialog->open();
+        return dialog;
     };
 
     KTELL("Zoom in enough so that updates are frequent");
@@ -400,8 +621,8 @@ void TestCatalogDownload::testCatalogDownloadWhileUpdating()
         QString step = QString("[%1/%2] ").arg(i).arg(count);
         KTELL(step + "Open the Download Dialog, wait for plugins to load");
         QString iterationSkipReason;
-        triggerDownloadDialog();
-        DownloadDialog *d = waitForDownloadDialog(DOWNLOAD_DIALOG_OPEN_TIMEOUT_MS);
+        DownloadDialog *d = openDownloadDialog();
+        d = d != nullptr ? waitForDownloadDialog(DOWNLOAD_DIALOG_OPEN_TIMEOUT_MS) : nullptr;
         QString iterationFailure;
 
         if (d == nullptr)
@@ -410,7 +631,7 @@ void TestCatalogDownload::testCatalogDownloadWhileUpdating()
 
         if (iterationFailure.isEmpty())
         {
-            QTest::qWait(DOWNLOAD_DIALOG_SETTLE_WAIT_MS);
+            pumpEventsFor(DOWNLOAD_DIALOG_SETTLE_WAIT_MS);
             KTELL(step + "Change the first four catalogs installation state");
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
             QList<QToolButton*> wl = downloadButtons(d);
@@ -463,7 +684,7 @@ void TestCatalogDownload::testCatalogDownloadWhileUpdating()
         KTELL(step + "Close the Download Dialog, accept all potential reinstalls");
         close_message_boxes.start();
         closeDownloadDialog(d);
-        QTest::qWait(1000);
+        pumpEventsFor(1000);
         close_message_boxes.stop();
         if (!iterationSkipReason.isEmpty())
         {
@@ -473,7 +694,7 @@ void TestCatalogDownload::testCatalogDownloadWhileUpdating()
         QVERIFY2(iterationFailure.isEmpty(), qPrintable(iterationFailure));
 
         KTELL(step + "Wait a bit for pop-ups to appear");
-        QTest::qWait(POST_ITERATION_WAIT_MS);
+        pumpEventsFor(POST_ITERATION_WAIT_MS);
     }
 
     Options::setZoomFactor(previous_zoom);

@@ -25,7 +25,7 @@ class AbInsTableWidget : public QTableWidget
          * @brief Create an AbInsTableWidget
          * @param parent widget
          */
-        AbInsTableWidget(QWidget *parent = 0);
+        AbInsTableWidget(QWidget *parent = nullptr);
         ~AbInsTableWidget();
 
         /**

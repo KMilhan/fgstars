@@ -152,7 +152,8 @@ QVector<Eigen::Vector2f> EquirectangularProjector::groundPoly(SkyPoint *labelpoi
 
         if (labelpoint)
         {
-            auto pLabel_ = corner2 - 50. * (corner1 - corner2).normalized();
+            const Eigen::Vector2f labelDir((corner1 - corner2).normalized());
+            const Eigen::Vector2f pLabel_(corner2 - 50.0f * labelDir);
             QPointF pLabel(pLabel_[0], pLabel_[1]);
             KStarsData *data = KStarsData::Instance();
             *labelpoint      = fromScreen(pLabel, data);

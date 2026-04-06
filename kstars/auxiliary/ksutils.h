@@ -336,7 +336,7 @@ class JPLParser
                     return item.toArray().at(m_field_map.at(key));
                 });
             }
-        };
+        }
 
     private:
         QJsonDocument m_doc;
@@ -360,7 +360,7 @@ class MPCParser
                     return item.toObject().value(key);
                 });
             }
-        };
+        }
 
     private:
         QJsonDocument m_doc;

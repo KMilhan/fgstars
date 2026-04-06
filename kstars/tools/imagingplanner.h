@@ -73,7 +73,7 @@ class CatalogFilter : public QSortFilterProxyModel
 {
         Q_OBJECT
     public:
-        CatalogFilter(QObject* parent = 0);
+        CatalogFilter(QObject* parent = nullptr);
         bool filterAcceptsRow(int row, const QModelIndex &parent) const override;
         bool lessThan ( const QModelIndex &left, const QModelIndex &right ) const override;
         void setMinHours(double hours);
@@ -293,5 +293,4 @@ class ImagingPlannerPopup : public QMenu
         void init(ImagingPlanner *planner, const QStringList &names,
                   const bool *imaged, const bool *picked, const bool *ignored);
 };
-
 

@@ -151,6 +151,10 @@ class GeoLocation
         {
             return TZrule;
         }
+        const TimeZoneRule *tzrule() const
+        {
+            return TZrule;
+        }
 
         /** Set Time zone.
              * @param value the new time zone */

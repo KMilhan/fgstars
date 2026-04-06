@@ -8724,7 +8724,7 @@ class QCP_LIB_DECL QCPPolarAxisRadial : public QCPLayerable
         Q_SLOT void setSelectedParts(const QCPPolarAxisRadial::SelectableParts &selectedParts);
 
         // reimplemented virtual methods:
-        virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details = 0) const Q_DECL_OVERRIDE;
+        virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details = nullptr) const Q_DECL_OVERRIDE;
 
         // non-property methods:
         void moveRange(double diff);
@@ -9095,7 +9095,7 @@ class QCP_LIB_DECL QCPPolarAxisAngular : public QCPLayoutElement
         Q_SLOT void setSelectedParts(const QCPPolarAxisAngular::SelectableParts &selectedParts);
 
         // reimplemented virtual methods:
-        virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details = 0) const Q_DECL_OVERRIDE;
+        virtual double selectTest(const QPointF &pos, bool onlySelectable, QVariant *details = nullptr) const Q_DECL_OVERRIDE;
         virtual void update(UpdatePhase phase) Q_DECL_OVERRIDE;
         virtual QList<QCPLayoutElement*> elements(bool recursive) const Q_DECL_OVERRIDE;
 
@@ -9104,7 +9104,7 @@ class QCP_LIB_DECL QCPPolarAxisAngular : public QCPLayoutElement
         int radialAxisCount() const;
         QCPPolarAxisRadial *radialAxis(int index = 0) const;
         QList<QCPPolarAxisRadial*> radialAxes() const;
-        QCPPolarAxisRadial *addRadialAxis(QCPPolarAxisRadial *axis = 0);
+        QCPPolarAxisRadial *addRadialAxis(QCPPolarAxisRadial *axis = nullptr);
         bool removeRadialAxis(QCPPolarAxisRadial *axis);
         QCPLayoutInset *insetLayout() const
         {
@@ -9540,11 +9540,11 @@ class QCP_LIB_DECL QCPPolarGraph : public QCPLayerable
 
         // introduced virtual methods:
         virtual double selectTest(const QPointF &pos, bool onlySelectable,
-                                  QVariant *details = 0) const
+                                  QVariant *details = nullptr) const
         override; // actually introduced in QCPLayerable as non-pure, but we want to force reimplementation for plottables
         virtual QCPPlottableInterface1D *interface1D()
         {
-            return 0;    // TODO: return this later, when QCPAbstractPolarPlottable is created
+            return nullptr;    // TODO: return this later, when QCPAbstractPolarPlottable is created
         }
         virtual QCPRange getKeyRange(bool &foundRange, QCP::SignDomain inSignDomain = QCP::sdBoth) const;
         virtual QCPRange getValueRange(bool &foundRange, QCP::SignDomain inSignDomain = QCP::sdBoth,
@@ -9615,4 +9615,3 @@ class QCP_LIB_DECL QCPPolarGraph : public QCPLayerable
 
 
 #endif // QCUSTOMPLOT_H
-

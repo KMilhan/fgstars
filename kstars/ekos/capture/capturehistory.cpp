@@ -53,7 +53,7 @@ const CaptureHistory::FrameData CaptureHistory::firstFrame()
         return getFrame(0);
 
     // return an empty value
-    CaptureHistory::FrameData dummy;
+    CaptureHistory::FrameData dummy {};
     return dummy;
 }
 
@@ -63,7 +63,7 @@ const CaptureHistory::FrameData CaptureHistory::lastFrame()
         return getFrame(m_history.size() - 1);
 
     // return an empty value
-    CaptureHistory::FrameData dummy;
+    CaptureHistory::FrameData dummy {};
     return dummy;
 }
 

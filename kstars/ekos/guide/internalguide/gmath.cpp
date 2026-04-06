@@ -104,7 +104,7 @@ bool cgmath::setGuiderParameters(double guider_aperture)
 void cgmath::createGuideLog()
 {
     logFile.close();
-    if (!logFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (logFile.open(QIODevice::WriteOnly | QIODevice::Text) == false)
     {
         qCWarning(KSTARS_EKOS_GUIDE) << "Failed to open guide log file:" << logFile.fileName() << logFile.errorString();
         return;

@@ -88,9 +88,9 @@ IF (INDI_FOUND)
 include_directories(
     ${INDI_INCLUDE_DIR}
     ${kstars_SOURCE_DIR}/kstars/ekos/align
-    ${kstars_SOURCE_DIR}/kstars/internalguide
-    ${kstars_SOURCE_DIR}/kstars/focus
-    ${kstars_SOURCE_DIR}/kstars/scheduler
+    ${kstars_SOURCE_DIR}/kstars/ekos/guide/internalguide
+    ${kstars_SOURCE_DIR}/kstars/ekos/focus
+    ${kstars_SOURCE_DIR}/kstars/ekos/scheduler
     )
 # ekos/ is the parent for all Ekos module tests (scheduler, capture, focus,
 # guide, align, mount, observatory, analyze, auxiliary).

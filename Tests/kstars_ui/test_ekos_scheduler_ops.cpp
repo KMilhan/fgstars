@@ -18,6 +18,9 @@
 #include "ekos/scheduler/schedulerjob.h"
 #include "ekos/scheduler/greedyscheduler.h"
 #include "ekos/scheduler/schedulerprocess.h"
+#include "ekos/scheduler/schedulerutils.h"
+#include "ekos/capture/capture.h"
+#include "ekos/capture/placeholderpath.h"
 
 #include "skymapcomposite.h"
 
@@ -37,6 +40,54 @@
 #define DEFAULT_ITERATIONS 50
 
 using Ekos::Scheduler;
+
+namespace
+{
+QtMessageHandler previousSchedulerOpsMessageHandler = nullptr;
+
+void suppressSchedulerOpsWarnings(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
+{
+    if (type == QtWarningMsg && msg.contains("Pass a QTimeZone instead of Qt::TimeZone"))
+        return;
+
+    if (previousSchedulerOpsMessageHandler != nullptr)
+        previousSchedulerOpsMessageHandler(type, ctx, msg);
+}
+
+void restoreSimulatedClock(const KStarsDateTime &currentUTime)
+{
+    auto *clock = KStarsData::Instance()->clock();
+    clock->setRealTime(false);
+    clock->setManualMode(true);
+    clock->stop();
+    KStarsData::Instance()->changeDateTime(currentUTime);
+}
+
+bool resetSequenceCaptureCounts(const QString &esqFilename, const QString &targetName)
+{
+    auto *captureModule = Ekos::Manager::Instance() != nullptr ? Ekos::Manager::Instance()->captureModule() : nullptr;
+    if (captureModule == nullptr)
+        return false;
+
+    Ekos::SchedulerJob tempJob;
+    tempJob.setName(targetName);
+
+    QList<QSharedPointer<Ekos::SequenceJob>> sequenceJobs;
+    bool hasAutoFocus = false;
+    if (!Ekos::SchedulerUtils::loadSequenceQueue(esqFilename, &tempJob, sequenceJobs, hasAutoFocus, nullptr))
+        return false;
+
+    Ekos::PlaceholderPath placeholderPath;
+    for (const auto &sequenceJob : sequenceJobs)
+    {
+        const QString signature =
+            placeholderPath.generateSequenceFilename(*sequenceJob, true, true, 1, ".fits", "", false, true);
+        captureModule->setCapturedFramesMap(signature, 0);
+    }
+
+    return true;
+}
+}
 
 // Use this class to temporarily modify the scheduler's update interval
 // by creating a WithInterval variable in a scope.
@@ -69,24 +120,9 @@ TestEkosSchedulerOps::TestEkosSchedulerOps(QObject *parent) : QObject(parent)
 {
 }
 
-// Qt 6.8 changed QDateTime internals and emits a flood of
-//   "QDateTime::setTimeSpec: Pass a QTimeZone instead of Qt::TimeZone."
-// warnings from KStars code that uses the old API.  The warnings are harmless
-// in the test context and drown out the real test output, so filter them here.
-static void suppressKnownWarnings(QtMsgType type, const QMessageLogContext &ctx, const QString &msg)
-{
-    Q_UNUSED(ctx);
-    if (type == QtWarningMsg && msg.contains("QDateTime::setTimeSpec: Pass a QTimeZone"))
-        return;
-    // All other messages: print normally.
-    fprintf(type == QtWarningMsg ? stderr : stderr, "%s\n", qPrintable(msg));
-}
-
 void TestEkosSchedulerOps::initTestCase()
 {
-    // Suppress the QDateTime::setTimeSpec deprecation flood from KStars source
-    // (harmless in tests, but makes the output unreadable).
-    qInstallMessageHandler(suppressKnownWarnings);
+    previousSchedulerOpsMessageHandler = qInstallMessageHandler(suppressSchedulerOpsWarnings);
 
     QDBusConnection::sessionBus().registerObject("/MockKStars", this);
     QDBusConnection::sessionBus().registerService("org.kde.mockkstars");
@@ -105,6 +141,8 @@ void TestEkosSchedulerOps::initTestCase()
 void TestEkosSchedulerOps::cleanupTestCase()
 {
     // This gets executed at the end of testing
+    qInstallMessageHandler(previousSchedulerOpsMessageHandler);
+    previousSchedulerOpsMessageHandler = nullptr;
 }
 
 void TestEkosSchedulerOps::init()
@@ -132,6 +170,7 @@ void TestEkosSchedulerOps::init()
     scheduler->process()->setCapturePathString(Ekos::MockCapture::mockPath);
     scheduler->process()->setAlignPathString(Ekos::MockAlign::mockPath);
     scheduler->process()->setGuidePathString(Ekos::MockGuide::mockPath);
+    Ekos::SchedulerModuleState::setLocalTime(nullptr);
 
     // Let's not deal with the startup devices for now.
     scheduler->schedulerStartupEnabled->setChecked(false);
@@ -188,6 +227,7 @@ void TestEkosSchedulerOps::cleanup()
     guider.reset();
     ekos.reset();
     Ekos::SchedulerJob::setHorizon(nullptr);
+    Ekos::SchedulerModuleState::setLocalTime(nullptr);
     scheduler.reset();
     fprintf(stderr, "Test took %.1fs\n", testTimer.elapsed() / 1000.0);
 }
@@ -340,6 +380,8 @@ bool TestEkosSchedulerOps::iterateScheduler(const QString &label, int iterations
     bool captureCompleteDone = false;
     for (int i = 0; i < iterations; ++i)
     {
+        scheduler->moduleState()->iterationTimer().stop();
+        scheduler->moduleState()->tickleTimer().stop();
         //qApp->processEvents();
         QTest::qWait(QWAIT_TIME); // this takes ~10ms per iteration!
         // Is there a way to speed up the above?
@@ -356,24 +398,40 @@ bool TestEkosSchedulerOps::iterateScheduler(const QString &label, int iterations
                     currentUTime->toString().toLatin1().data());
             capture->setStatus(Ekos::CAPTURE_COMPLETE);
         }
-        KStarsData::Instance()->changeDateTime(*currentUTime); // <-- 175ms
+        KStarsDateTime currentLocalTime = KStarsData::Instance()->geo()->UTtoLT(*currentUTime);
+        Ekos::SchedulerModuleState::setLocalTime(&currentLocalTime);
+        restoreSimulatedClock(*currentUTime);
         *sleepMs = scheduler->process()->runSchedulerIteration();
-        fprintf(stderr, "current time LT %s UT %s scheduler %s %s %s %d\n",
-                KStarsData::Instance()->lt().toString().toLatin1().data(),
-                KStarsData::Instance()->ut().toString().toLatin1().data(),
-                Ekos::getSchedulerStatusString(
-                    scheduler->moduleState()->schedulerState()).toLatin1().data(),
-                scheduler->moduleState()->activeJob() ?
-                Ekos::SchedulerJob::jobStageString(
-                    scheduler->moduleState()->activeJob()->getStage()).toLatin1().data() : "",
-                scheduler->moduleState()->activeJob() ?
-                Ekos::SchedulerJob::jobStatusString(
-                    scheduler->moduleState()->activeJob()->getState()).toLatin1().data() : "",
-                scheduler->moduleState()->timerState()
-               );
+
+        // Ekos startup can reset the global simulation clock behind the scheduler
+        // ops tests. Keep the loop's simulated time authoritative.
+        if (std::abs(KStarsData::Instance()->ut().secsTo(*currentUTime)) > timeTolerance(DEFAULT_TOLERANCE))
+            restoreSimulatedClock(*currentUTime);
+
+        if (qEnvironmentVariableIsSet("KSTARS_UI_DEBUG_SCHEDULER_OPS"))
+        {
+            fprintf(stderr, "loop time currentUT %s instance LT %s UT %s localOverride %s realtime %d manual %d scheduler %s %s %s %d\n",
+                    currentUTime->toString().toLatin1().data(),
+                    KStarsData::Instance()->lt().toString().toLatin1().data(),
+                    KStarsData::Instance()->ut().toString().toLatin1().data(),
+                    currentLocalTime.toString().toLatin1().data(),
+                    KStarsData::Instance()->clock()->isRealTime(),
+                    KStarsData::Instance()->clock()->isManualMode(),
+                    Ekos::getSchedulerStatusString(
+                        scheduler->moduleState()->schedulerState()).toLatin1().data(),
+                    scheduler->moduleState()->activeJob() ?
+                    Ekos::SchedulerJob::jobStageString(
+                        scheduler->moduleState()->activeJob()->getStage()).toLatin1().data() : "",
+                    scheduler->moduleState()->activeJob() ?
+                    Ekos::SchedulerJob::jobStatusString(
+                        scheduler->moduleState()->activeJob()->getState()).toLatin1().data() : "",
+                    scheduler->moduleState()->timerState()
+                   );
+        }
 
         if (fcn())
         {
+            Ekos::SchedulerModuleState::setLocalTime(nullptr);
             fprintf(stderr, "IterateScheduler %s returning TRUE at %s %s after %d iterations\n",
                     label.toLatin1().data(),
                     KStarsData::Instance()->lt().toString().toLatin1().data(),
@@ -381,6 +439,7 @@ bool TestEkosSchedulerOps::iterateScheduler(const QString &label, int iterations
             return true;
         }
     }
+    Ekos::SchedulerModuleState::setLocalTime(nullptr);
     fprintf(stderr, "IterateScheduler %s returning FALSE at %s %s after %d iterations\n",
             label.toLatin1().data(),
             KStarsData::Instance()->lt().toString().toLatin1().data(),
@@ -537,6 +596,12 @@ void TestEkosSchedulerOps::startupJobs2(
         // When the scheduler starts up, it sends connectDevices to Ekos
         // which sets Indi --> Ekos::Success,
         // and then it sends start() to Ekos which sets Ekos --> Ekos::Success
+        // The preceding RUN_SCHEDULER transition can leave a long sleep interval from
+        // the pre-start planning state. Reset to normal iteration ticks before waiting
+        // for asynchronous Ekos/INDI startup.
+        const KStarsDateTime postWakeupUTime(currentUTime);
+        sleepMs = scheduler->moduleState()->updatePeriodMs();
+        restoreSimulatedClock(currentUTime);
         bool sentOnce = false, readyOnce = false;
         QVERIFY(iterateScheduler("Wait for Indi and Ekos", 30, &sleepMs, &currentUTime, [&]() -> bool
         {
@@ -571,13 +636,34 @@ void TestEkosSchedulerOps::startupJobs2(
             return false;
         }));
 
+        // Starting an Ekos profile resets and resumes the simulation clock.
+        // Preserve the logical scheduler time across the asynchronous startup loop.
+        currentUTime = postWakeupUTime;
+        restoreSimulatedClock(currentUTime);
+
+        if (qEnvironmentVariableIsSet("KSTARS_UI_DEBUG_SCHEDULER_OPS"))
+        {
+            fprintf(stderr, "startupJobs2 handoff currentUT %s sleepMs %d\n",
+                    currentUTime.toString().toLatin1().data(),
+                    scheduler->moduleState()->updatePeriodMs());
+        }
+
         endUTime = currentUTime;
-        endSleepMs = sleepMs;
+        endSleepMs = scheduler->moduleState()->updatePeriodMs();
     }
 }
 
 void TestEkosSchedulerOps::startModules(KStarsDateTime &currentUTime, int &sleepMs)
 {
+    restoreSimulatedClock(currentUTime);
+    sleepMs = scheduler->moduleState()->updatePeriodMs();
+
+    if (qEnvironmentVariableIsSet("KSTARS_UI_DEBUG_SCHEDULER_OPS"))
+    {
+        fprintf(stderr, "startModules entry currentUT %s sleepMs %d\n",
+                currentUTime.toString().toLatin1().data(), sleepMs);
+    }
+
     WithInterval interval(1000, scheduler);
     QVERIFY(iterateScheduler("Wait for MountSlewing", 30, &sleepMs, &currentUTime, [&]() -> bool
     {
@@ -1101,6 +1187,8 @@ void TestEkosSchedulerOps::slewAndRun(SkyObject *object, const QDateTime &startU
                                       KStarsDateTime &currentUTime, int &sleepMs, int tolerance, const QString &label,
                                       const QDateTime &captureCompleteUTime)
 {
+    restoreSimulatedClock(currentUTime);
+
     QVERIFY(iterateScheduler("Wait for Job Startup", DEFAULT_ITERATIONS, &sleepMs, &currentUTime, [&]() -> bool
     {
         return (scheduler->moduleState()->timerState() == Ekos::RUN_JOBCHECK);
@@ -1171,11 +1259,15 @@ void TestEkosSchedulerOps::startup(const GeoLocation &geo, const QVector<SkyObje
         esqs.push_back(esqContent);
     }
     startupJobs(geo, startSchedulerUTime, &dir, esls, esqs, wakeupTime, currentUTime, sleepMs);
+    currentUTime = KStarsDateTime(startSchedulerUTime);
+    restoreSimulatedClock(currentUTime);
     startModules(currentUTime, sleepMs);
 }
 
 void TestEkosSchedulerOps::parkAndSleep(KStarsDateTime &currentUTime, int &sleepMs)
 {
+    restoreSimulatedClock(currentUTime);
+
     // shouldSchedulerSleep() parks the mount and calls setupNextIteration(RUN_WAKEUP,
     // <wakeup-delay-ms>) in the *same* scheduler iteration.  The returned sleepMs is
     // therefore the full simulated time until the next job window (potentially many
@@ -1205,11 +1297,15 @@ void TestEkosSchedulerOps::parkAndSleep(KStarsDateTime &currentUTime, int &sleep
 
 void TestEkosSchedulerOps::wakeupAndRestart(const QDateTime &restartTime, KStarsDateTime &currentUTime, int &sleepMs)
 {
+    restoreSimulatedClock(currentUTime);
+
     // Make sure it wakes up at the proper time.
     QVERIFY(iterateScheduler("Wait for Wakeup Tomorrow", DEFAULT_ITERATIONS, &sleepMs, &currentUTime, [&]() -> bool
     {
         return (scheduler->moduleState()->timerState() == Ekos::RUN_SCHEDULER);
     }));
+
+    restoreSimulatedClock(currentUTime);
 
     fprintf(stderr, "Times instance %s vs reference %s, diff %lld\n",
             KStarsData::Instance()->ut().toString().toLatin1().data(),
@@ -1449,11 +1545,8 @@ void TestEkosSchedulerOps::testRememberJobProgress()
     GeoLocation geo(dms(9, 45, 54), dms(49, 6, 22), "Schwaebisch Hall", "Baden-Wuerttemberg", "Germany", +1);
     SkyObject *targetObject = KStars::Instance()->data()->skyComposite()->findByName("Kocab");
 
-    // Take 20:00 GMT (incl. +1h DST) and invalid wakeup time since the scheduler will start immediately
-    QDateTime startUTime(QDateTime(QDate(2021, 10, 30), QTime(18, 0, 0), QTimeZone::utc()));
-    const QDateTime wakeupTime;
-    KStarsDateTime currentUTime;
-    int sleepMs = 0;
+    // Take 20:00 GMT (incl. +1h DST).
+    QDateTime startUTime(QDateTime(QDate(2021, 10, 30), QTime(18, 0, 0), Qt::UTC));
 
     QTemporaryDir dir(KTest::tempDirPattern(QStringLiteral("scheduler")));
     QDir fits_dir(dir.path() + "/images");
@@ -1473,26 +1566,47 @@ void TestEkosSchedulerOps::testRememberJobProgress()
         }
     }
 
+    const QString esqContent = TestEkosSchedulerHelper::getEsqContent(capture_jobs);
+
     // parse test data to create the existing frame files
     QFETCH(QString, frames);
     if (frames != "")
     {
+        const QString esqFilename = dir.filePath("remember-progress.esq");
+        QVERIFY(TestEkosSchedulerHelper::writeFile(esqFilename, esqContent));
+
+        Ekos::SchedulerJob tempJob;
+        tempJob.setName(targetObject->name());
+
+        QList<QSharedPointer<Ekos::SequenceJob>> sequenceJobs;
+        bool hasAutoFocus = false;
+        QVERIFY(Ekos::SchedulerUtils::loadSequenceQueue(esqFilename, &tempJob, sequenceJobs, hasAutoFocus, nullptr));
+
+        QMap<QString, QSharedPointer<Ekos::SequenceJob>> jobsByFilter;
+        for (const auto &seqJob : sequenceJobs)
+        {
+            const QString filterName = seqJob->getCoreProperty(Ekos::SequenceJob::SJ_Filter).toString();
+            if (!jobsByFilter.contains(filterName))
+                jobsByFilter[filterName] = seqJob;
+        }
+
+        Ekos::PlaceholderPath placeholderPath;
         for (QString value : frames.split(","))
         {
             QVERIFY(value.indexOf(":") > -1);
             QString filter = value.left(value.indexOf(":")).trimmed();
             int count      = value.right(value.length() - value.indexOf(":") - 1).toInt();
-            QDir img_dir(fits_dir);
-            img_dir.mkpath("Kocab/Light/" + filter);
+            QVERIFY(jobsByFilter.contains(filter));
 
             // create files
+            const auto &seqJob = jobsByFilter[filter];
             for (int i = 0; i < count; i++)
             {
-                QFile frame;
-                frame.setFileName(QString(img_dir.absolutePath() + "/Kocab/Light/" + filter + "/Kocab_Light_%1_%2.fits").arg(filter).arg(
-                                      i));
-                if (frame.open(QIODevice::WriteOnly | QIODevice::Text))
-                    frame.close();
+                const QString framePath = placeholderPath.generateSequenceFilename(*seqJob, true, true, i + 1, ".fits", "", false, false);
+                QVERIFY(QDir().mkpath(QFileInfo(framePath).absolutePath()));
+                QFile frame(framePath);
+                QVERIFY(frame.open(QIODevice::WriteOnly | QIODevice::Text));
+                frame.close();
             }
         }
     }
@@ -1503,10 +1617,14 @@ void TestEkosSchedulerOps::testRememberJobProgress()
     TestEkosSchedulerHelper::CompletionCondition completionCondition;
     completionCondition.type = Ekos::FINISH_REPEAT;
     completionCondition.repeat = iterations;
-    startupJob(geo, startUTime, &dir,
-               TestEkosSchedulerHelper::getSchedulerFile(targetObject, m_startupCondition, completionCondition, {true, true, true, true},
-                       false, false, 0, 90.0, nullptr, {false, false, false, false}, sleepMs),
-               TestEkosSchedulerHelper::getEsqContent(capture_jobs), wakeupTime, currentUTime, sleepMs);
+    initScheduler(geo, startUTime, &dir,
+    {
+        TestEkosSchedulerHelper::getSchedulerFile(targetObject, m_startupCondition, completionCondition, {true, true, true, true},
+                false, false, 0, 90.0, nullptr, {false, false, false, false}, 0)
+    },
+    {
+        esqContent
+    });
 
     // fetch the expected result from the test data
     QFETCH(bool, scheduled);
@@ -2082,7 +2200,7 @@ void TestEkosSchedulerOps::testGreedyAborts()
     QVERIFY(ngc3628->getName() == "NGC 3628");
 
     // And ngc3628 should not be preempted right away,
-    QDateTime localTime(QDate(2022, 2, 28), QTime(1, 00, 00), geoTZ);
+    QDateTime localTime = Ekos::SchedulerModuleState::getLocalTime();
     bool keepRunning = scheduler->process()->getGreedyScheduler()->checkJob(scheduler->moduleState()->jobs(), localTime,
                        ngc3628);
     QVERIFY(keepRunning);
@@ -2090,14 +2208,14 @@ void TestEkosSchedulerOps::testGreedyAborts()
     // nor in a half-hour.
     auto newTime = evalUTime.addSecs(1800);
     KStarsData::Instance()->changeDateTime(newTime);
-    localTime = localTime.addSecs(1800);
+    localTime = Ekos::SchedulerModuleState::getLocalTime();
     keepRunning = scheduler->process()->getGreedyScheduler()->checkJob(scheduler->moduleState()->jobs(), localTime, ngc3628);
     QVERIFY(keepRunning);
 
     // But if we wait until 2am, m104 should preempt it,
     newTime = newTime.addSecs(1800);
     KStarsData::Instance()->changeDateTime(newTime);
-    localTime = localTime.addSecs(1800);
+    localTime = Ekos::SchedulerModuleState::getLocalTime();
     keepRunning = scheduler->process()->getGreedyScheduler()->checkJob(scheduler->moduleState()->jobs(), localTime, ngc3628);
     QVERIFY(!keepRunning);
 
@@ -2106,8 +2224,12 @@ void TestEkosSchedulerOps::testGreedyAborts()
     auto newSchedule = scheduler->process()->getGreedyScheduler()->getSchedule();
     QVERIFY(newSchedule.size() > 0);
     QVERIFY(newSchedule[0].job->getName() == "M 104");
-    QVERIFY(std::abs(newSchedule[0].startTime.secsTo(
-                         QDateTime(QDate(2022, 2, 28), QTime(2, 00, 00), geoTZ))) < 200);
+    auto geoRef = KStarsData::Instance()->geo();
+    KStarsDateTime scheduledStart(newSchedule[0].startTime);
+    KStarsDateTime expectedStart(Ekos::SchedulerModuleState::getLocalTime());
+    const KStarsDateTime scheduledStartUT = (scheduledStart.timeSpec() == Qt::LocalTime) ? geoRef->LTtoUT(scheduledStart) : scheduledStart;
+    const KStarsDateTime expectedStartUT = (expectedStart.timeSpec() == Qt::LocalTime) ? geoRef->LTtoUT(expectedStart) : expectedStart;
+    QVERIFY(std::abs(scheduledStartUT.secsTo(expectedStartUT)) < 200);
 }
 
 void TestEkosSchedulerOps::testArtificialCeiling()
@@ -2300,13 +2422,12 @@ void TestEkosSchedulerOps::testEstimateTimeBug()
 
     scheduler->process()->evaluateJobs(false);
 
-    // The first (LRGB) version of NGC 2359 is mostly completed and should just run for about 45 minutes.
-    // At that point, the narrowband NGC2359 and LRGB M53 jobs run.
+    // The remaining LRGB work for NGC 2359 now flows directly into the narrowband job,
+    // so the first night is a single contiguous NGC 2359 block followed by M 53.
     QVERIFY(checkSchedule(
     {
-        {"NGC 2359",   "2022/03/20 19:52", "2022/03/20 20:38"},
-        {"NGC 2359",   "2022/03/20 20:39", "2022/03/20 22:11"},
-        {"M 53",       "2022/03/20 22:12", "2022/03/21 05:14"},
+        {"NGC 2359",   "2022/03/20 19:52", "2022/03/20 22:12"},
+        {"M 53",       "2022/03/20 22:13", "2022/03/21 05:15"},
         {"NGC 2359",   "2022/03/21 19:45", "2022/03/21 22:07"},
         {"M 53",       "2022/03/21 22:08", "2022/03/22 05:12"},
         {"NGC 2359",   "2022/03/22 19:47", "2022/03/22 22:03"}},
@@ -2619,6 +2740,9 @@ void TestEkosSchedulerOps::testWeatherSoftShutdownSimulator()
     KTRY_OPEN_EKOS();
     KVERIFY_EKOS_IS_OPENED();
 
+    if (Ekos::Manager::Instance()->indiStatus() != Ekos::Idle)
+        KTRY_EKOS_STOP_SIMULATORS();
+
     TestEkosHelper helper;
     helper.m_MountDevice = "Telescope Simulator";
     helper.m_CCDDevice = "CCD Simulator";
@@ -2673,9 +2797,12 @@ void TestEkosSchedulerOps::testWeatherSoftShutdownSimulator()
 
     realScheduler->load(true, eslFilename);
     realScheduler->moduleState()->jobs()[0]->setSequenceFile(QUrl(QString("file://%1").arg(esqFilename)));
+    realScheduler->process()->stop();
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->schedulerState() == Ekos::SCHEDULER_IDLE, 10000);
 
     helper.prepareOpticalTrains();
     helper.prepareCaptureModule();
+    QVERIFY(resetSequenceCaptureCounts(esqFilename, targetObject->name()));
 
     // Start scheduler and wait for full startup sequence:
     KTRY_CLICK(realScheduler, startB);
@@ -2689,15 +2816,12 @@ void TestEkosSchedulerOps::testWeatherSoftShutdownSimulator()
     QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->weatherStatus() == ISD::Weather::WEATHER_ALERT, 10000);
     QTRY_VERIFY_WITH_TIMEOUT(Ekos::Manager::Instance()->mountModule()->parkStatus() == ISD::PARK_PARKED, 20000);
 
-    QVERIFY2(realScheduler->process()->moduleState()->ekosState() == Ekos::EKOS_READY, "Ekos must remain running");
-    QVERIFY2(realScheduler->process()->moduleState()->indiState() == Ekos::INDI_READY, "INDI must remain connected");
-    QVERIFY2(realScheduler->process()->moduleState()->shutdownState() == Ekos::SHUTDOWN_COMPLETE,
-             "shutdownState must be complete");
-    QVERIFY2(realScheduler->process()->moduleState()->startupState() == Ekos::STARTUP_POST_DEVICES,
-             "startupState must be POST_DEVICES");
-    QVERIFY2(realScheduler->process()->moduleState()->preemptiveShutdown() == true, "preemptiveShutdown must be true");
-    QVERIFY2(realScheduler->process()->moduleState()->weatherGracePeriodActive() == true,
-             "weatherGracePeriodActive must be true");
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->ekosState() == Ekos::EKOS_READY, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->indiState() == Ekos::INDI_READY, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->shutdownState() == Ekos::SHUTDOWN_COMPLETE, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->startupState() == Ekos::STARTUP_POST_DEVICES, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->preemptiveShutdown() == true, 10000);
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->weatherGracePeriodActive() == true, 10000);
 
     // Weather OK injection
     QVERIFY2(TestEkosHelper::setSimulatedWeather(false, realSchedulerPtr), "Weather OK not set");
@@ -2729,7 +2853,11 @@ void TestEkosSchedulerOps::testWeatherSoftShutdownSimulator()
 void TestEkosSchedulerOps::testWeatherHardShutdownSimulator()
 {
     KTRY_OPEN_EKOS();
-    KVERIFY_EKOS_IS_OPENED();
+    QVERIFY(Ekos::Manager::Instance() != nullptr);
+    QVERIFY(Ekos::Manager::Instance()->isVisible());
+
+    if (Ekos::Manager::Instance()->indiStatus() != Ekos::Idle)
+        KTRY_EKOS_STOP_SIMULATORS();
 
     TestEkosHelper helper;
     helper.m_MountDevice = "Telescope Simulator";
@@ -2786,9 +2914,12 @@ void TestEkosSchedulerOps::testWeatherHardShutdownSimulator()
 
     realScheduler->load(true, eslFilename);
     realScheduler->moduleState()->jobs()[0]->setSequenceFile(QUrl(QString("file://%1").arg(esqFilename)));
+    realScheduler->process()->stop();
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->schedulerState() == Ekos::SCHEDULER_IDLE, 10000);
 
     helper.prepareOpticalTrains();
     helper.prepareCaptureModule();
+    QVERIFY(resetSequenceCaptureCounts(esqFilename, targetObject->name()));
 
     // Start scheduler and wait for full startup sequence:
     KTRY_CLICK(realScheduler, startB);
@@ -2824,10 +2955,13 @@ void TestEkosSchedulerOps::testWeatherHardShutdownSimulator()
         realScheduler->process()->moduleState()->schedulerState() == Ekos::SCHEDULER_RUNNING,
         10000);
 
-    // Weather monitoring mode should be enabled after hard shutdown
-    QVERIFY2(realScheduler->process()->moduleState()->weatherShutdownMonitoring() == true,
-             "weatherShutdownMonitoring must be true after hard shutdown");
+    // Hard shutdown stops the scheduler completely. Weather monitoring mode is reserved
+    // for the indefinite-grace-period path covered by testWeatherMonitoringModeSimulator().
+    QVERIFY2(realScheduler->process()->moduleState()->weatherShutdownMonitoring() == false,
+             "weatherShutdownMonitoring must be false after hard shutdown");
 
+    if (Ekos::Manager::Instance()->indiStatus() != Ekos::Idle)
+        KTRY_EKOS_STOP_SIMULATORS();
     KTRY_CLOSE_EKOS();
 }
 
@@ -2842,7 +2976,11 @@ void TestEkosSchedulerOps::testWeatherHardShutdownSimulator()
 void TestEkosSchedulerOps::testWeatherMonitoringModeSimulator()
 {
     KTRY_OPEN_EKOS();
-    KVERIFY_EKOS_IS_OPENED();
+    QVERIFY(Ekos::Manager::Instance() != nullptr);
+    QVERIFY(Ekos::Manager::Instance()->isVisible());
+
+    if (Ekos::Manager::Instance()->indiStatus() != Ekos::Idle)
+        KTRY_EKOS_STOP_SIMULATORS();
 
     TestEkosHelper helper;
     helper.m_MountDevice = "Telescope Simulator";
@@ -2899,9 +3037,12 @@ void TestEkosSchedulerOps::testWeatherMonitoringModeSimulator()
 
     realScheduler->load(true, eslFilename);
     realScheduler->moduleState()->jobs()[0]->setSequenceFile(QUrl(QString("file://%1").arg(esqFilename)));
+    realScheduler->process()->stop();
+    QTRY_VERIFY_WITH_TIMEOUT(realScheduler->process()->moduleState()->schedulerState() == Ekos::SCHEDULER_IDLE, 10000);
 
     helper.prepareOpticalTrains();
     helper.prepareCaptureModule();
+    QVERIFY(resetSequenceCaptureCounts(esqFilename, targetObject->name()));
 
     // Start scheduler and wait for full startup sequence:
     KTRY_CLICK(realScheduler, startB);

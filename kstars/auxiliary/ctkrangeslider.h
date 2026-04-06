@@ -46,8 +46,8 @@ class ctkRangeSlider : public QSlider
         /// Constructor, builds a ctkRangeSlider that ranges from 0 to 100 and has
         /// a lower and upper values of 0 and 100 respectively, other properties
         /// are set the QSlider default properties.
-        explicit ctkRangeSlider( Qt::Orientation o, QWidget* par = 0 );
-        explicit ctkRangeSlider( QWidget* par = 0 );
+        explicit ctkRangeSlider( Qt::Orientation o, QWidget* par = nullptr );
+        explicit ctkRangeSlider( QWidget* par = nullptr );
         virtual ~ctkRangeSlider();
 
         ///
@@ -164,8 +164,8 @@ class ctkRangeSlider : public QSlider
         void onRangeChanged(int minimum, int maximum);
 
     protected:
-        ctkRangeSlider( ctkRangeSliderPrivate* impl, Qt::Orientation o, QWidget* par = 0 );
-        ctkRangeSlider( ctkRangeSliderPrivate* impl, QWidget* par = 0 );
+        ctkRangeSlider( ctkRangeSliderPrivate* impl, Qt::Orientation o, QWidget* par = nullptr );
+        ctkRangeSlider( ctkRangeSliderPrivate* impl, QWidget* par = nullptr );
 
         // Description:
         // Standard Qt UI events
@@ -187,9 +187,8 @@ class ctkRangeSlider : public QSlider
         QScopedPointer<ctkRangeSliderPrivate> d_ptr;
 
     private:
-        Q_DECLARE_PRIVATE(ctkRangeSlider);
-        Q_DISABLE_COPY(ctkRangeSlider);
+        Q_DECLARE_PRIVATE(ctkRangeSlider)
+        Q_DISABLE_COPY(ctkRangeSlider)
 };
 
 #endif
-

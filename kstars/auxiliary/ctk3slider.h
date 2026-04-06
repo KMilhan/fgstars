@@ -44,8 +44,8 @@ class ctk3Slider : public QSlider
         /// Constructor, builds a ctk3Slider that ranges from 0 to 100 and has
         /// a lower and upper values of 0 and 100 respectively, other properties
         /// are set the QSlider default properties.
-        explicit ctk3Slider( Qt::Orientation o, QWidget* par = 0 );
-        explicit ctk3Slider( QWidget* par = 0 );
+        explicit ctk3Slider( Qt::Orientation o, QWidget* par = nullptr );
+        explicit ctk3Slider( QWidget* par = nullptr );
         virtual ~ctk3Slider();
 
         ///
@@ -193,8 +193,8 @@ class ctk3Slider : public QSlider
         void onRangeChanged(int minimum, int maximum);
 
     protected:
-        ctk3Slider( ctk3SliderPrivate* impl, Qt::Orientation o, QWidget* par = 0 );
-        ctk3Slider( ctk3SliderPrivate* impl, QWidget* par = 0 );
+        ctk3Slider( ctk3SliderPrivate* impl, Qt::Orientation o, QWidget* par = nullptr );
+        ctk3Slider( ctk3SliderPrivate* impl, QWidget* par = nullptr );
 
         // Description:
         // Standard Qt UI events
@@ -217,9 +217,8 @@ class ctk3Slider : public QSlider
         QScopedPointer<ctk3SliderPrivate> d_ptr;
 
     private:
-        Q_DECLARE_PRIVATE(ctk3Slider);
-        Q_DISABLE_COPY(ctk3Slider);
+        Q_DECLARE_PRIVATE(ctk3Slider)
+        Q_DISABLE_COPY(ctk3Slider)
 };
 
 #endif
-

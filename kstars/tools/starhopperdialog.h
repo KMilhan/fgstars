@@ -24,7 +24,7 @@ Q_DECLARE_METATYPE(StarObject *)
 
 class StarHopperDialog : public QDialog, public Ui::StarHopperDialog
 {
-        Q_OBJECT;
+        Q_OBJECT
 
     public:
         explicit StarHopperDialog(QWidget *parent = nullptr);

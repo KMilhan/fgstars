@@ -26,7 +26,7 @@ class QModelIndex;
  */
 class SessionSortFilterProxyModel : public QSortFilterProxyModel
 {
-        Q_OBJECT;
+        Q_OBJECT
 
     public:
         explicit SessionSortFilterProxyModel(QObject *parent = nullptr);

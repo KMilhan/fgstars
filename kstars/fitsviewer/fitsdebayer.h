@@ -16,7 +16,7 @@ class debayerUI : public QDialog, public Ui::FITSDebayerDialog
         Q_OBJECT
 
     public:
-        explicit debayerUI(QDialog *parent = 0);
+        explicit debayerUI(QDialog *parent = nullptr);
 };
 
 class FITSDebayer : public QDialog

@@ -10,6 +10,7 @@
 #include "../templatemanager.h"
 #include "ekos/manager.h"
 #include "indi/indilistener.h"
+#include <QTimer>
 #include <ekos_scheduler_debug.h>
 
 namespace Ekos
@@ -79,7 +80,18 @@ bool QueueExecutor::start()
             return false;
         }
 
-        if (ekosManager->indiStatus() != Ekos::Success)
+        bool indiReady = ekosManager->indiStatus() == Ekos::Success;
+        if (!indiReady)
+        {
+            const auto devices = INDIListener::devices();
+            indiReady = !devices.isEmpty() &&
+                        std::all_of(devices.cbegin(), devices.cend(), [](const auto &device)
+            {
+                return device->isConnected() && device->isReady();
+            });
+        }
+
+        if (!indiReady)
         {
             qCWarning(KSTARS_EKOS_SCHEDULER) << "Cannot start queue: No Ekos profile running. Please start an equipment profile first.";
             return false;
@@ -271,9 +283,13 @@ void QueueExecutor::executeItem(QueueItem *item)
                             qCInfo(KSTARS_EKOS_SCHEDULER) << "Skipping task due to missing device (failure_action: skip_to_next_task)";
                             item->setStatus(QueueItem::SKIPPED);
                             item->setErrorMessage(errorMsg);
-                            // Don't emit itemFailed for skipped tasks - just move to next
+                            // Queue the transition so item teardown finishes before we
+                            // inspect the remaining queue state or emit completion.
                             m_currentItem = nullptr;
-                            executeNext();
+                            QTimer::singleShot(0, this, [this]()
+                            {
+                                executeNext();
+                            });
                             return;
 
                         case TaskAction::CONTINUE:
@@ -510,7 +526,10 @@ void QueueExecutor::handleActionFailure(TaskAction *action)
             m_currentItem = nullptr;
             m_currentAction = nullptr;
             m_currentActionIndex = -1;
-            executeNext();
+            QTimer::singleShot(0, this, [this]()
+            {
+                executeNext();
+            });
             break;
     }
 }

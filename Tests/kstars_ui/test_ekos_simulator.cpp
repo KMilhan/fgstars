@@ -10,11 +10,14 @@
 
 #include <cmath>
 #include <limits>
+#include <QFile>
+#include <QStandardPaths>
 
 #if defined(HAVE_INDI)
 
 #include "test_ekos.h"
 #include "ksmessagebox.h"
+#include "Options.h"
 
 #include <QLabel>
 
@@ -24,6 +27,9 @@ TestEkosSimulator::TestEkosSimulator(QObject *parent) : QObject(parent)
 
 void TestEkosSimulator::initTestCase()
 {
+    if (!KStarsUiTests::configureTestIndiRuntime())
+        QSKIP("INDI server binary not found; skipping TestEkosSimulator.", SkipAll);
+
     KTRY_OPEN_EKOS();
     KVERIFY_EKOS_IS_OPENED();
 }

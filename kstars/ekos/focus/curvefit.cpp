@@ -1146,8 +1146,10 @@ QVector<double> CurveFitting::hyperbola_fit(FittingGoal goal, const QVector<doub
                                         NUM_HYPERBOLA_PARAMS);
     gsl_multifit_nlinear_fdf fdf;
     gsl_vector *guess = gsl_vector_alloc(NUM_HYPERBOLA_PARAMS);
-    int numIters;
-    double xtol, gtol, ftol;
+    int numIters = MAX_ITERATIONS_CURVE;
+    double xtol = INEPSXTOL;
+    double gtol = INEPSGTOL;
+    double ftol = INEPSFTOL;
 
     // Fill in function info
     fdf.f = hypFx;
@@ -1462,8 +1464,10 @@ QVector<double> CurveFitting::parabola_fit(FittingGoal goal, const QVector<doubl
                                         NUM_PARABOLA_PARAMS);
     gsl_multifit_nlinear_fdf fdf;
     gsl_vector * guess = gsl_vector_alloc(NUM_PARABOLA_PARAMS);
-    int numIters;
-    double xtol, gtol, ftol;
+    int numIters = MAX_ITERATIONS_CURVE;
+    double xtol = INEPSXTOL;
+    double gtol = INEPSGTOL;
+    double ftol = INEPSFTOL;
 
     // Fill in function info
     fdf.f = parFx;
@@ -1728,8 +1732,10 @@ QVector<double> CurveFitting::gaussian2D_fit(FittingGoal goal, const QVector<dou
                                         NUM_2DGAUSSIAN_PARAMS);
     gsl_multifit_nlinear_fdf fdf;
     gsl_vector * guess = gsl_vector_alloc(NUM_2DGAUSSIAN_PARAMS);
-    int numIters;
-    double xtol, gtol, ftol;
+    int numIters = MAX_ITERATIONS_CURVE;
+    double xtol = INEPSXTOL;
+    double gtol = INEPSGTOL;
+    double ftol = INEPSFTOL;
 
     // Fill in function info
     fdf.f = gau2DFx;
@@ -1972,8 +1978,10 @@ QVector<double> CurveFitting::gaussian3D_fit(DataPoint3DT data, const StarParams
     gsl_multifit_nlinear_workspace* w = gsl_multifit_nlinear_alloc (gsl_multifit_nlinear_trust, &params, data.dps.size(),
                                         NUM_3DGAUSSIAN_PARAMS);
     gsl_multifit_nlinear_fdf fdf;
-    int numIters;
-    double xtol, gtol, ftol;
+    int numIters = MAX_ITERATIONS_CURVE;
+    double xtol = INEPSXTOL;
+    double gtol = INEPSGTOL;
+    double ftol = INEPSFTOL;
 
     // Fill in function info
     fdf.f = gauFxy;
@@ -2177,8 +2185,10 @@ QVector<double> CurveFitting::plane_fit(const DataPoint3DT data)
     gsl_multifit_nlinear_workspace* w = gsl_multifit_nlinear_alloc (gsl_multifit_nlinear_trust, &params, data.dps.size(),
                                         NUM_PLANE_PARAMS);
     gsl_multifit_nlinear_fdf fdf;
-    int numIters;
-    double xtol, gtol, ftol;
+    int numIters = MAX_ITERATIONS_CURVE;
+    double xtol = INEPSXTOL;
+    double gtol = INEPSGTOL;
+    double ftol = INEPSFTOL;
 
     // Fill in function info
     fdf.f = plaFxy;
