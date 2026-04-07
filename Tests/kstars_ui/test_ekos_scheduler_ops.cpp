@@ -1268,6 +1268,21 @@ void TestEkosSchedulerOps::parkAndSleep(KStarsDateTime &currentUTime, int &sleep
 {
     restoreSimulatedClock(currentUTime);
 
+    // The caller can arrive here after the previous helper loop has already consumed
+    // the scheduler iteration that parked the mount and scheduled the wakeup.
+    // In that case sleepMs already contains the long wakeup delay, so performing one
+    // more iterateScheduler() step would jump straight to the next evening and miss the
+    // parked+sleeping state we want to verify.
+    if (scheduler->moduleState()->timerState() == Ekos::RUN_WAKEUP)
+    {
+        QTRY_VERIFY(mount->parkStatus() == ISD::PARK_PARKED);
+        QVERIFY2(scheduler->moduleState()->ekosState() == Ekos::EKOS_READY,
+                 "Ekos must remain running during park-and-sleep (non-preemptive) shutdown");
+        QVERIFY2(scheduler->moduleState()->indiState() == Ekos::INDI_READY,
+                 "INDI must remain connected during park-and-sleep (non-preemptive) shutdown");
+        return;
+    }
+
     // shouldSchedulerSleep() parks the mount and calls setupNextIteration(RUN_WAKEUP,
     // <wakeup-delay-ms>) in the *same* scheduler iteration.  The returned sleepMs is
     // therefore the full simulated time until the next job window (potentially many
@@ -1730,8 +1745,9 @@ void TestEkosSchedulerOps::testGreedy()
 
     // Setup geo and an artificial horizon.
     GeoLocation geo(dms(-122, 10), dms(37, 26, 30), "Silicon Valley", "CA", "USA", -8);
-    // Use the geo's fixed UTC offset so the test is timezone-independent.
-    const QTimeZone geoTZ = QTimeZone(static_cast<int>(geo.TZ() * 3600));
+    // Use the location's IANA timezone so summer DST stays correct without
+    // depending on the machine's timezone.
+    const QTimeZone geoTZ("America/Los_Angeles");
     ArtificialHorizon shutdownHorizon;
     addHorizonConstraint(&shutdownHorizon, "h", true, QVector<double>({175, 200}), QVector<double>({70, 70}));
     Ekos::SchedulerJob::setHorizon(&shutdownHorizon);
@@ -1951,8 +1967,9 @@ void TestEkosSchedulerOps::testGreedyStartAt()
 
     // Setup geo and an artificial horizon.
     GeoLocation geo(dms(-122, 10), dms(37, 26, 30), "Silicon Valley", "CA", "USA", -8);
-    // Use the geo's fixed UTC offset so the test is timezone-independent.
-    const QTimeZone geoTZ = QTimeZone(static_cast<int>(geo.TZ() * 3600));
+    // Use the location's IANA timezone so summer DST stays correct without
+    // depending on the machine's timezone.
+    const QTimeZone geoTZ("America/Los_Angeles");
     ArtificialHorizon shutdownHorizon;
     addHorizonConstraint(&shutdownHorizon, "h", true, QVector<double>({175, 200}), QVector<double>({70, 70}));
 
@@ -1999,10 +2016,10 @@ void TestEkosSchedulerOps::testGreedyStartAt()
     constexpr int altairIndex = 0, denebIndex = 1;
     targetObjects.push_back(KStars::Instance()->data()->skyComposite()->findByName("Altair"));
     targetObjects.push_back(KStars::Instance()->data()->skyComposite()->findByName("Deneb"));
-    QDateTime a1Start (QDateTime(QDate(2021, 6, 14), QTime( 8, 00, 0), QTimeZone::utc())); // 1am
-    QDateTime a1End   (QDateTime(QDate(2021, 6, 14), QTime( 8, 33, 0), QTimeZone::utc())); // 1:33am
-    QDateTime d1Start (QDateTime(QDate(2021, 6, 14), QTime(10, 00, 0), QTimeZone::utc())); // 3am
-    QDateTime d1End   (QDateTime(QDate(2021, 6, 14), QTime(10, 23, 0), QTimeZone::utc())); // 3:23am
+    QDateTime a1Start (QDateTime(QDate(2021, 6, 14), QTime( 8, 00, 0), QTimeZone::utc())); // 1am local
+    QDateTime a1End   (QDateTime(QDate(2021, 6, 14), QTime( 8, 33, 0), QTimeZone::utc())); // 1:33am local
+    QDateTime d1Start (QDateTime(QDate(2021, 6, 14), QTime(10, 00, 0), QTimeZone::utc())); // 3am local
+    QDateTime d1End   (QDateTime(QDate(2021, 6, 14), QTime(10, 23, 0), QTimeZone::utc())); // 3:23am local
 
     slewAndRun(targetObjects[altairIndex], a1Start, a1End, currentUTime, sleepMs, 600, "Greedy job #1", a1End);
     wakeupAndRestart(d1Start, currentUTime, sleepMs);
@@ -2102,8 +2119,9 @@ void TestEkosSchedulerOps::testGreedyAborts()
 
     // Setup geo and an artificial horizon.
     GeoLocation geo(dms(-122, 10), dms(37, 26, 30), "Silicon Valley", "CA", "USA", -8);
-    // Use the geo's fixed UTC offset so the test is timezone-independent.
-    const QTimeZone geoTZ = QTimeZone(static_cast<int>(geo.TZ() * 3600));
+    // Use the location's IANA timezone so summer DST stays correct without
+    // depending on the machine's timezone.
+    const QTimeZone geoTZ("America/Los_Angeles");
 
     // Start the scheduler about 9pm local
     const QDateTime startUTime = QDateTime(QDate(2022, 2, 28), QTime(10, 29, 26), QTimeZone::utc());
