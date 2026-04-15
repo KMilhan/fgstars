@@ -31,7 +31,7 @@ TestPlaceholderPath::~TestPlaceholderPath()
 }
 
 // helper functions
-void parseCSV(const QString filename, const QList<const char*> columns)
+void parseCSV(const QString &filename, const QList<const char*> columns)
 {
     QFile testDataFile(filename);
 
@@ -181,7 +181,9 @@ void TestPlaceholderPath::testSchedulerProcessJobInfo_data()
     {
         QTest::addColumn<QString>(column);
     }
-    parseCSV("testSchedulerProcessJobInfo_data.csv", columns);
+    const QString csvFile = QFINDTESTDATA("testSchedulerProcessJobInfo_data.csv");
+    QVERIFY2(!csvFile.isEmpty(), "Unable to locate testSchedulerProcessJobInfo_data.csv");
+    parseCSV(csvFile, columns);
 
 #endif
 }

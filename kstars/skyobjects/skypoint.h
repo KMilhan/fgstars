@@ -567,7 +567,7 @@ class SkyPoint
         dms angularDistanceTo(const SkyPoint *sp, double *const positionAngle = nullptr) const;
 
         /** @return returns true if _current_ epoch RA / Dec match */
-        inline bool operator==(SkyPoint &p) const
+        inline bool operator==(const SkyPoint &p) const
         {
             return (ra() == p.ra() && dec() == p.dec());
         }

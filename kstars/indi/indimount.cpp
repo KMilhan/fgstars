@@ -707,7 +707,7 @@ bool Mount::sendCoords(SkyPoint * ScopeTarget)
 
     // Function for sending the coordinates to the INDI mount device
     // via the ClientManager. This helper function translates EKOS objects into INDI commands.
-    auto sendToMountDevice = [ = ]()
+    auto sendToMountDevice = [=, this]()
     {
         // communicate the new target only if a slew will be executed for the given coordinates
         if (slewDefined())
@@ -773,14 +773,14 @@ bool Mount::sendCoords(SkyPoint * ScopeTarget)
     // tracking modes have to be adapted (special cases moon and sun), explicitly warns before
     // slewing to the sun and finally (independent whether there exists a target object
     // for the target coordinates) calls sendToMountDevice
-    auto checkObjectAndSend = [ = ]()
+    auto checkObjectAndSend = [=, this]()
     {
         // Search within 0.1 degrees independent of zoom level.
         double maxrad = 0.1;
         currentObject = KStarsData::Instance()->skyComposite()->objectNearest(ScopeTarget, maxrad);
         if (currentObject)
         {
-            auto checkTrackModes = [ = ]()
+            auto checkTrackModes = [=, this]()
             {
                 if (m_hasTrackModes)
                 {
@@ -808,13 +808,13 @@ bool Mount::sendCoords(SkyPoint * ScopeTarget)
             // Sun Warning, but don't ask if tracking is already solar.
             if (currentObject->name() == i18n("Sun") && currentTrackMode != TRACK_SOLAR)
             {
-                connect(KSMessageBox::Instance(), &KSMessageBox::accepted, this, [ = ]()
+                connect(KSMessageBox::Instance(), &KSMessageBox::accepted, this, [=, this]()
                 {
                     KSMessageBox::Instance()->disconnect(this);
                     checkTrackModes();
                     sendToMountDevice();
                 });
-                connect(KSMessageBox::Instance(), &KSMessageBox::rejected, this, [ = ]()
+                connect(KSMessageBox::Instance(), &KSMessageBox::rejected, this, [=, this]()
                 {
                     KSMessageBox::Instance()->disconnect(this);
                 });
@@ -851,14 +851,14 @@ bool Mount::sendCoords(SkyPoint * ScopeTarget)
     // If disabled, then check if below horizon and warning the user unless the user previously dismissed it.
     if (Options::confirmBelowHorizon() && targetAlt < 0 && minAlt == -1)
     {
-        connect(KSMessageBox::Instance(), &KSMessageBox::accepted, this, [ = ]()
+        connect(KSMessageBox::Instance(), &KSMessageBox::accepted, this, [=, this]()
         {
             if (minAlt < -90 && +90 < maxAlt)
                 Options::setConfirmBelowHorizon(false);
             KSMessageBox::Instance()->disconnect(this);
             checkObjectAndSend();
         });
-        connect(KSMessageBox::Instance(), &KSMessageBox::rejected, this, [ = ]()
+        connect(KSMessageBox::Instance(), &KSMessageBox::rejected, this, [=, this]()
         {
             KSMessageBox::Instance()->disconnect(this);
             if (useEquatorialCoordinates)
@@ -898,10 +898,8 @@ bool Mount::slewDefined()
     {
         return true;
     }
-    else
-    {
-        return false;
-    }
+
+    return false;
 }
 
 bool Mount::Slew(double ra, double dec, bool flip)

@@ -147,8 +147,8 @@ bool Focuser::canAbsMove()
 
     if (!focusProp)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 bool Focuser::moveRel(int steps)
@@ -197,8 +197,8 @@ bool Focuser::canRelMove()
 
     if (!focusProp)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 bool Focuser::canManualFocusDriveMove()
@@ -207,8 +207,8 @@ bool Focuser::canManualFocusDriveMove()
 
     if (!focusProp)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 double Focuser::getLastManualFocusDriveValue()
@@ -228,8 +228,8 @@ bool Focuser::canTimerMove()
 
     if (!focusProp)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 bool Focuser::setMaxPosition(uint32_t steps)

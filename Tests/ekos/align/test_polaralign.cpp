@@ -62,7 +62,9 @@ void loadDummyFits(QSharedPointer<FITSData> &image, const KStarsDateTime &time,
     // Borrow one of the other fits files in the test suite.
     // We don't use the contents of the image, but the image's width and height.
     // We do set the wcs data.
-    QFuture<bool> worker = image->loadFromFile("ngc4535-autofocus1.fits");
+    const QString fitsFile = QFINDTESTDATA("ngc4535-autofocus1.fits");
+    QVERIFY2(!fitsFile.isEmpty(), "Unable to locate ngc4535-autofocus1.fits");
+    QFuture<bool> worker = image->loadFromFile(fitsFile);
     QTRY_VERIFY_WITH_TIMEOUT(worker.isFinished(), 60000);
     QVERIFY(worker.result());
     auto stats = image->getStatistics();

@@ -2973,10 +2973,10 @@ void TestEkosSchedulerOps::testWeatherHardShutdownSimulator()
         realScheduler->process()->moduleState()->schedulerState() == Ekos::SCHEDULER_RUNNING,
         10000);
 
-    // Hard shutdown stops the scheduler completely. Weather monitoring mode is reserved
-    // for the indefinite-grace-period path covered by testWeatherMonitoringModeSimulator().
-    QVERIFY2(realScheduler->process()->moduleState()->weatherShutdownMonitoring() == false,
-             "weatherShutdownMonitoring must be false after hard shutdown");
+    // After a weather-triggered hard shutdown, the scheduler now stays in weather
+    // monitoring mode so it can automatically recover when safety improves.
+    QVERIFY2(realScheduler->process()->moduleState()->weatherShutdownMonitoring() == true,
+             "weatherShutdownMonitoring must remain enabled after weather hard shutdown");
 
     if (Ekos::Manager::Instance()->indiStatus() != Ekos::Idle)
         KTRY_EKOS_STOP_SIMULATORS();

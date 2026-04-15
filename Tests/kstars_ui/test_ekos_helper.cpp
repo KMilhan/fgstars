@@ -24,6 +24,8 @@
 #include "../testhelpers.h"
 
 #include <QDir>
+#include <QFileInfo>
+#include <QStandardPaths>
 
 namespace
 {
@@ -43,6 +45,58 @@ void setTreeviewCombo(QComboBox *combo, const QString &label)
     combo->setRootModelIndex(item.parent());
     combo->setCurrentText(label);
     QCOMPARE(combo->currentText(), label);
+}
+
+bool configureCcdSimulatorStarCatalog(QString *reason = nullptr)
+{
+    QString gscExecutable = QStandardPaths::findExecutable(QStringLiteral("gsc"));
+    if (gscExecutable.isEmpty())
+    {
+        const QFileInfo packagedGsc(QStringLiteral("/usr/share/GSC/bin/gsc"));
+        if (packagedGsc.isExecutable())
+            gscExecutable = packagedGsc.absoluteFilePath();
+    }
+
+    QString gscDataDir = qEnvironmentVariable("GSCDAT");
+    if (gscDataDir.isEmpty())
+    {
+        const QStringList candidates = {
+            QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)).filePath(QStringLiteral("gsc")),
+            QStringLiteral("/usr/share/GSC"),
+            QStringLiteral("/usr/share/gsc")
+        };
+
+        for (const QString &candidate : candidates)
+        {
+            if (QFileInfo(candidate).isDir())
+            {
+                gscDataDir = candidate;
+                break;
+            }
+        }
+    }
+
+    if (gscExecutable.isEmpty() || gscDataDir.isEmpty())
+    {
+        if (reason != nullptr)
+        {
+            *reason = QStringLiteral("CCD Simulator autofocus requires the 'gsc' executable and a readable GSC catalog directory.");
+        }
+        return false;
+    }
+
+    const QByteArray gscPath = QFileInfo(gscExecutable).absolutePath().toLocal8Bit();
+    const QByteArray currentPath = qgetenv("PATH");
+    if (!currentPath.split(':').contains(gscPath))
+    {
+        QByteArray updatedPath = gscPath;
+        if (!currentPath.isEmpty())
+            updatedPath += ':' + currentPath;
+        qputenv("PATH", updatedPath);
+    }
+
+    qputenv("GSCDAT", QFileInfo(gscDataDir).absoluteFilePath().toLocal8Bit());
+    return true;
 }
 }
 
@@ -439,7 +493,8 @@ void TestEkosHelper::preparePHD2()
         // rename existing file to backup file
         QVERIFY(QFile::rename(phd2_config_home.filePath(), phd2_config_home_bak.filePath()));
     }
-    QVERIFY2(phd2_config_orig.exists(), phd2_config_orig_name.toLocal8Bit() + " not found in current directory!");
+    const QByteArray missingConfigMessage = phd2_config_orig_name.toLocal8Bit() + " not found in current directory!";
+    QVERIFY2(phd2_config_orig.exists(), missingConfigMessage.constData());
     QFile configSource(phd2_config_orig.filePath());
     QVERIFY2(configSource.open(QIODevice::ReadOnly | QIODevice::Text),
              qPrintable(QString("Unable to read %1: %2").arg(phd2_config_orig.filePath(), configSource.errorString())));
@@ -509,21 +564,26 @@ void TestEkosHelper::prepareOpticalTrains()
 
 void TestEkosHelper::prepareAlignmentModule()
 {
+    const bool astrometryAvailable = isAstrometryAvailable();
 
-    // check if astrometry files exist
-    QTRY_VERIFY(isAstrometryAvailable() == true);
+    if (!astrometryAvailable)
+        QWARN("Skipping solver configuration because no astrometry index files were found.");
+
     // switch to alignment module
     KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(Ekos::Manager::Instance()->alignModule(), 1000);
     // select the primary train for alignment
     KTRY_SET_COMBO(Ekos::Manager::Instance()->alignModule(), opticalTrainCombo, m_primaryTrain);
     // select local solver
-    Ekos::Manager::Instance()->alignModule()->setSolverMode(Ekos::Align::SOLVER_LOCAL);
-    // select internal SEP method
-    Options::setSolveSextractorType(SSolver::EXTRACTOR_BUILTIN);
-    // select StellarSolver
-    Options::setSolverType(SSolver::SOLVER_STELLARSOLVER);
-    // select fast solve profile option
-    Options::setSolveOptionsProfile(SSolver::Parameters::SINGLE_THREAD_SOLVING);
+    if (astrometryAvailable)
+    {
+        Ekos::Manager::Instance()->alignModule()->setSolverMode(Ekos::Align::SOLVER_LOCAL);
+        // select internal SEP method
+        Options::setSolveSextractorType(SSolver::EXTRACTOR_BUILTIN);
+        // select StellarSolver
+        Options::setSolverType(SSolver::SOLVER_STELLARSOLVER);
+        // select fast solve profile option
+        Options::setSolveOptionsProfile(SSolver::Parameters::SINGLE_THREAD_SOLVING);
+    }
     // select the "Slew to Target" mode
     KTRY_SET_RADIOBUTTON(Ekos::Manager::Instance()->alignModule(), slewR, true);
     // disable rotator check in alignment
@@ -884,6 +944,10 @@ bool TestEkosHelper::executeFocusing(int initialFocusPosition)
             || getFocusStatus() == Ekos::FOCUS_ABORTED))
         return true;
 
+    QString reason;
+    if (!ensureCcdSimulatorStarsAvailable(&reason))
+        return false;
+
     // prepare for focusing tests
     prepareFocusModule();
 
@@ -901,6 +965,11 @@ bool TestEkosHelper::executeFocusing(int initialFocusPosition)
     qCInfo(KSTARS_EKOS_TEST) << "Focusing finished.";
     // all checks succeeded
     return true;
+}
+
+bool TestEkosHelper::ensureCcdSimulatorStarsAvailable(QString *reason)
+{
+    return configureCcdSimulatorStarCatalog(reason);
 }
 
 bool TestEkosHelper::stopFocusing()

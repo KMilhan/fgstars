@@ -20,6 +20,8 @@
 
 namespace
 {
+bool g_focusTestInitialized = false;
+
 int focusDetectedStars()
 {
     QLabel *starsOut = Ekos::Manager::Instance()->focusModule()->mainFocuser().get()->findChild<QLabel *>("starsOut");
@@ -151,11 +153,17 @@ TestEkosFocus::TestEkosFocus(QObject *parent) : QObject(parent)
 void TestEkosFocus::initTestCase()
 {
     KVERIFY_EKOS_IS_HIDDEN();
+    g_focusTestInitialized = false;
+
+    TestEkosHelper *helper = new TestEkosHelper();
+    QString reason;
+    if (!helper->ensureCcdSimulatorStarsAvailable(&reason))
+        QSKIP(qPrintable(reason));
+
     KTRY_OPEN_EKOS();
     KVERIFY_EKOS_IS_OPENED();
     KTRY_EKOS_START_SIMULATORS();
 
-    TestEkosHelper *helper = new TestEkosHelper();
     helper->init();
     // set the focuser device for correct preparation of optical trains
     helper->m_FocuserDevice = "Focuser Simulator";
@@ -168,11 +176,15 @@ void TestEkosFocus::initTestCase()
     // HACK: Reset clock to initial conditions
     // KHACK_RESET_EKOS_TIME();
 
+    g_focusTestInitialized = true;
     KTELL_BEGIN();
 }
 
 void TestEkosFocus::cleanupTestCase()
 {
+    if (!g_focusTestInitialized)
+        return;
+
     KTELL_END();
     KTRY_EKOS_STOP_SIMULATORS();
     KTRY_CLOSE_EKOS();

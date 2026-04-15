@@ -115,8 +115,8 @@ bool DustCap::canPark()
     auto parkSP = getSwitch("CAP_PARK");
     if (!parkSP)
         return false;
-    else
-        return true;
+
+    return true;
 }
 
 bool DustCap::isParked()
