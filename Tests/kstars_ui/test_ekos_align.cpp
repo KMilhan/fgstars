@@ -14,11 +14,16 @@
 #include "mountmodel.h"
 #include "ekos/scheduler/schedulerprocess.h"
 #include "ekos/scheduler/schedulermodulestate.h"
+#include "ekos/workspacesession.h"
 #include "Options.h"
 #include "indi/guimanager.h"
 #include "ekos/align/align.h"
+#include "ekos/capture/capture.h"
+#include "fitsviewer/summaryfitsview.h"
 
 #include "skymapcomposite.h"
+
+#include <QSignalSpy>
 
 TestEkosAlign::TestEkosAlign(QObject *parent) : QObject(parent)
 {
@@ -114,6 +119,59 @@ void TestEkosAlign::testFitsAlignTargetScheduledJob()
 
     // test scheduler with target
     alignWithScheduler(&targetObject, target_fits.absoluteFilePath());
+}
+
+void TestEkosAlign::testWorkspaceShowsAlignAnnotations()
+{
+    QVERIFY(publishAlignWorkspaceImage(QFINDTESTDATA("Kocab.fits"), true));
+
+    auto * const session = Ekos::Manager::Instance()->workspaceSession();
+    QVERIFY(session != nullptr);
+    const auto overlay = session->alignOverlay();
+    QVERIFY(overlay.has_value());
+    QVERIFY(overlay->crosshairEnabled);
+    QVERIFY(overlay->eqGridEnabled);
+    QVERIFY(overlay->objectsEnabled);
+
+    auto * const summaryPreview = qobject_cast<SummaryFITSView *>(Ekos::Manager::Instance()->getSummaryPreview());
+    QVERIFY(summaryPreview != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData()->hasWCS(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData()->filename().endsWith("Kocab.fits"), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
+                              session->frame(Ekos::WorkspaceSession::Source::Align)->filename(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->isCrosshairVisible(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->isEQGridVisible(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->areObjectsVisible(), 5000);
+}
+
+void TestEkosAlign::testWorkspaceKeepsAlignOverlaysManageable()
+{
+    QVERIFY(publishAlignWorkspaceImage(QFINDTESTDATA("../fitsviewer/m47_sim_stars.fits"), false));
+
+    auto * const session = Ekos::Manager::Instance()->workspaceSession();
+    QVERIFY(session != nullptr);
+    const auto overlay = session->alignOverlay();
+    QVERIFY(overlay.has_value());
+    QVERIFY(overlay->crosshairEnabled);
+    QVERIFY(!overlay->eqGridEnabled);
+    QVERIFY(!overlay->objectsEnabled);
+
+    auto * const summaryPreview = qobject_cast<SummaryFITSView *>(Ekos::Manager::Instance()->getSummaryPreview());
+    QVERIFY(summaryPreview != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData()->filename().endsWith("m47_sim_stars.fits"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!summaryPreview->imageData()->hasWCS(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->isCrosshairVisible(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!summaryPreview->isEQGridVisible(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!summaryPreview->areObjectsVisible(), 5000);
+
+    KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(Ekos::Manager::Instance()->captureModule(), 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData()->filename().endsWith("m47_sim_stars.fits"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!summaryPreview->isCrosshairVisible(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!summaryPreview->isEQGridVisible(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!summaryPreview->areObjectsVisible(), 5000);
 }
 
 void TestEkosAlign::testSyncOnlyAlign()
@@ -381,6 +439,33 @@ bool TestEkosAlign::executeAlignment(SkyObject *targetObject)
     // check if the alignment target matches
     KVERIFY_SUB(verifyAlignmentTarget(targetObject));
     // success
+    return true;
+}
+
+bool TestEkosAlign::publishAlignWorkspaceImage(const QString &fitsFile, std::optional<bool> expectedWcs)
+{
+    QFileInfo targetFits(fitsFile);
+    KVERIFY2_SUB(targetFits.exists(), QString("Test FITS file %1 is missing.").arg(targetFits.filePath()).toLocal8Bit());
+
+    auto * const manager = Ekos::Manager::Instance();
+    auto * const align = manager->alignModule();
+    KVERIFY_SUB(align != nullptr);
+
+    KWRAP_SUB(KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(align, 1000));
+
+    auto * const alignView = align->findChild<FITSView *>();
+    KVERIFY_SUB(alignView != nullptr);
+
+    QSignalSpy loadedSpy(alignView, &FITSView::loaded);
+    alignView->loadFile(targetFits.filePath());
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(!loadedSpy.isEmpty(), 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(alignView->imageData() != nullptr, 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(alignView->imageData()->filename().endsWith(targetFits.fileName()), 5000);
+    if (expectedWcs.has_value())
+        KTRY_VERIFY_WITH_TIMEOUT_SUB(alignView->imageData()->hasWCS() == *expectedWcs, 5000);
+
+    const auto publishedView = QSharedPointer<FITSView>(alignView, [](FITSView *) {});
+    align->newImage(publishedView);
     return true;
 }
 

@@ -15,6 +15,7 @@
 #if defined(HAVE_INDI)
 
 #include <QObject>
+#include <optional>
 
 #define KTRY_CHECK_ALIGNMENTS(i) \
     qCInfo(KSTARS_EKOS_TEST) << "Alignment finished," << image_count << "captures," \
@@ -97,6 +98,8 @@ class TestEkosAlign : public QObject
          * @brief update J2000 coordinates
          */
         void updateJ2000Coordinates(SkyPoint *target);
+
+        bool publishAlignWorkspaceImage(const QString &fitsFile, std::optional<bool> expectedWcs = std::nullopt);
 
     private:
         // helper class
@@ -189,6 +192,12 @@ class TestEkosAlign : public QObject
          * @brief Test alignment to a FITS target of a scheduled job
          */
         void testFitsAlignTargetScheduledJob();
+
+        /** @brief Test that solve annotations appear in the shared workspace. */
+        void testWorkspaceShowsAlignAnnotations();
+
+        /** @brief Test that align overlay state stays manageable without WCS and after leaving Align. */
+        void testWorkspaceKeepsAlignOverlaysManageable();
 
         /** @brief Test if aligning gets suspended when a slew occurs and recovers when
          *         the scope returns to tracking mode */

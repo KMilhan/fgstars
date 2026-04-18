@@ -58,6 +58,26 @@ void applyFocusOverlay(FITSView *view, const std::optional<Ekos::WorkspaceSessio
     view->updateFrame();
 }
 
+void applyAlignOverlay(FITSView *view, const std::optional<Ekos::WorkspaceSession::AlignOverlayState> &overlay)
+{
+    if (view == nullptr)
+        return;
+
+    if (overlay.has_value() == false)
+    {
+        view->setCrosshairEnabled(false);
+        view->setEQGridEnabled(false);
+        view->setObjectsEnabled(false);
+        view->updateFrame();
+        return;
+    }
+
+    view->setCrosshairEnabled(overlay->crosshairEnabled);
+    view->setEQGridEnabled(overlay->eqGridEnabled);
+    view->setObjectsEnabled(overlay->objectsEnabled);
+    view->updateFrame();
+}
+
 }
 
 namespace Ekos
@@ -126,18 +146,25 @@ void WorkspaceSession::applyTo(Source source, FITSView *view) const
         return;
 
     const auto &state = m_sourceStates[sourceIndex(source)];
+    const auto focusOverlay = source == Source::Focus ? m_focusOverlay : std::nullopt;
+    const auto alignOverlay = source == Source::Align ? m_alignOverlay : std::nullopt;
+
     if (state.frame.isNull())
+    {
+        applyFocusOverlay(view, focusOverlay);
+        applyAlignOverlay(view, alignOverlay);
         return;
+    }
 
     const auto viewport = state.viewport;
-    const auto focusOverlay = source == Source::Focus ? m_focusOverlay : std::nullopt;
-    auto restore = [guard = QPointer<FITSView>(view), viewport, focusOverlay]()
+    auto restore = [guard = QPointer<FITSView>(view), viewport, focusOverlay, alignOverlay]()
     {
         if (guard == nullptr)
             return;
 
         restoreViewport(guard.get(), viewport);
         applyFocusOverlay(guard.get(), focusOverlay);
+        applyAlignOverlay(guard.get(), alignOverlay);
     };
 
     if (view->imageData() != state.frame)
@@ -171,6 +198,19 @@ void WorkspaceSession::setFocusOverlay(const FocusOverlayState &state)
 std::optional<WorkspaceSession::FocusOverlayState> WorkspaceSession::focusOverlay() const
 {
     return m_focusOverlay;
+}
+
+void WorkspaceSession::setAlignOverlay(const AlignOverlayState &state)
+{
+    if (m_alignOverlay == state)
+        return;
+
+    m_alignOverlay = state;
+}
+
+std::optional<WorkspaceSession::AlignOverlayState> WorkspaceSession::alignOverlay() const
+{
+    return m_alignOverlay;
 }
 
 void WorkspaceSession::setOverlayVisible(const QString &key, bool visible)

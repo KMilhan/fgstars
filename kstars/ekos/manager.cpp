@@ -2360,8 +2360,7 @@ void Manager::processTabChange()
         if (const auto currentSource = workspaceSourceForWidget(currentWidget); currentSource.has_value())
         {
             m_workspaceSession->activateSource(*currentSource);
-            if (m_workspaceSession->frame(*currentSource) != nullptr)
-                m_workspaceSession->applyTo(*currentSource, summaryPreview);
+            m_workspaceSession->applyTo(*currentSource, summaryPreview);
         }
     }
 
@@ -4320,6 +4319,15 @@ void Manager::publishWorkspaceView(WorkspaceSession::Source source, const QShare
             .trackingBox = view->getTrackingBox(),
             .starsEnabled = view->imageData()->getDetectedStars() > 0,
             .starsHfrEnabled = view->imageData()->getDetectedStars() > 0,
+        });
+    }
+    else if (source == WorkspaceSession::Source::Align && view->imageData() != nullptr)
+    {
+        m_workspaceSession->setAlignOverlay(WorkspaceSession::AlignOverlayState
+        {
+            .crosshairEnabled = true,
+            .eqGridEnabled = view->imageData()->hasWCS(),
+            .objectsEnabled = view->imageData()->hasWCS(),
         });
     }
 

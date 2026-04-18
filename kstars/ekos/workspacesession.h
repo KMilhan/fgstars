@@ -55,6 +55,15 @@ class WorkspaceSession : public QObject
             bool operator==(const FocusOverlayState &) const = default;
         };
 
+        struct AlignOverlayState
+        {
+            bool crosshairEnabled {false};
+            bool eqGridEnabled {false};
+            bool objectsEnabled {false};
+
+            bool operator==(const AlignOverlayState &) const = default;
+        };
+
         static constexpr auto CaptureProcessInfoOverlayKey = "capture.process-info";
 
         explicit WorkspaceSession(QObject *parent = nullptr);
@@ -71,6 +80,8 @@ class WorkspaceSession : public QObject
         const ViewportState &viewport(Source source) const;
         void setFocusOverlay(const FocusOverlayState &state);
         std::optional<FocusOverlayState> focusOverlay() const;
+        void setAlignOverlay(const AlignOverlayState &state);
+        std::optional<AlignOverlayState> alignOverlay() const;
 
         void setOverlayVisible(const QString &key, bool visible);
         std::optional<bool> overlayVisible(const QString &key) const;
@@ -97,6 +108,7 @@ class WorkspaceSession : public QObject
         std::array<SourceState, SOURCE_COUNT> m_sourceStates {};
         std::optional<Source> m_activeSource {Source::Capture};
         std::optional<FocusOverlayState> m_focusOverlay;
+        std::optional<AlignOverlayState> m_alignOverlay;
         QHash<QString, bool> m_overlayVisibility;
 };
 

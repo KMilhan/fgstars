@@ -2978,6 +2978,36 @@ void FITSView::setStarsHFREnabled(bool enable)
     showStarsHFR = enable;
 }
 
+void FITSView::setCrosshairEnabled(bool enable)
+{
+    showCrosshair = enable;
+    if (floatingToolBar != nullptr)
+    {
+        for (auto action : floatingToolBar->actions())
+        {
+            if (action->text() == i18n("Show Cross Hairs"))
+            {
+                action->setChecked(showCrosshair);
+                break;
+            }
+        }
+    }
+}
+
+void FITSView::setEQGridEnabled(bool enable)
+{
+    showEQGrid = enable;
+    if (toggleEQGridAction != nullptr)
+        toggleEQGridAction->setChecked(showEQGrid);
+}
+
+void FITSView::setObjectsEnabled(bool enable)
+{
+    showObjects = enable;
+    if (toggleObjectsAction != nullptr)
+        toggleObjectsAction->setChecked(showObjects);
+}
+
 void FITSView::setStretchValues(double shadows, double midtones, double highlights)
 {
     StretchParams params = getStretchParams();

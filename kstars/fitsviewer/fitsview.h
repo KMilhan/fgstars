@@ -229,7 +229,22 @@ class FITSView : public QScrollArea
         void searchStars();
         void setStarsEnabled(bool enable);
         void setStarsHFREnabled(bool enable);
+        void setCrosshairEnabled(bool enable);
+        void setEQGridEnabled(bool enable);
+        void setObjectsEnabled(bool enable);
         int filterStars();
+        bool isCrosshairVisible() const
+        {
+            return showCrosshair;
+        }
+        bool isEQGridVisible() const
+        {
+            return showEQGrid;
+        }
+        bool areObjectsVisible() const
+        {
+            return showObjects;
+        }
 
         // image masks
         QSharedPointer<ImageMask> imageMask()
