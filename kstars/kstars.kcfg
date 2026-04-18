@@ -1693,7 +1693,7 @@
    </entry>     
    <entry name="useFITSViewer" type="Bool">
       <label>Display every image captured in a FITS Viewer window.</label>
-      <default>true</default>
+      <default>false</default>
    </entry>
    <entry name="singlePreviewFITS" type="Bool">
       <label>Preview FITS in a single tab?</label>

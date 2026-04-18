@@ -494,11 +494,11 @@ void CameraProcess::prepareJob(const QSharedPointer<SequenceJob> &job)
     if (job->jobType() == SequenceJob::JOBTYPE_PREVIEW && Options::useFITSViewer() == false
             && Options::useSummaryPreview() == false)
     {
-        // ask if FITS viewer usage should be enabled
+        // Ask whether the embedded workspace preview should be enabled.
         connect(KSMessageBox::Instance(), &KSMessageBox::accepted, this, [ = ]()
         {
             KSMessageBox::Instance()->disconnect(this);
-            Options::setUseFITSViewer(true);
+            Options::setUseSummaryPreview(true);
             // restart
             prepareJob(job);
         });
@@ -507,7 +507,7 @@ void CameraProcess::prepareJob(const QSharedPointer<SequenceJob> &job)
             KSMessageBox::Instance()->disconnect(this);
             activeJob()->abort();
         });
-        KSMessageBox::Instance()->questionYesNo(i18n("No view available for previews. Enable FITS viewer?"),
+        KSMessageBox::Instance()->questionYesNo(i18n("No embedded workspace preview is enabled. Enable it now?"),
                                                 i18n("Display preview"), 15);
         // do nothing because currently none of the previews is active.
         return;
@@ -1205,6 +1205,7 @@ void CameraProcess::processFITSData(const QSharedPointer<FITSData> &data, const 
             // Set image metadata and emit captureComplete
             // Need to do this now for previews as the activeJob() will be set to null.
             updateImageMetadataAction(state()->imageData());
+            Q_EMIT newImage(activeJob(), state()->imageData());
         }
     }
 

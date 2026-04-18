@@ -18,8 +18,11 @@
 #include "ekos/focus/focusmodule.h"
 #include "ekos/align/align.h"
 #include "ekos/guide/guide.h"
+#include "fitsviewer/fitsviewer.h"
 #include "fitsviewer/summaryfitsview.h"
+#include "kstars.h"
 
+#include <algorithm>
 #include <array>
 
 TestEkosCapture::TestEkosCapture(QObject *parent) : QObject(parent)
@@ -174,6 +177,18 @@ void TestEkosCapture::testCaptureToTemporary()
     QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
     QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 30000);
 
+    KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("005.fits"), 5000);
+
+    const auto fitsViewers = KStars::Instance()->findChildren<FITSViewer *>();
+    QVERIFY(std::ranges::all_of(fitsViewers, [](const auto *viewer)
+    {
+        return viewer == nullptr || viewer->isVisible() == false;
+    }));
+
     QWARN("Test capturing to temporary is no longer valid since we don't create temporary files any more.");
     //    QWARN("When storing to a recognized system temporary folder, only one FITS file is created.");
     //    QTRY_VERIFY_WITH_TIMEOUT(searchFITS(QDir(destination.path())).count() == 1, 1000);
@@ -193,6 +208,8 @@ void TestEkosCapture::testEmbeddedWorkspaceHost()
     QCOMPARE(ekos->getSummaryPreview(), static_cast<FITSView *>(workspaceView));
     QCOMPARE(workspaceView->parentWidget(), capturePreview->previewWidget);
     QVERIFY(capturePreview->previewWidget->layout() != nullptr);
+    QVERIFY(Options::useSummaryPreview());
+    QVERIFY(!Options::useFITSViewer());
 
     const QList<int> sizes = deviceSplitter->sizes();
     QCOMPARE(sizes.size(), 2);
@@ -256,6 +273,18 @@ void TestEkosCapture::testCaptureSingle()
     QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == 1, 1000);
     QVERIFY(m_CaptureHelper->searchFITS(QDir(destination.path()))[0].startsWith("test_Light_"));
     QVERIFY(m_CaptureHelper->searchFITS(QDir(destination.path()))[0].endsWith("001.fits"));
+
+    KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("001.fits"), 5000);
+
+    const auto fitsViewers = KStars::Instance()->findChildren<FITSViewer *>();
+    QVERIFY(std::ranges::all_of(fitsViewers, [](const auto *viewer)
+    {
+        return viewer == nullptr || viewer->isVisible() == false;
+    }));
 
     // Reset sequence state - this makes a confirmation dialog appear
     volatile bool dialogValidated = false;
