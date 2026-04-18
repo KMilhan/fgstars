@@ -180,6 +180,7 @@ class TestEkosFocus : public QObject
         void testFocusFailure();
         void testFocusWhenMountFlips();
         void testWorkspaceSessionTracksFocusFrame();
+        void testWorkspaceSessionPreservesCaptureAndFocusViewports();
 
         void testStarDetection_data();
         void testStarDetection();

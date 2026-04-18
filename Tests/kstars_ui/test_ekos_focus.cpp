@@ -14,12 +14,16 @@
 #include "test_ekos_helper.h"
 #include "test_ekos_simulator.h"
 #include "test_ekos_mount.h"
+#include "test_ekos_capture_helper.h"
+#include "ekos/capture/capture.h"
 #include "ekos/focus/focusfitsview.h"
 #include "ekos/focus/focusmodule.h"
 #include "ekos/focus/focusutils.h"
 #include "ekos/workspacesession.h"
 #include "fitsviewer/summaryfitsview.h"
 #include "Options.h"
+
+#include <QTemporaryDir>
 
 namespace
 {
@@ -239,6 +243,83 @@ void TestEkosFocus::testWorkspaceSessionTracksFocusFrame()
                               session->frame(Ekos::WorkspaceSession::Source::Focus)->filename(), 5000);
     QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
                               focusView->imageData()->filename(), 5000);
+}
+
+void TestEkosFocus::testWorkspaceSessionPreservesCaptureAndFocusViewports()
+{
+    auto * const session = Ekos::Manager::Instance()->workspaceSession();
+    QVERIFY(session != nullptr);
+
+    auto * const summaryPreview = qobject_cast<SummaryFITSView *>(Ekos::Manager::Instance()->getSummaryPreview());
+    QVERIFY(summaryPreview != nullptr);
+
+    QTemporaryDir destination;
+    QVERIFY(destination.isValid());
+    QVERIFY(destination.autoRemove());
+
+    KTRY_CAPTURE_SHOW();
+    KTRY_CAPTURE_ADD_LIGHT(0.1, 1, 0, "Red", "continuity", destination.path());
+    KTRY_CAPTURE_GADGET(QPushButton, startB);
+    KTRY_CAPTURE_CLICK(startB);
+    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
+    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 30000);
+
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Capture) != nullptr, 5000);
+    summaryPreview->ZoomIn();
+    summaryPreview->ZoomIn();
+    if (summaryPreview->horizontalScrollBar()->maximum() > 0 || summaryPreview->verticalScrollBar()->maximum() > 0)
+    {
+        summaryPreview->horizontalScrollBar()->setValue(summaryPreview->horizontalScrollBar()->maximum() / 3);
+        summaryPreview->verticalScrollBar()->setValue(summaryPreview->verticalScrollBar()->maximum() / 4);
+    }
+    QTRY_VERIFY_WITH_TIMEOUT(session->viewport(Ekos::WorkspaceSession::Source::Capture).zoom > 100.0, 5000);
+    const auto captureViewport = session->viewport(Ekos::WorkspaceSession::Source::Capture);
+
+    KTRY_FOCUS_SHOW();
+    KTRY_FOCUS_MOVETO(40000);
+    KTRY_FOCUS_CONFIGURE("SEP", "Iterative", 0.0, 100.0, 3.0);
+    KTRY_FOCUS_DETECT(2, 1, 99);
+    if (focusDetectedStars() <= 0)
+        QSKIP("CCD simulator reported no stars; viewport continuity coverage requires detectable stars.");
+
+    QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Focus) != nullptr, 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
+                              session->frame(Ekos::WorkspaceSession::Source::Focus)->filename(), 5000);
+    summaryPreview->ZoomIn();
+    if (summaryPreview->horizontalScrollBar()->maximum() > 0 || summaryPreview->verticalScrollBar()->maximum() > 0)
+    {
+        summaryPreview->horizontalScrollBar()->setValue(summaryPreview->horizontalScrollBar()->maximum() / 5);
+        summaryPreview->verticalScrollBar()->setValue(summaryPreview->verticalScrollBar()->maximum() / 6);
+    }
+    const auto focusViewport = session->viewport(Ekos::WorkspaceSession::Source::Focus);
+    QVERIFY(focusViewport.zoom < captureViewport.zoom);
+
+    KTRY_CAPTURE_SHOW();
+    QTRY_VERIFY_WITH_TIMEOUT(session->activeSource() ==
+                             std::optional<Ekos::WorkspaceSession::Source>(Ekos::WorkspaceSession::Source::Capture), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
+                              session->frame(Ekos::WorkspaceSession::Source::Capture)->filename(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(qAbs(summaryPreview->getCurrentZoom() - captureViewport.zoom) < 0.1, 5000);
+    if (captureViewport.valid)
+    {
+        QTRY_COMPARE_WITH_TIMEOUT(QPoint(summaryPreview->horizontalScrollBar()->value(),
+                                         summaryPreview->verticalScrollBar()->value()),
+                                  captureViewport.scrollPosition, 5000);
+    }
+
+    KTRY_FOCUS_SHOW();
+    QTRY_VERIFY_WITH_TIMEOUT(session->activeSource() ==
+                             std::optional<Ekos::WorkspaceSession::Source>(Ekos::WorkspaceSession::Source::Focus), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
+                              session->frame(Ekos::WorkspaceSession::Source::Focus)->filename(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(qAbs(summaryPreview->getCurrentZoom() - focusViewport.zoom) < 0.1, 5000);
+    if (focusViewport.valid)
+    {
+        QTRY_COMPARE_WITH_TIMEOUT(QPoint(summaryPreview->horizontalScrollBar()->value(),
+                                         summaryPreview->verticalScrollBar()->value()),
+                                  focusViewport.scrollPosition, 5000);
+    }
 }
 
 void TestEkosFocus::testCaptureStates()

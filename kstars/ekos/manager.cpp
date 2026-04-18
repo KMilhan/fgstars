@@ -2347,7 +2347,23 @@ void Manager::processNewProperty(INDI::Property prop)
 
 void Manager::processTabChange()
 {
-    auto currentWidget = toolsWidget->currentWidget();
+    auto * const currentWidget = toolsWidget->currentWidget();
+    auto * const summaryPreview = getSummaryPreview();
+
+    if (m_workspaceSession != nullptr && summaryPreview != nullptr)
+    {
+        if (const auto previousSource = m_workspaceSession->activeSource();
+                previousSource.has_value() &&
+                m_workspaceSession->frame(*previousSource) == summaryPreview->imageData())
+            m_workspaceSession->captureViewport(*previousSource, summaryPreview);
+
+        if (const auto currentSource = workspaceSourceForWidget(currentWidget); currentSource.has_value())
+        {
+            m_workspaceSession->activateSource(*currentSource);
+            if (m_workspaceSession->frame(*currentSource) != nullptr)
+                m_workspaceSession->applyTo(*currentSource, summaryPreview);
+        }
+    }
 
     if (alignProcess && alignModule() == currentWidget)
     {
