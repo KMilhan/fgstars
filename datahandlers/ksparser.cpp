@@ -293,13 +293,8 @@ QList<QString> KSParser::CombineQuoteParts(QList<QString> &separated)
             }
 
             QString col_result;
-<<<<<<< HEAD
-            for (auto join : queue)
-                col_result += (join + delimiter_);
-=======
             for (const QString &join : queue)
                 col_result += join + QChar::fromLatin1(delimiter_);
->>>>>>> 4d4f8c2bd (chore: improve Qt6 compatibility and code readability)
             if (!col_result.isEmpty())
                 col_result.chop(1); // remove extra delimiter
             quoteCombined.append(col_result);

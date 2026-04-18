@@ -51,6 +51,9 @@ class TestEkosCapture : public QObject
         /** @brief Test that storing to a system temporary folder makes the capture a preview. */
         void testCaptureToTemporary();
 
+        /** @brief Test embedded workspace ownership and default prominence. */
+        void testEmbeddedWorkspaceHost();
+
         /** @brief Test capturing a single frame in multiple attempts. */
         void testCaptureSingle();
 

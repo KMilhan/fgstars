@@ -30,6 +30,18 @@ if(TARGET kstars_indi_test_runtime)
         "KSTARS_TEST_INDI_SERVER=${KSTARS_VENDORED_INDI_SERVER};KSTARS_TEST_INDI_DRIVERS_DIR=${CMAKE_SOURCE_DIR}/submodules/indi"
     )
 endif()
+set(KSTARS_UI_DISPLAY_ENVIRONMENT
+    "DISPLAY=$ENV{DISPLAY};WAYLAND_DISPLAY=$ENV{WAYLAND_DISPLAY};XDG_SESSION_TYPE=$ENV{XDG_SESSION_TYPE};XAUTHORITY=$ENV{XAUTHORITY};QT_QPA_PLATFORM=xcb;GDK_BACKEND=x11"
+)
+if(KSTARS_UI_TEST_ENVIRONMENT)
+    set(KSTARS_UI_TEST_RUNTIME_ENVIRONMENT
+        "${KSTARS_UI_DISPLAY_ENVIRONMENT};${KSTARS_UI_TEST_ENVIRONMENT}"
+    )
+else()
+    set(KSTARS_UI_TEST_RUNTIME_ENVIRONMENT
+        "${KSTARS_UI_DISPLAY_ENVIRONMENT}"
+    )
+endif()
 SET(KSTARS_UI_EKOS_SRC ${KSTARS_UI_TESTS_SRC} test_ekos_wizard.cpp test_ekos_wizard.h)
 SET(KSTARS_UI_EKOS_LIBS ${TEST_LIBRARIES} ${CFITSIO_LIBRARIES} ${INDI_CLIENT_LIBRARIES} ${NOVA_LIBRARIES} z)
 
@@ -52,18 +64,18 @@ qt6_add_dbus_adaptor(KSTARS_UI_MOCK_SRC org.kde.mockkstars.MockEkos.xml mockmodu
 ADD_EXECUTABLE(test_ekos_simulator ${KSTARS_UI_EKOS_SRC} test_ekos_simulator.cpp test_ekos_simulator.h)
 TARGET_LINK_LIBRARIES(test_ekos_simulator ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosSimulator COMMAND test_ekos_simulator)
+set_tests_properties(TestEkosSimulator PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_simulator kstars_indi_test_runtime)
-    set_tests_properties(TestEkosSimulator PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 # SET_TESTS_PROPERTIES( TestEkosSimulator PROPERTIES LABELS "stable;ui")
 
 ADD_EXECUTABLE(test_ekos_focus ${KSTARS_UI_EKOS_SRC} test_ekos_focus.cpp test_ekos_focus.h test_ekos_helper.cpp test_ekos_helper.h)
 TARGET_LINK_LIBRARIES(test_ekos_focus ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosFocus COMMAND test_ekos_focus)
+set_tests_properties(TestEkosFocus PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_focus kstars_indi_test_runtime)
-    set_tests_properties(TestEkosFocus PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 # SET_TESTS_PROPERTIES( TestEkosFocus PROPERTIES LABELS "stable;ui")
 
@@ -71,17 +83,17 @@ ADD_EXECUTABLE(test_ekos_capture ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test
 TARGET_LINK_LIBRARIES(test_ekos_capture ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosCapture COMMAND test_ekos_capture)
 SET_TESTS_PROPERTIES( TestEkosCapture PROPERTIES LABELS "stable;ui" TIMEOUT 600)
+set_tests_properties(TestEkosCapture PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_capture kstars_indi_test_runtime)
-    set_tests_properties(TestEkosCapture PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 ADD_EXECUTABLE(test_ekos_filterwheel ${KSTARS_UI_EKOS_SRC} test_ekos_filterwheel.cpp test_ekos_filterwheel.h test_ekos_helper.cpp test_ekos_helper.h)
 TARGET_LINK_LIBRARIES(test_ekos_filterwheel ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosFilterWheel COMMAND test_ekos_filterwheel)
+set_tests_properties(TestEkosFilterWheel PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_filterwheel kstars_indi_test_runtime)
-    set_tests_properties(TestEkosFilterWheel PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 ADD_EXECUTABLE(test_ekos_capture_count ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_capture_count.cpp test_ekos_capture_count.h)
@@ -94,9 +106,9 @@ ADD_EXECUTABLE(test_ekos_capture_workflow ${KSTARS_UI_EKOS_SRC} test_ekos_helper
 TARGET_LINK_LIBRARIES(test_ekos_capture_workflow ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosCaptureWorkflow COMMAND test_ekos_capture_workflow)
 SET_TESTS_PROPERTIES(TestEkosCaptureWorkflow PROPERTIES LABELS "stable;ui" TIMEOUT 600 RESOURCE_LOCK "kstars-ui")
+set_tests_properties(TestEkosCaptureWorkflow PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_capture_workflow kstars_indi_test_runtime)
-    set_tests_properties(TestEkosCaptureWorkflow PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 ADD_EXECUTABLE(test_ekos_align ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_scheduler_helper.cpp test_ekos_align.cpp test_ekos_align.h)
@@ -134,9 +146,9 @@ ADD_EXECUTABLE( test_ekos_meridianflipstate ${KSTARS_UI_EKOS_SRC} test_ekos_help
 TARGET_LINK_LIBRARIES( test_ekos_meridianflipstate ${TEST_LIBRARIES})
 ADD_TEST( NAME TestEkosMeridianFlipState COMMAND test_ekos_meridianflipstate )
 SET_TESTS_PROPERTIES( TestEkosMeridianFlipState PROPERTIES LABELS "stable;ui" TIMEOUT 120 )
+set_tests_properties(TestEkosMeridianFlipState PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_meridianflipstate kstars_indi_test_runtime)
-    set_tests_properties(TestEkosMeridianFlipState PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 ADD_EXECUTABLE(test_ekos_scheduler ${KSTARS_UI_EKOS_SRC} test_ekos_scheduler.cpp test_ekos_scheduler.h)
@@ -151,9 +163,9 @@ ADD_CUSTOM_COMMAND( TARGET test_ekos_scheduler POST_BUILD
             ${CMAKE_CURRENT_BINARY_DIR}/1x1s_RGBLumRGB.esq)
 ADD_TEST(NAME TestEkosScheduler COMMAND test_ekos_scheduler)
 SET_TESTS_PROPERTIES( TestEkosScheduler PROPERTIES LABELS "stable;ui" TIMEOUT 600 )
+set_tests_properties(TestEkosScheduler PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_scheduler kstars_indi_test_runtime)
-    set_tests_properties(TestEkosScheduler PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 ADD_EXECUTABLE(test_ekos_scheduler_ops ${KSTARS_UI_EKOS_SRC} ${KSTARS_UI_MOCK_SRC} mockmodules.h test_ekos_helper.cpp test_ekos_helper.h test_ekos_scheduler_helper.cpp test_ekos_scheduler_ops.cpp test_ekos_scheduler_ops.h)
@@ -177,24 +189,19 @@ SET_TESTS_PROPERTIES(
     PROPERTIES
         LABELS "stable;ui"
         TIMEOUT 1200
-        ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=1200000"
+        ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=1200000;${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}"
 )
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_scheduler_ops kstars_indi_test_runtime)
-    set_tests_properties(
-        TestEkosSchedulerOps
-        PROPERTIES
-            ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=1200000;${KSTARS_UI_TEST_ENVIRONMENT}"
-    )
 endif()
 
 ADD_EXECUTABLE(test_artificial_horizon ${KSTARS_UI_EKOS_SRC} test_artificial_horizon.cpp test_artificial_horizon.h)
 TARGET_LINK_LIBRARIES(test_artificial_horizon ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestArtificialHorizon COMMAND test_artificial_horizon)
 SET_TESTS_PROPERTIES( TestArtificialHorizon PROPERTIES LABELS "stable;ui" TIMEOUT 600 )
+set_tests_properties(TestArtificialHorizon PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_artificial_horizon kstars_indi_test_runtime)
-    set_tests_properties(TestArtificialHorizon PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 # JM 2021-10.16 PHD2 test often fails in CI so it is excluded now until it is fixed.
@@ -211,9 +218,9 @@ ADD_EXECUTABLE(test_ekos_mount ${KSTARS_UI_EKOS_SRC} test_ekos_mount.cpp test_ek
 TARGET_LINK_LIBRARIES(test_ekos_mount ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosMount COMMAND test_ekos_mount)
 SET_TESTS_PROPERTIES( TestEkosMount PROPERTIES LABELS "no-xvfb;ui" TIMEOUT 600 )
+set_tests_properties(TestEkosMount PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_mount kstars_indi_test_runtime)
-    set_tests_properties(TestEkosMount PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 ADD_EXECUTABLE(test_catalog_download ${KSTARS_UI_EKOS_SRC} test_catalog_download.cpp test_catalog_download.h)
@@ -222,11 +229,10 @@ ADD_TEST(NAME TestCatalogDownload COMMAND test_catalog_download)
 SET_TESTS_PROPERTIES( TestCatalogDownload PROPERTIES
     LABELS "stable;ui"
     TIMEOUT 600
-    ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=600000"
+    ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=600000;${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}"
 )
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_catalog_download kstars_indi_test_runtime)
-    set_tests_properties(TestCatalogDownload PROPERTIES ENVIRONMENT "QTEST_FUNCTION_TIMEOUT=600000;${KSTARS_UI_TEST_ENVIRONMENT}")
 endif()
 
 # These UI tests share global resources (KStars instance, INDI simulators, DBus services) and are not safe to run in parallel.

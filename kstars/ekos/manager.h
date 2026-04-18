@@ -137,7 +137,7 @@ class Manager : public QDialog, public Ui::Manager
         }
         FITSView *getSummaryPreview()
         {
-            return m_SummaryView.get();
+            return capturePreview != nullptr ? capturePreview->summaryFITSView() : nullptr;
         }
 
         // Filter Manager
@@ -635,8 +635,6 @@ class Manager : public QDialog, public Ui::Manager
         // Capture Summary
         QTimer m_CountdownTimer;
         QTimer settleTimer;
-        // Preview Frame
-        QSharedPointer<SummaryFITSView> m_SummaryView;
         bool FITSfromFile = false;
         QTimer extensionTimer;
         bool extensionAbort = false;

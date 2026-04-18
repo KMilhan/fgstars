@@ -117,8 +117,12 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     capturePreview->targetLabel->setVisible(false);
     capturePreview->mountTarget->setVisible(false);
 
-    // position the vertical splitter by 2/3
-    deviceSplitter->setSizes(QList<int>({20000, 10000}));
+    // Give the embedded workspace clear visual priority over the contextual side panel.
+    deviceSplitter->setStretchFactor(0, 3);
+    deviceSplitter->setStretchFactor(1, 1);
+    deviceSplitter->setSizes(QList<int>({30000, 10000}));
+    capturePreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    rightLayoutWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
 
     qRegisterMetaType<Ekos::CommunicationStatus>("Ekos::CommunicationStatus");
     qDBusRegisterMetaType<Ekos::CommunicationStatus>();
@@ -523,14 +527,6 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     // FIXME
     //resize(1000,750);
 
-    m_SummaryView.reset(new SummaryFITSView(capturePreview->previewWidget));
-    m_SummaryView->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    // sterne-jaeger 2021-08-08: Do not set base size here, otherwise the zoom will be incorrect
-    // summaryPreview->setBaseSize(capturePreview->previewWidget->size());
-    m_SummaryView->createFloatingToolBar();
-    m_SummaryView->setCursorMode(FITSView::dragCursor);
-    m_SummaryView->showProcessInfo(false);
-    capturePreview->setSummaryFITSView(m_SummaryView);
     mountStatusLayout->setAlignment(Qt::AlignVCenter);
 
     if (Options::ekosLeftIcons())

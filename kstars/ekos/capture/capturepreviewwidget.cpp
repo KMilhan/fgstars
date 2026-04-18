@@ -36,6 +36,8 @@ CapturePreviewWidget::CapturePreviewWidget(QWidget *parent) : QWidget(parent)
 
     // make invisible until we have at least two cameras active
     trainSelectionCB->setVisible(false);
+
+    initializeSummaryFITSView();
 }
 
 void CapturePreviewWidget::shareCaptureModule(Ekos::Capture *module)
@@ -246,27 +248,34 @@ void CapturePreviewWidget::deleteCurrentFrame()
 
 }
 
-void CapturePreviewWidget::setSummaryFITSView(const QSharedPointer<SummaryFITSView> &view)
+void CapturePreviewWidget::initializeSummaryFITSView()
 {
-    m_fitsPreview = view;
-    QVBoxLayout * vlayout = new QVBoxLayout();
-    vlayout->setContentsMargins(0, 0, 0, 0);
-    vlayout->addWidget(view.get());
-    previewWidget->setLayout(vlayout);
+    if (m_fitsPreview != nullptr)
+        return;
+
+    // The capture preview widget owns the embedded workspace and its overlay host.
+    m_fitsPreview.reset(new SummaryFITSView(previewWidget));
+    m_fitsPreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    m_fitsPreview->createFloatingToolBar();
+    m_fitsPreview->setCursorMode(FITSView::dragCursor);
+    m_fitsPreview->showProcessInfo(false);
+
+    auto *previewLayout = new QVBoxLayout();
+    previewLayout->setContentsMargins(0, 0, 0, 0);
+    previewLayout->addWidget(m_fitsPreview.get());
+    previewWidget->setLayout(previewLayout);
     previewWidget->setContentsMargins(0, 0, 0, 0);
 
-    // initialize the FITS data overlay
-    // create vertically info box as overlay
-    QVBoxLayout *layout = new QVBoxLayout(view->processInfoWidget);
+    auto *layout = new QVBoxLayout(m_fitsPreview->processInfoWidget);
+    layout->setContentsMargins(0, 0, 0, 0);
     layout->addWidget(m_overlay.get(), 0);
 
-    view->processInfoWidget->setLayout(layout);
-    // react upon signals
-    connect(view.get(), &FITSView::loaded, [&]()
+    m_fitsPreview->processInfoWidget->setLayout(layout);
+    connect(m_fitsPreview.get(), &FITSView::loaded, this, [this]()
     {
         m_overlay->setEnabled(true);
     });
-    connect(view.get(), &FITSView::failed, [&]()
+    connect(m_fitsPreview.get(), &FITSView::failed, this, [this]()
     {
         m_overlay->setEnabled(true);
     });
@@ -348,4 +357,3 @@ void CapturePreviewWidget::setTargetName(QString name)
     m_mountTarget = name;
     m_currentFrame[trainSelectionCB->currentText()].target = name;
 }
-

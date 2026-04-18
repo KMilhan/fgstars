@@ -63,9 +63,12 @@ class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
         void deleteCurrentFrame();
 
         /**
-         * @brief Set the summary FITS view
+         * @brief Access the embedded workspace view owned by this widget.
          */
-        void setSummaryFITSView(const QSharedPointer<SummaryFITSView> &view);
+        SummaryFITSView *summaryFITSView() const
+        {
+            return m_fitsPreview.get();
+        }
 
         /**
          * @brief enable / disable display widgets
@@ -106,6 +109,7 @@ class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
         void selectedTrainChanged(QString newName);
 
     private:
+        void initializeSummaryFITSView();
 
         void updateExposureProgress(const QSharedPointer<Ekos::SequenceJob> &job, const QString &devicename);
         void updateDownloadProgress(double downloadTimeLeft, const QString &devicename);

@@ -78,8 +78,8 @@ Relevant files:
 
 ### Embedded capture workspace
 
-- `SummaryFITSView` is created in `Ekos::Manager`.
-- It is injected into `CapturePreviewWidget::previewWidget`.
+- `Ekos::Manager` owns workspace placement in the Setup-tab shell and exposes the shared embedded preview entry point.
+- `CapturePreviewWidget` owns embedded workspace creation, lifetime, and the capture overlay host inside `previewWidget`.
 - `SummaryFITSView` is a specialized `FITSView` with overlay hosting and a floating toolbar.
 - `CapturePreviewWidget::updateJobProgress()` already routes image data into the embedded view when `useSummaryPreview` is enabled.
 

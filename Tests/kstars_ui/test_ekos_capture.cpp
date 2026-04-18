@@ -14,6 +14,8 @@
 #include "test_ekos.h"
 #include "test_ekos_simulator.h"
 #include "ekos/capture/capture.h"
+#include "ekos/capture/capturepreviewwidget.h"
+#include "fitsviewer/summaryfitsview.h"
 
 TestEkosCapture::TestEkosCapture(QObject *parent) : QObject(parent)
 {
@@ -171,6 +173,24 @@ void TestEkosCapture::testCaptureToTemporary()
     //    QWARN("When storing to a recognized system temporary folder, only one FITS file is created.");
     //    QTRY_VERIFY_WITH_TIMEOUT(searchFITS(QDir(destination.path())).count() == 1, 1000);
     //    QCOMPARE(searchFITS(QDir(destination.path()))[0], QString("Light_005.fits"));
+}
+
+void TestEkosCapture::testEmbeddedWorkspaceHost()
+{
+    Ekos::Manager * const ekos = Ekos::Manager::Instance();
+
+    KTRY_GADGET(ekos, CapturePreviewWidget, capturePreview);
+    KTRY_GADGET(ekos, QSplitter, deviceSplitter);
+
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+    QCOMPARE(ekos->getSummaryPreview(), static_cast<FITSView *>(workspaceView));
+    QCOMPARE(workspaceView->parentWidget(), capturePreview->previewWidget);
+    QVERIFY(capturePreview->previewWidget->layout() != nullptr);
+
+    const QList<int> sizes = deviceSplitter->sizes();
+    QCOMPARE(sizes.size(), 2);
+    QVERIFY2(sizes[0] > sizes[1] * 2, "Embedded workspace pane should dominate the contextual side panel by default.");
 }
 
 void TestEkosCapture::testCaptureSingle()
