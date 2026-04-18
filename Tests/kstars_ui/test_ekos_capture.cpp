@@ -24,6 +24,7 @@
 
 #include <algorithm>
 #include <array>
+#include <ranges>
 
 TestEkosCapture::TestEkosCapture(QObject *parent) : QObject(parent)
 {
@@ -367,6 +368,57 @@ void TestEkosCapture::testCaptureMultiple()
     QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == 2 * count, 1000);
 
     // TODO: test storage options
+}
+
+void TestEkosCapture::testDetachedViewerFallbackFromWorkspaceHistory()
+{
+    QTemporaryDir destination;
+    QVERIFY(destination.isValid());
+    QVERIFY(destination.autoRemove());
+
+    KTRY_CAPTURE_ADD_LIGHT(0.1, 3, 0, "Red", "history", destination.path());
+
+    KTRY_CAPTURE_GADGET(QPushButton, startB);
+    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
+    KTRY_CAPTURE_CLICK(startB);
+    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
+    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 30000);
+
+    KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("003.fits"), 5000);
+
+    capturePreview->showPreviousFrame();
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("002.fits"), 5000);
+
+    workspaceView->openInDetachedViewer();
+
+    QPointer<FITSViewer> detachedViewer;
+    QTRY_VERIFY_WITH_TIMEOUT(([&]()
+    {
+        const auto &viewers = KStars::Instance()->getFITSViewers();
+        const auto viewerIt = std::ranges::find_if(viewers, [](const auto &viewer)
+        {
+            return viewer && viewer->isVisible();
+        });
+        if (viewerIt == viewers.cend())
+            return false;
+
+        detachedViewer = viewerIt->get();
+        return detachedViewer != nullptr;
+    })(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(detachedViewer->isVisible(), 5000);
+
+    QSharedPointer<FITSView> detachedView;
+    QTRY_VERIFY_WITH_TIMEOUT(detachedViewer->getCurrentView(detachedView), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(detachedView != nullptr && detachedView->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(detachedView->imageData()->filename().endsWith("002.fits"), 5000);
+
+    detachedViewer->close();
+    QTRY_VERIFY_WITH_TIMEOUT(detachedViewer->isVisible() == false, 5000);
 }
 
 void TestEkosCapture::testCaptureDarkFlats()

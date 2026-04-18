@@ -8,9 +8,12 @@
 
 #include <QObject>
 #include <QAction>
+#include <QPointer>
 #include <QToolBar>
 
 #include "fitsview.h"
+
+class FITSViewer;
 
 class SummaryFITSView : public FITSView
 {
@@ -26,6 +29,8 @@ class SummaryFITSView : public FITSView
         QWidget *processInfoWidget;
 
     public Q_SLOTS:
+        void openInDetachedViewer();
+
         // process information
         void showProcessInfo(bool show);
         void toggleShowProcessInfo()
@@ -38,6 +43,9 @@ class SummaryFITSView : public FITSView
     private:
         // floating bar
         bool m_showProcessInfo { false };
+        QPointer<FITSViewer> m_detachedViewer;
+        int m_detachedViewerTabID { -1 };
+        QAction *openDetachedViewerAction { nullptr };
         QAction *toggleProcessInfoAction { nullptr };
 
 };

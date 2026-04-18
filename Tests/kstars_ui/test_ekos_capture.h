@@ -60,6 +60,9 @@ class TestEkosCapture : public QObject
         /** @brief Test capturing a single frame in multiple attempts. */
         void testCaptureSingle();
 
+        /** @brief Test that the embedded workspace can explicitly open the current history frame in FITS Viewer. */
+        void testDetachedViewerFallbackFromWorkspaceHistory();
+
         /** @brief Test capturing multiple frames in multiple attempts. */
         void testCaptureMultiple();
 
