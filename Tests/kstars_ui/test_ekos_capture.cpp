@@ -193,6 +193,27 @@ void TestEkosCapture::testEmbeddedWorkspaceHost()
     QVERIFY2(sizes[0] > sizes[1] * 2, "Embedded workspace pane should dominate the contextual side panel by default.");
 }
 
+void TestEkosCapture::testSummaryPreviewSettingPersists()
+{
+    const bool original = Options::useSummaryPreview();
+    const bool toggled = !original;
+
+    Options::setUseSummaryPreview(toggled);
+    Options::self()->save();
+    QCOMPARE(Options::useSummaryPreview(), toggled);
+
+    Options::setUseSummaryPreview(original);
+    QCOMPARE(Options::useSummaryPreview(), original);
+
+    Options::self()->load();
+    QCOMPARE(Options::useSummaryPreview(), toggled);
+
+    Options::setUseSummaryPreview(original);
+    Options::self()->save();
+    Options::self()->load();
+    QCOMPARE(Options::useSummaryPreview(), original);
+}
+
 void TestEkosCapture::testCaptureSingle()
 {
     // We cannot use a system temporary due to what testCaptureToTemporary marks

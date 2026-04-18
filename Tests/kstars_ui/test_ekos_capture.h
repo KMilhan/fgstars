@@ -54,6 +54,9 @@ class TestEkosCapture : public QObject
         /** @brief Test embedded workspace ownership and default prominence. */
         void testEmbeddedWorkspaceHost();
 
+        /** @brief Test that the summary preview rollout flag persists through the settings path. */
+        void testSummaryPreviewSettingPersists();
+
         /** @brief Test capturing a single frame in multiple attempts. */
         void testCaptureSingle();
 
