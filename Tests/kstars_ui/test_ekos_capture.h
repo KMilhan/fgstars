@@ -63,6 +63,9 @@ class TestEkosCapture : public QObject
         /** @brief Test that the embedded workspace can explicitly open the current history frame in FITS Viewer. */
         void testDetachedViewerFallbackFromWorkspaceHistory();
 
+        /** @brief Test that capture updates the shared workspace session state. */
+        void testWorkspaceSessionTracksCaptureState();
+
         /** @brief Test capturing multiple frames in multiple attempts. */
         void testCaptureMultiple();
 

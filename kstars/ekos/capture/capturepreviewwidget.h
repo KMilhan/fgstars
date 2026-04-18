@@ -11,6 +11,7 @@
 #include "captureprocessoverlay.h"
 
 #include <QObject>
+#include <QPointer>
 #include <QWidget>
 
 class FITSData;
@@ -22,6 +23,7 @@ class Capture;
 class Mount;
 class SchedulerModuleState;
 class SequenceJob;
+class WorkspaceSession;
 }
 
 class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
@@ -33,6 +35,7 @@ class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
         void shareCaptureModule(Ekos::Capture *module);
         void shareSchedulerModuleState(QSharedPointer<Ekos::SchedulerModuleState> state);
         void shareMountModule(Ekos::Mount *module);
+        void shareWorkspaceSession(Ekos::WorkspaceSession *session);
 
         /**
          * @brief display information about the currently running job
@@ -117,6 +120,7 @@ class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
         QSharedPointer<Ekos::SchedulerModuleState> m_schedulerModuleState = nullptr;
         Ekos::Capture *m_captureModule = nullptr;
         Ekos::Mount *m_mountModule = nullptr;
+        QPointer<Ekos::WorkspaceSession> m_workspaceSession;
 
         // cache frame data
         QMap<QString, CaptureHistory::FrameData> m_currentFrame;

@@ -16,6 +16,7 @@
 #include "sequencejob.h"
 #include "fitsviewer/fitsdata.h"
 #include "fitsviewer/summaryfitsview.h"
+#include "ekos/workspacesession.h"
 #include "ekos/scheduler/schedulerjob.h"
 #include "ekos/scheduler/schedulermodulestate.h"
 
@@ -81,6 +82,13 @@ void CapturePreviewWidget::shareMountModule(Ekos::Mount *module)
         connect(m_mountModule, &Ekos::Mount::newTargetName, this, &CapturePreviewWidget::setTargetName,
                 Qt::UniqueConnection);
     }
+}
+
+void CapturePreviewWidget::shareWorkspaceSession(Ekos::WorkspaceSession *session)
+{
+    m_workspaceSession = session;
+    if (m_fitsPreview != nullptr)
+        m_fitsPreview->setWorkspaceSession(session);
 }
 
 void CapturePreviewWidget::updateJobProgress(const QSharedPointer<Ekos::SequenceJob> &job,
@@ -275,6 +283,7 @@ void CapturePreviewWidget::initializeSummaryFITSView()
     m_fitsPreview->createFloatingToolBar();
     m_fitsPreview->setCursorMode(FITSView::dragCursor);
     m_fitsPreview->showProcessInfo(false);
+    m_fitsPreview->setWorkspaceSession(m_workspaceSession);
 
     auto *previewLayout = new QVBoxLayout();
     previewLayout->setContentsMargins(0, 0, 0, 0);

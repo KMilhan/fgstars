@@ -113,9 +113,11 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
         setWindowFlags(Qt::Window);
 #endif
     setupUi(this);
+    m_workspaceSession = std::make_unique<WorkspaceSession>(this);
     // do not show empty targets
     capturePreview->targetLabel->setVisible(false);
     capturePreview->mountTarget->setVisible(false);
+    capturePreview->shareWorkspaceSession(m_workspaceSession.get());
 
     // Lift the workspace shell out of the Setup tab so it remains visible while the user
     // switches between image-heavy modules.
@@ -2509,6 +2511,10 @@ void Manager::initAlign()
     int index = addModuleTab(EkosModule::Align, alignModule(), QIcon(":/icons/ekos_align.png"));
     toolsWidget->tabBar()->setTabToolTip(index, i18n("Align"));
     connect(alignModule(), &Ekos::Align::newLog, this, &Ekos::Manager::updateLog);
+    connect(alignModule(), &Ekos::Align::newImage, this, [this](const QSharedPointer<FITSView> &view)
+    {
+        publishWorkspaceView(WorkspaceSession::Source::Align, view);
+    });
     connect(alignModule(), &Ekos::Align::newLog, this, [this]()
     {
         QJsonObject cStatus =
@@ -2555,6 +2561,10 @@ void Manager::initFocus()
 
     // Focus <---> Manager connections (restricted to the main focuser)
     connect(focusModule()->mainFocuser().get(), &Ekos::Focus::newStatus, this, &Ekos::Manager::updateFocusStatus);
+    connect(focusModule()->mainFocuser().get(), &Ekos::Focus::newImage, this, [this](const QSharedPointer<FITSView> &view)
+    {
+        publishWorkspaceView(WorkspaceSession::Source::Focus, view);
+    });
     connect(focusModule()->mainFocuser().get(), &Ekos::Focus::newStarPixmap, focusProgressWidget,
             &Ekos::FocusProgressWidget::updateFocusStarPixmap);
     connect(focusModule()->mainFocuser().get(), &Ekos::Focus::newHFR, this, &Ekos::Manager::updateCurrentHFR);
@@ -2774,6 +2784,10 @@ void Manager::initGuide()
         int index = addModuleTab(EkosModule::Guide, guideModule(), QIcon(":/icons/ekos_guide.png"));
         toolsWidget->tabBar()->setTabToolTip(index, i18n("Guide"));
         connect(guideModule(), &Ekos::Guide::newLog, this, &Ekos::Manager::updateLog);
+        connect(guideModule(), &Ekos::Guide::newImage, this, [this](const QSharedPointer<FITSView> &view)
+        {
+            publishWorkspaceView(WorkspaceSession::Source::Guide, view);
+        });
         connect(guideModule(), &Ekos::Guide::driverTimedout, this, &Ekos::Manager::restartDriver);
 
         guideManager->setEnabled(true);
@@ -3244,7 +3258,13 @@ void Manager::updateCaptureProgress(const QSharedPointer<SequenceJob> &job, cons
     if (captureModule() == nullptr)
         return;
 
+    if (m_workspaceSession != nullptr &&
+            workspaceSourceForWidget(toolsWidget->currentWidget()) == WorkspaceSession::Source::Capture)
+        m_workspaceSession->activateSource(WorkspaceSession::Source::Capture);
+
     capturePreview->updateJobProgress(job, data, trainname);
+    if (m_workspaceSession != nullptr && data)
+        m_workspaceSession->publishFrame(WorkspaceSession::Source::Capture, data);
 
     QJsonObject status =
     {
@@ -4268,5 +4288,39 @@ void Manager::previewFile(QString filePath)
 {
     capturePreview->updateJobPreview(filePath);
     appendLogText(i18n("Received external preview file"));
+}
+
+void Manager::publishWorkspaceView(WorkspaceSession::Source source, const QSharedPointer<FITSView> &view)
+{
+    if (m_workspaceSession == nullptr || view.isNull())
+        return;
+
+    m_workspaceSession->publishView(source, view);
+
+    const auto currentSource = workspaceSourceForWidget(toolsWidget->currentWidget());
+    if (currentSource != source)
+        return;
+
+    m_workspaceSession->activateSource(source);
+
+    auto * const summaryPreview = getSummaryPreview();
+    if (summaryPreview == nullptr)
+        return;
+
+    m_workspaceSession->applyTo(source, summaryPreview);
+}
+
+std::optional<WorkspaceSession::Source> Manager::workspaceSourceForWidget(const QWidget *widget)
+{
+    if (widget == captureModule())
+        return WorkspaceSession::Source::Capture;
+    if (widget == focusModule())
+        return WorkspaceSession::Source::Focus;
+    if (widget == alignModule())
+        return WorkspaceSession::Source::Align;
+    if (widget == guideModule())
+        return WorkspaceSession::Source::Guide;
+
+    return std::nullopt;
 }
 }

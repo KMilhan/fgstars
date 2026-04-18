@@ -6,6 +6,7 @@
 
 #include "summaryfitsview.h"
 #include "fitsviewer.h"
+#include "ekos/workspacesession.h"
 #include "kstars.h"
 #include "QGraphicsOpacityEffect"
 
@@ -17,6 +18,38 @@ SummaryFITSView::SummaryFITSView(QWidget *parent): FITSView(parent, FITS_NORMAL,
     processInfoWidget->setGraphicsEffect(new QGraphicsOpacityEffect(this));
 
     processInfoWidget->raise();
+
+    connect(this, &FITSView::loaded, this, &SummaryFITSView::syncWorkspaceSession);
+    connect(this, &FITSView::updated, this, &SummaryFITSView::syncWorkspaceSession);
+    connect(this, &FITSView::zoomRubberBand, this, [this](double)
+    {
+        syncWorkspaceSession();
+    });
+    connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, [this]()
+    {
+        syncWorkspaceSession();
+    });
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this]()
+    {
+        syncWorkspaceSession();
+    });
+}
+
+void SummaryFITSView::setWorkspaceSession(Ekos::WorkspaceSession *session)
+{
+    m_workspaceSession = session;
+    if (m_workspaceSession == nullptr)
+        return;
+
+    if (const auto processInfoVisible =
+                m_workspaceSession->overlayVisible(QString::fromLatin1(Ekos::WorkspaceSession::CaptureProcessInfoOverlayKey));
+            processInfoVisible.has_value())
+        showProcessInfo(*processInfoVisible);
+    else
+        m_workspaceSession->setOverlayVisible(QString::fromLatin1(Ekos::WorkspaceSession::CaptureProcessInfoOverlayKey),
+                                              m_showProcessInfo);
+
+    syncWorkspaceSession();
 }
 
 void SummaryFITSView::createFloatingToolBar()
@@ -80,6 +113,8 @@ void SummaryFITSView::showProcessInfo(bool show)
     processInfoWidget->setVisible(show);
     if(toggleProcessInfoAction != nullptr)
         toggleProcessInfoAction->setChecked(show);
+    if (m_workspaceSession != nullptr)
+        m_workspaceSession->setOverlayVisible(QString::fromLatin1(Ekos::WorkspaceSession::CaptureProcessInfoOverlayKey), show);
     updateFrame();
 }
 
@@ -88,4 +123,19 @@ void SummaryFITSView::resizeEvent(QResizeEvent *event)
     FITSView::resizeEvent(event);
     // forward the viewport geometry to the overlay
     processInfoWidget->setGeometry(this->viewport()->geometry());
+}
+
+void SummaryFITSView::syncWorkspaceSession()
+{
+    if (m_workspaceSession == nullptr)
+        return;
+
+    const auto activeSource = m_workspaceSession->activeSource();
+    if (activeSource.has_value() == false)
+        return;
+
+    if (m_workspaceSession->frame(*activeSource) != imageData())
+        return;
+
+    m_workspaceSession->captureViewport(*activeSource, this);
 }

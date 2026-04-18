@@ -222,6 +222,7 @@ if (INDI_FOUND)
 
             # Manager
             ekos/manager.cpp
+            ekos/workspacesession.cpp
             ekos/manager/focusprogresswidget.cpp
             ekos/manager/guidemanager.cpp
             ekos/manager/meridianflipstate.cpp

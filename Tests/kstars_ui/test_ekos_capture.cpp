@@ -15,6 +15,7 @@
 #include "test_ekos_simulator.h"
 #include "ekos/capture/capture.h"
 #include "ekos/capture/capturepreviewwidget.h"
+#include "ekos/workspacesession.h"
 #include "ekos/focus/focusmodule.h"
 #include "ekos/align/align.h"
 #include "ekos/guide/guide.h"
@@ -24,6 +25,7 @@
 
 #include <algorithm>
 #include <array>
+#include <optional>
 #include <ranges>
 
 TestEkosCapture::TestEkosCapture(QObject *parent) : QObject(parent)
@@ -419,6 +421,51 @@ void TestEkosCapture::testDetachedViewerFallbackFromWorkspaceHistory()
 
     detachedViewer->close();
     QTRY_VERIFY_WITH_TIMEOUT(detachedViewer->isVisible() == false, 5000);
+}
+
+void TestEkosCapture::testWorkspaceSessionTracksCaptureState()
+{
+    QTemporaryDir destination;
+    QVERIFY(destination.isValid());
+    QVERIFY(destination.autoRemove());
+
+    KTRY_CAPTURE_ADD_LIGHT(0.1, 1, 0, "Red", "workspace", destination.path());
+
+    KTRY_CAPTURE_GADGET(QPushButton, startB);
+    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
+    KTRY_CAPTURE_CLICK(startB);
+    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
+    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 30000);
+
+    auto * const session = Ekos::Manager::Instance()->workspaceSession();
+    QVERIFY(session != nullptr);
+
+    KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Capture) != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Capture)->filename().endsWith("001.fits"), 5000);
+
+    workspaceView->showProcessInfo(true);
+    QTRY_VERIFY_WITH_TIMEOUT(session->overlayVisible(QString::fromLatin1(Ekos::WorkspaceSession::CaptureProcessInfoOverlayKey))
+                             == std::optional<bool>(true), 5000);
+    workspaceView->showProcessInfo(false);
+    QTRY_VERIFY_WITH_TIMEOUT(session->overlayVisible(QString::fromLatin1(Ekos::WorkspaceSession::CaptureProcessInfoOverlayKey))
+                             == std::optional<bool>(false), 5000);
+
+    const auto initialZoom = session->viewport(Ekos::WorkspaceSession::Source::Capture).zoom;
+    workspaceView->ZoomIn();
+    QTRY_VERIFY_WITH_TIMEOUT(session->viewport(Ekos::WorkspaceSession::Source::Capture).zoom > initialZoom, 5000);
+
+    if (workspaceView->horizontalScrollBar()->maximum() > 0 || workspaceView->verticalScrollBar()->maximum() > 0)
+    {
+        workspaceView->horizontalScrollBar()->setValue(workspaceView->horizontalScrollBar()->maximum() / 2);
+        workspaceView->verticalScrollBar()->setValue(workspaceView->verticalScrollBar()->maximum() / 2);
+        QTRY_COMPARE_WITH_TIMEOUT(session->viewport(Ekos::WorkspaceSession::Source::Capture).scrollPosition,
+                                  QPoint(workspaceView->horizontalScrollBar()->value(),
+                                         workspaceView->verticalScrollBar()->value()), 5000);
+    }
 }
 
 void TestEkosCapture::testCaptureDarkFlats()

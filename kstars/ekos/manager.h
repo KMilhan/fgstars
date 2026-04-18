@@ -11,6 +11,7 @@
 #include "ui_manager.h"
 
 #include "ekos.h"
+#include "workspacesession.h"
 #include "fitsviewer/summaryfitsview.h"
 #include "indi/indistd.h"
 #include "auxiliary/portselector.h"
@@ -138,6 +139,10 @@ class Manager : public QDialog, public Ui::Manager
         FITSView *getSummaryPreview()
         {
             return capturePreview != nullptr ? capturePreview->summaryFITSView() : nullptr;
+        }
+        WorkspaceSession *workspaceSession() const
+        {
+            return m_workspaceSession.get();
         }
 
         // Filter Manager
@@ -657,9 +662,12 @@ class Manager : public QDialog, public Ui::Manager
 
         // Used by the help button.
         bool checkIfPageExists(const QString &urlString);
+        void publishWorkspaceView(WorkspaceSession::Source source, const QSharedPointer<FITSView> &view);
+        std::optional<WorkspaceSession::Source> workspaceSourceForWidget(const QWidget *widget);
         QNetworkAccessManager m_networkManager;
         QSet<QString> m_syncedDevices;
         QSet<QString> m_ProfileManagedDevices;
+        std::unique_ptr<WorkspaceSession> m_workspaceSession;
 
         friend class EkosLive::Client;
         friend class EkosLive::Message;

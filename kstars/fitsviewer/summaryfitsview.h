@@ -14,6 +14,10 @@
 #include "fitsview.h"
 
 class FITSViewer;
+namespace Ekos
+{
+class WorkspaceSession;
+}
 
 class SummaryFITSView : public FITSView
 {
@@ -21,6 +25,7 @@ class SummaryFITSView : public FITSView
 
     public:
         explicit SummaryFITSView(QWidget *parent = nullptr);
+        void setWorkspaceSession(Ekos::WorkspaceSession *session);
 
         // Floating toolbar
         void createFloatingToolBar();
@@ -41,9 +46,12 @@ class SummaryFITSView : public FITSView
         void resizeEvent(QResizeEvent *event) override;
 
     private:
+        void syncWorkspaceSession();
+
         // floating bar
         bool m_showProcessInfo { false };
         QPointer<FITSViewer> m_detachedViewer;
+        QPointer<Ekos::WorkspaceSession> m_workspaceSession;
         int m_detachedViewerTabID { -1 };
         QAction *openDetachedViewerAction { nullptr };
         QAction *toggleProcessInfoAction { nullptr };

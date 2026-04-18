@@ -179,6 +179,7 @@ class TestEkosFocus : public QObject
         void testFocusWhenHFRChecking();
         void testFocusFailure();
         void testFocusWhenMountFlips();
+        void testWorkspaceSessionTracksFocusFrame();
 
         void testStarDetection_data();
         void testStarDetection();

@@ -14,8 +14,11 @@
 #include "test_ekos_helper.h"
 #include "test_ekos_simulator.h"
 #include "test_ekos_mount.h"
+#include "ekos/focus/focusfitsview.h"
 #include "ekos/focus/focusmodule.h"
 #include "ekos/focus/focusutils.h"
+#include "ekos/workspacesession.h"
+#include "fitsviewer/summaryfitsview.h"
 #include "Options.h"
 
 namespace
@@ -210,6 +213,32 @@ void TestEkosFocus::cleanup()
                 QTRY_VERIFY_WITH_TIMEOUT(!stopFocusB->isEnabled(), 10000);
         }
     KTELL_HIDE();
+}
+
+void TestEkosFocus::testWorkspaceSessionTracksFocusFrame()
+{
+    KTRY_FOCUS_SHOW();
+    KTRY_FOCUS_MOVETO(40000);
+    KTRY_FOCUS_CONFIGURE("SEP", "Iterative", 0.0, 100.0, 3.0);
+    KTRY_FOCUS_DETECT(2, 1, 99);
+    if (focusDetectedStars() <= 0)
+        QSKIP("CCD simulator reported no stars; shared workspace focus coverage requires detectable stars.");
+
+    auto * const session = Ekos::Manager::Instance()->workspaceSession();
+    QVERIFY(session != nullptr);
+
+    auto * const focusView = Ekos::Manager::Instance()->focusModule()->mainFocuser().get()->findChild<FocusFITSView *>();
+    QVERIFY(focusView != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(focusView->imageData() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Focus) != nullptr, 5000);
+
+    auto * const summaryPreview = qobject_cast<SummaryFITSView *>(Ekos::Manager::Instance()->getSummaryPreview());
+    QVERIFY(summaryPreview != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->imageData() != nullptr, 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
+                              session->frame(Ekos::WorkspaceSession::Source::Focus)->filename(), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
+                              focusView->imageData()->filename(), 5000);
 }
 
 void TestEkosFocus::testCaptureStates()
