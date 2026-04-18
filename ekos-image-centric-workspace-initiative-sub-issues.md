@@ -98,15 +98,15 @@ Verification: Review targeted artifacts and UI tests to confirm the initial adap
 ### I11 — Add workspace-specific UI acceptance coverage and eval gating
 Title: Turn the initiative into a real acceptance-tested rollout.
 Why: Existing named UI targets are useful baseline regressions, but they do not yet prove the new workspace behavior.
-Scope: Add workspace-specific UI acceptance coverage for canonical capture routing, shared-workspace bridge behavior, viewport continuity, and explicit detached-viewer fallback. Keep the runs non-headless.
-Acceptance Criteria: The initiative has explicit workspace-specific UI acceptance coverage in addition to baseline regressions.
+Scope: Add workspace-specific UI acceptance coverage for canonical capture routing, shared-workspace bridge behavior, viewport continuity, guide context, and explicit detached-viewer fallback. Keep the runs non-headless and register them as focused `CTest` slices instead of re-enabling the whole long-running align suite.
+Acceptance Criteria: The initiative has explicit workspace-specific UI acceptance coverage in addition to baseline regressions, and the acceptance command is captured in a dedicated fgstars eval wrapper.
 Dependencies: I5, I6, I7, I8, I9, I10.
-Verification: Execute the new tests plus the current baseline regression targets and inspect workspace artifacts when visual changes are involved.
+Verification: Execute `scripts/eval_fgstars_workspace.sh`, verify `TestEkosWorkspaceCapture` and `TestEkosWorkspaceAlign` pass non-headless, and inspect workspace artifacts when visual changes are involved.
 
 ### I12 — Decide default-on rollout and cleanup
 Title: Make the final rollout decision after acceptance coverage and UX validation.
 Why: Default-on should depend on proven behavior, not just code landing.
-Scope: Final cleanup, docs, rollout notes, and the decision to keep the feature guarded or switch it on by default.
-Acceptance Criteria: The initiative ends with a documented rollout decision backed by workspace-specific UI acceptance coverage and stable regression results.
+Scope: Final cleanup, docs, rollout notes, and the decision to keep the embedded workspace default-on for non-hardware-limited systems while preserving the existing guarded fallback on hardware-limited systems.
+Acceptance Criteria: The initiative ends with a documented rollout decision backed by workspace-specific UI acceptance coverage, stable regression results, `useFITSViewer=false` by default, and `useSummaryPreview=!KSUtils::isHardwareLimited()` as the remaining guard on constrained hardware.
 Dependencies: I11.
 Verification: Review the final acceptance results, rollout notes, and user-facing defaults before flipping the final switch.

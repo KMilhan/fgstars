@@ -83,7 +83,18 @@ ADD_EXECUTABLE(test_ekos_capture ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test
 TARGET_LINK_LIBRARIES(test_ekos_capture ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosCapture COMMAND test_ekos_capture)
 SET_TESTS_PROPERTIES( TestEkosCapture PROPERTIES LABELS "stable;ui" TIMEOUT 600)
+ADD_TEST(
+    NAME TestEkosWorkspaceCapture
+    COMMAND test_ekos_capture
+            testEmbeddedWorkspaceHost
+            testPersistentWorkspaceAcrossTabs
+            testDetachedViewerFallbackFromWorkspaceHistory
+            testWorkspaceSessionTracksCaptureState
+            testWorkspaceShowsGuideTrackingContext
+)
+SET_TESTS_PROPERTIES(TestEkosWorkspaceCapture PROPERTIES LABELS "stable;ui" TIMEOUT 600)
 set_tests_properties(TestEkosCapture PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+set_tests_properties(TestEkosWorkspaceCapture PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_capture kstars_indi_test_runtime)
 endif()
@@ -117,6 +128,14 @@ ADD_CUSTOM_COMMAND( TARGET test_ekos_align POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
             ${CMAKE_CURRENT_SOURCE_DIR}/Kocab.fits
             ${CMAKE_CURRENT_BINARY_DIR}/Kocab.fits)
+ADD_TEST(
+    NAME TestEkosWorkspaceAlign
+    COMMAND test_ekos_align
+            testWorkspaceShowsAlignAnnotations
+            testWorkspaceKeepsAlignOverlaysManageable
+)
+SET_TESTS_PROPERTIES(TestEkosWorkspaceAlign PROPERTIES LABELS "stable;ui" TIMEOUT 600)
+set_tests_properties(TestEkosWorkspaceAlign PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 
 # excluded to avoid CI timelimit failure
 # ADD_TEST(NAME TestEkosAlign COMMAND test_ekos_align)
@@ -240,6 +259,8 @@ set_tests_properties(
     TestEkosSimulator
     TestEkosFocus
     TestEkosCapture
+    TestEkosWorkspaceCapture
+    TestEkosWorkspaceAlign
     TestEkosFilterWheel
     TestEkosMeridianFlipState
     TestEkosScheduler

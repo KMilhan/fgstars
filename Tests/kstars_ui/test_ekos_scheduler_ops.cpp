@@ -218,6 +218,17 @@ void TestEkosSchedulerOps::cleanup()
 {
     // This gets executed at the end of each of the individual tests.
 
+    // Stop asynchronous scheduler timers before teardown so the next test
+    // cannot receive stale timeouts from the previous Scheduler instance.
+    if (scheduler)
+    {
+        scheduler->moduleState()->iterationTimer().stop();
+        scheduler->moduleState()->iterationTimer().disconnect();
+        scheduler->moduleState()->tickleTimer().stop();
+        scheduler->moduleState()->tickleTimer().disconnect();
+        scheduler.reset();
+    }
+
     // The signal and/or dbus communications seems to get confused
     // without explicit resetting of these objects.
     focuser.reset();
@@ -228,7 +239,7 @@ void TestEkosSchedulerOps::cleanup()
     ekos.reset();
     Ekos::SchedulerJob::setHorizon(nullptr);
     Ekos::SchedulerModuleState::setLocalTime(nullptr);
-    scheduler.reset();
+    QTest::qWait(QWAIT_TIME);
     fprintf(stderr, "Test took %.1fs\n", testTimer.elapsed() / 1000.0);
 }
 

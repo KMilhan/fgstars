@@ -357,7 +357,14 @@ cmake --build build-tests --target all -j"$(nproc)"
 
 - `TestEkosFocus`
 
-`TestEkosFocus` is currently useful as a targeted run for focus-related regression checks, but it is not part of the current stable-label gate.
+`TestEkosFocus` remains a targeted regression check for focus-related changes even though it is not part of the stable-label gate.
+
+### Workspace-specific non-headless acceptance targets
+
+- `TestEkosWorkspaceCapture`
+- `TestEkosWorkspaceAlign`
+
+These targets intentionally run only the fgstars-v1 workspace slices inside the larger UI binaries so the initiative can gate embedded-workspace behavior without re-enabling the full long-running align suite.
 
 ### Full stable validation
 
@@ -372,6 +379,18 @@ BUILD_DIR=/home/mill/oss/fgstars/build-tests /home/mill/oss/fgstars/scripts/eval
 ```
 
 `scripts/eval_tests.sh` is currently a pass-rate wrapper, not a two-signal evaluator.
+
+### fgstars v1 eval wrapper
+
+```bash
+BUILD_DIR=/home/mill/oss/fgstars/build-tests /home/mill/oss/fgstars/scripts/eval_fgstars_workspace.sh
+```
+
+This wrapper keeps the repo-wide `eval_tests.sh` path, but narrows the initiative gate to:
+
+- baseline regressions: `TestEkosCapture`, `TestEkosCaptureWorkflow`, `TestEkosSchedulerOps`, `TestEkosScheduler`
+- supporting regression: `TestEkosFocus`
+- workspace-specific acceptance: `TestEkosWorkspaceCapture`, `TestEkosWorkspaceAlign`
 
 ### v1-specific validation requirements
 
@@ -404,7 +423,9 @@ For implementation work under this initiative:
 
 ### Phase 3
 
-- Consider default-on rollout once new acceptance coverage and usability are stable.
+- Default to the embedded workspace on non-hardware-limited systems, using the existing defaults of `useSummaryPreview=true` and `useFITSViewer=false`.
+- Keep hardware-limited systems on the existing guarded path where `useSummaryPreview` defaults off until users opt in.
+- Treat the detached FITS viewer as the advanced fallback instead of the routine path.
 
 ## Risks
 
@@ -446,7 +467,6 @@ Mitigation:
 
 ## Open Questions
 
-- Should `fgstars v1` end with default-on behavior, or with a production-ready feature flag?
 - How much Guide integration is realistic in v1 versus a follow-up milestone?
 - Should the Setup tab remain the near-term home of the image workspace, or should the workspace become a broader Ekos shell concept in v2?
 
