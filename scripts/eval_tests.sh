@@ -20,12 +20,16 @@ cmake -S "${REPO_ROOT}" -B "${BUILD_DIR}" 2>&1 | tee "${CONFIGURE_LOG}"
 
 cmake --build "${BUILD_DIR}" -- -j"$(nproc)" 2>&1 | tee "${BUILD_LOG}"
 
+ctest_status=0
+set +e
 ctest --test-dir "${BUILD_DIR}" "$@" --output-on-failure | tee "${LOG_FILE}"
+ctest_status=${PIPESTATUS[0]}
+set -e
 
 summary_line=$(grep -E "^[[:space:]]*[0-9]+% tests passed, [0-9]+ tests? failed out of [0-9]+" "${LOG_FILE}" | tail -n 1 || true)
 
 if [[ -z "${summary_line}" ]]; then
-  status="fail"
+    status="fail"
 else
   if [[ "${summary_line}" =~ ([0-9]+)%\ tests\ passed,\ ([0-9]+)\ tests?\ failed\ out\ of\ ([0-9]+) ]]; then
     overall_score="${BASH_REMATCH[1]}"
@@ -41,7 +45,11 @@ else
 fi
 
 if [[ "${overall_score}" -lt 90 ]] || [[ "${llm_average}" -lt 90 ]]; then
-  status="fail"
+    status="fail"
+fi
+
+if [[ "${ctest_status}" -ne 0 ]]; then
+    status="fail"
 fi
 
 cat <<EOF
