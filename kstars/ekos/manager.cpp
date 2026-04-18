@@ -4312,6 +4312,16 @@ void Manager::publishWorkspaceView(WorkspaceSession::Source source, const QShare
         return;
 
     m_workspaceSession->publishView(source, view);
+    if (source == WorkspaceSession::Source::Focus && view->imageData() != nullptr)
+    {
+        m_workspaceSession->setFocusOverlay(WorkspaceSession::FocusOverlayState
+        {
+            .trackingBoxEnabled = view->isTrackingBoxEnabled(),
+            .trackingBox = view->getTrackingBox(),
+            .starsEnabled = view->imageData()->getDetectedStars() > 0,
+            .starsHfrEnabled = view->imageData()->getDetectedStars() > 0,
+        });
+    }
 
     const auto currentSource = workspaceSourceForWidget(toolsWidget->currentWidget());
     if (currentSource != source)

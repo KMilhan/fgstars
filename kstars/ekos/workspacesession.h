@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QHash>
 #include <QPoint>
+#include <QRect>
 #include <QSharedPointer>
 
 #include <array>
@@ -44,6 +45,16 @@ class WorkspaceSession : public QObject
             bool operator==(const ViewportState &) const = default;
         };
 
+        struct FocusOverlayState
+        {
+            bool trackingBoxEnabled {false};
+            QRect trackingBox {};
+            bool starsEnabled {false};
+            bool starsHfrEnabled {false};
+
+            bool operator==(const FocusOverlayState &) const = default;
+        };
+
         static constexpr auto CaptureProcessInfoOverlayKey = "capture.process-info";
 
         explicit WorkspaceSession(QObject *parent = nullptr);
@@ -58,6 +69,8 @@ class WorkspaceSession : public QObject
 
         const QSharedPointer<FITSData> &frame(Source source) const;
         const ViewportState &viewport(Source source) const;
+        void setFocusOverlay(const FocusOverlayState &state);
+        std::optional<FocusOverlayState> focusOverlay() const;
 
         void setOverlayVisible(const QString &key, bool visible);
         std::optional<bool> overlayVisible(const QString &key) const;
@@ -83,6 +96,7 @@ class WorkspaceSession : public QObject
 
         std::array<SourceState, SOURCE_COUNT> m_sourceStates {};
         std::optional<Source> m_activeSource {Source::Capture};
+        std::optional<FocusOverlayState> m_focusOverlay;
         QHash<QString, bool> m_overlayVisibility;
 };
 

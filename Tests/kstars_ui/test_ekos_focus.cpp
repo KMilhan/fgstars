@@ -243,6 +243,12 @@ void TestEkosFocus::testWorkspaceSessionTracksFocusFrame()
                               session->frame(Ekos::WorkspaceSession::Source::Focus)->filename(), 5000);
     QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
                               focusView->imageData()->filename(), 5000);
+    const auto overlay = session->focusOverlay();
+    QVERIFY(overlay.has_value());
+    QVERIFY(overlay->trackingBoxEnabled);
+    QCOMPARE(overlay->trackingBox, focusView->getTrackingBox());
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->isTrackingBoxEnabled(), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->getTrackingBox(), overlay->trackingBox, 5000);
 }
 
 void TestEkosFocus::testWorkspaceSessionPreservesCaptureAndFocusViewports()
@@ -252,6 +258,8 @@ void TestEkosFocus::testWorkspaceSessionPreservesCaptureAndFocusViewports()
 
     auto * const summaryPreview = qobject_cast<SummaryFITSView *>(Ekos::Manager::Instance()->getSummaryPreview());
     QVERIFY(summaryPreview != nullptr);
+    auto * const focusView = Ekos::Manager::Instance()->focusModule()->mainFocuser().get()->findChild<FocusFITSView *>();
+    QVERIFY(focusView != nullptr);
 
     QTemporaryDir destination;
     QVERIFY(destination.isValid());
@@ -300,6 +308,7 @@ void TestEkosFocus::testWorkspaceSessionPreservesCaptureAndFocusViewports()
                              std::optional<Ekos::WorkspaceSession::Source>(Ekos::WorkspaceSession::Source::Capture), 5000);
     QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
                               session->frame(Ekos::WorkspaceSession::Source::Capture)->filename(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->isTrackingBoxEnabled() == false, 5000);
     QTRY_VERIFY_WITH_TIMEOUT(qAbs(summaryPreview->getCurrentZoom() - captureViewport.zoom) < 0.1, 5000);
     if (captureViewport.valid)
     {
@@ -313,6 +322,8 @@ void TestEkosFocus::testWorkspaceSessionPreservesCaptureAndFocusViewports()
                              std::optional<Ekos::WorkspaceSession::Source>(Ekos::WorkspaceSession::Source::Focus), 5000);
     QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->imageData()->filename(),
                               session->frame(Ekos::WorkspaceSession::Source::Focus)->filename(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(summaryPreview->isTrackingBoxEnabled(), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(summaryPreview->getTrackingBox(), focusView->getTrackingBox(), 5000);
     QTRY_VERIFY_WITH_TIMEOUT(qAbs(summaryPreview->getCurrentZoom() - focusViewport.zoom) < 0.1, 5000);
     if (focusViewport.valid)
     {

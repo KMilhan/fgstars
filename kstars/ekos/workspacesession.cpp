@@ -36,6 +36,28 @@ void restoreViewport(FITSView *view, const Ekos::WorkspaceSession::ViewportState
     view->verticalScrollBar()->setValue(std::clamp(viewport.scrollPosition.y(), 0, view->verticalScrollBar()->maximum()));
 }
 
+void applyFocusOverlay(FITSView *view, const std::optional<Ekos::WorkspaceSession::FocusOverlayState> &overlay)
+{
+    if (view == nullptr)
+        return;
+
+    if (overlay.has_value() == false)
+    {
+        view->setTrackingBoxEnabled(false);
+        view->setTrackingBox(QRect());
+        view->setStarsEnabled(false);
+        view->setStarsHFREnabled(false);
+        view->updateFrame();
+        return;
+    }
+
+    view->setTrackingBox(overlay->trackingBox);
+    view->setTrackingBoxEnabled(overlay->trackingBoxEnabled);
+    view->setStarsEnabled(overlay->starsEnabled);
+    view->setStarsHFREnabled(overlay->starsHfrEnabled);
+    view->updateFrame();
+}
+
 }
 
 namespace Ekos
@@ -108,12 +130,14 @@ void WorkspaceSession::applyTo(Source source, FITSView *view) const
         return;
 
     const auto viewport = state.viewport;
-    auto restore = [guard = QPointer<FITSView>(view), viewport]()
+    const auto focusOverlay = source == Source::Focus ? m_focusOverlay : std::nullopt;
+    auto restore = [guard = QPointer<FITSView>(view), viewport, focusOverlay]()
     {
         if (guard == nullptr)
             return;
 
         restoreViewport(guard.get(), viewport);
+        applyFocusOverlay(guard.get(), focusOverlay);
     };
 
     if (view->imageData() != state.frame)
@@ -134,6 +158,19 @@ const QSharedPointer<FITSData> &WorkspaceSession::frame(Source source) const
 const WorkspaceSession::ViewportState &WorkspaceSession::viewport(Source source) const
 {
     return m_sourceStates[sourceIndex(source)].viewport;
+}
+
+void WorkspaceSession::setFocusOverlay(const FocusOverlayState &state)
+{
+    if (m_focusOverlay == state)
+        return;
+
+    m_focusOverlay = state;
+}
+
+std::optional<WorkspaceSession::FocusOverlayState> WorkspaceSession::focusOverlay() const
+{
+    return m_focusOverlay;
 }
 
 void WorkspaceSession::setOverlayVisible(const QString &key, bool visible)
