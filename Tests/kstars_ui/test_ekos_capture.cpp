@@ -12,6 +12,7 @@
 #include "Options.h"
 #include "kstars_ui_tests.h"
 #include "test_ekos.h"
+#include "test_ekos_helper.h"
 #include "test_ekos_simulator.h"
 #include "ekos/capture/capture.h"
 #include "ekos/capture/capturepreviewwidget.h"
@@ -23,6 +24,8 @@
 #include "fitsviewer/summaryfitsview.h"
 #include "kstars.h"
 
+#include <QFileInfo>
+#include <QSignalSpy>
 #include <algorithm>
 #include <array>
 #include <optional>
@@ -466,6 +469,77 @@ void TestEkosCapture::testWorkspaceSessionTracksCaptureState()
                                   QPoint(workspaceView->horizontalScrollBar()->value(),
                                          workspaceView->verticalScrollBar()->value()), 5000);
     }
+}
+
+void TestEkosCapture::testWorkspaceShowsGuideTrackingContext()
+{
+    const auto expectedTrackingBox = QRect {64, 72, 96, 96};
+    QVERIFY(publishGuideWorkspaceImage(QFINDTESTDATA("../fitsviewer/m47_sim_stars.fits"), expectedTrackingBox));
+
+    auto * const session = Ekos::Manager::Instance()->workspaceSession();
+    QVERIFY(session != nullptr);
+    const auto overlay = session->guideOverlay();
+    QVERIFY(overlay.has_value());
+    QVERIFY(overlay->trackingBoxEnabled);
+    QCOMPARE(overlay->trackingBox, expectedTrackingBox);
+    QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Guide) != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Guide)->filename().endsWith("m47_sim_stars.fits"),
+                             5000);
+
+    KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(workspaceView->imageData()->filename(),
+                              session->frame(Ekos::WorkspaceSession::Source::Guide)->filename(), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->isTrackingBoxEnabled(), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(workspaceView->getTrackingBox(), expectedTrackingBox, 5000);
+
+    const auto captureFrame = session->frame(Ekos::WorkspaceSession::Source::Capture);
+    KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(Ekos::Manager::Instance()->captureModule(), 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
+    if (captureFrame != nullptr)
+        QTRY_COMPARE_WITH_TIMEOUT(workspaceView->imageData()->filename(), captureFrame->filename(), 5000);
+    else
+        QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("m47_sim_stars.fits"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(!workspaceView->isTrackingBoxEnabled(), 5000);
+    QTRY_COMPARE_WITH_TIMEOUT(workspaceView->getTrackingBox(), QRect(), 5000);
+}
+
+bool TestEkosCapture::publishGuideWorkspaceImage(const QString &fitsFile, const QRect &trackingBox)
+{
+    QFileInfo targetFits(fitsFile);
+    KVERIFY2_SUB(targetFits.exists(), QString("Test FITS file %1 is missing.").arg(targetFits.filePath()).toLocal8Bit());
+
+    auto * const manager = Ekos::Manager::Instance();
+    auto * const guide = manager->guideModule();
+    KVERIFY_SUB(guide != nullptr);
+
+    KWRAP_SUB(KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(guide, 1000));
+
+    auto * const guideView = guide->findChild<FITSView *>();
+    KVERIFY_SUB(guideView != nullptr);
+
+    QSignalSpy loadedSpy(guideView, &FITSView::loaded);
+    guideView->loadFile(targetFits.filePath());
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(!loadedSpy.isEmpty(), 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(guideView->imageData() != nullptr, 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(guideView->imageData()->filename().endsWith(targetFits.fileName()), 5000);
+
+    guideView->setTrackingBox(trackingBox);
+    guideView->setTrackingBoxEnabled(true);
+    guideView->updateFrame();
+
+    const auto publishedView = QSharedPointer<FITSView>(guideView, [](FITSView *) {});
+    guide->newImage(publishedView);
+    KWRAP_SUB(KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(guide, 1000));
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(manager->workspaceSession()->activeSource() == Ekos::WorkspaceSession::Source::Guide,
+                                 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(manager->workspaceSession()->frame(Ekos::WorkspaceSession::Source::Guide) != nullptr,
+                                 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(manager->workspaceSession()->frame(Ekos::WorkspaceSession::Source::Guide)->filename()
+                                 .endsWith(targetFits.fileName()), 5000);
+    return true;
 }
 
 void TestEkosCapture::testCaptureDarkFlats()

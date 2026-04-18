@@ -4330,6 +4330,14 @@ void Manager::publishWorkspaceView(WorkspaceSession::Source source, const QShare
             .objectsEnabled = view->imageData()->hasWCS(),
         });
     }
+    else if (source == WorkspaceSession::Source::Guide && view->imageData() != nullptr)
+    {
+        m_workspaceSession->setGuideOverlay(WorkspaceSession::GuideOverlayState
+        {
+            .trackingBoxEnabled = view->isTrackingBoxEnabled(),
+            .trackingBox = view->getTrackingBox(),
+        });
+    }
 
     const auto currentSource = workspaceSourceForWidget(toolsWidget->currentWidget());
     if (currentSource != source)

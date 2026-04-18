@@ -64,6 +64,14 @@ class WorkspaceSession : public QObject
             bool operator==(const AlignOverlayState &) const = default;
         };
 
+        struct GuideOverlayState
+        {
+            bool trackingBoxEnabled {false};
+            QRect trackingBox {};
+
+            bool operator==(const GuideOverlayState &) const = default;
+        };
+
         static constexpr auto CaptureProcessInfoOverlayKey = "capture.process-info";
 
         explicit WorkspaceSession(QObject *parent = nullptr);
@@ -82,6 +90,8 @@ class WorkspaceSession : public QObject
         std::optional<FocusOverlayState> focusOverlay() const;
         void setAlignOverlay(const AlignOverlayState &state);
         std::optional<AlignOverlayState> alignOverlay() const;
+        void setGuideOverlay(const GuideOverlayState &state);
+        std::optional<GuideOverlayState> guideOverlay() const;
 
         void setOverlayVisible(const QString &key, bool visible);
         std::optional<bool> overlayVisible(const QString &key) const;
@@ -109,6 +119,7 @@ class WorkspaceSession : public QObject
         std::optional<Source> m_activeSource {Source::Capture};
         std::optional<FocusOverlayState> m_focusOverlay;
         std::optional<AlignOverlayState> m_alignOverlay;
+        std::optional<GuideOverlayState> m_guideOverlay;
         QHash<QString, bool> m_overlayVisibility;
 };
 

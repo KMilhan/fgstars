@@ -13,6 +13,8 @@
 
 #include "test_ekos_capture_helper.h"
 
+#include <QRect>
+
 #include <QObject>
 #include <QPushButton>
 #include <QComboBox>
@@ -37,6 +39,8 @@ class TestEkosCapture : public QObject
 
     private:
         TestEkosCaptureHelper *m_CaptureHelper = new TestEkosCaptureHelper();
+
+        bool publishGuideWorkspaceImage(const QString &fitsFile, const QRect &trackingBox);
 
     private Q_SLOTS:
         void initTestCase();
@@ -65,6 +69,9 @@ class TestEkosCapture : public QObject
 
         /** @brief Test that capture updates the shared workspace session state. */
         void testWorkspaceSessionTracksCaptureState();
+
+        /** @brief Test that guide frames publish a tracking box into the shared workspace. */
+        void testWorkspaceShowsGuideTrackingContext();
 
         /** @brief Test capturing multiple frames in multiple attempts. */
         void testCaptureMultiple();
