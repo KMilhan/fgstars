@@ -42,6 +42,9 @@ CapturePreviewWidget::CapturePreviewWidget(QWidget *parent) : QWidget(parent)
 
 void CapturePreviewWidget::shareCaptureModule(Ekos::Capture *module)
 {
+    if (m_captureModule != nullptr && m_captureModule != module)
+        disconnect(m_captureModule, nullptr, this, nullptr);
+
     m_captureModule = module;
     captureCountsWidget->shareCaptureProcess(module);
     m_trainNames.clear();
@@ -52,9 +55,12 @@ void CapturePreviewWidget::shareCaptureModule(Ekos::Capture *module)
 
     if (m_captureModule != nullptr)
     {
-        connect(m_captureModule, &Ekos::Capture::newDownloadProgress, this, &CapturePreviewWidget::updateDownloadProgress);
-        connect(m_captureModule, &Ekos::Capture::newExposureProgress, this, &CapturePreviewWidget::updateExposureProgress);
-        connect(m_captureModule, &Ekos::Capture::captureTarget, this, &CapturePreviewWidget::setTargetName);
+        connect(m_captureModule, &Ekos::Capture::newDownloadProgress, this, &CapturePreviewWidget::updateDownloadProgress,
+                Qt::UniqueConnection);
+        connect(m_captureModule, &Ekos::Capture::newExposureProgress, this, &CapturePreviewWidget::updateExposureProgress,
+                Qt::UniqueConnection);
+        connect(m_captureModule, &Ekos::Capture::captureTarget, this, &CapturePreviewWidget::setTargetName,
+                Qt::UniqueConnection);
     }
 }
 
@@ -66,8 +72,15 @@ void CapturePreviewWidget::shareSchedulerModuleState(QSharedPointer<Ekos::Schedu
 
 void CapturePreviewWidget::shareMountModule(Ekos::Mount *module)
 {
+    if (m_mountModule != nullptr && m_mountModule != module)
+        disconnect(m_mountModule, nullptr, this, nullptr);
+
     m_mountModule = module;
-    connect(m_mountModule, &Ekos::Mount::newTargetName, this, &CapturePreviewWidget::setTargetName);
+    if (m_mountModule != nullptr)
+    {
+        connect(m_mountModule, &Ekos::Mount::newTargetName, this, &CapturePreviewWidget::setTargetName,
+                Qt::UniqueConnection);
+    }
 }
 
 void CapturePreviewWidget::updateJobProgress(const QSharedPointer<Ekos::SequenceJob> &job,
@@ -118,8 +131,11 @@ void CapturePreviewWidget::updateJobProgress(const QSharedPointer<Ekos::Sequence
         }
 
         const auto ISOIndex = job->getCoreProperty(SequenceJob::SJ_Offset).toInt();
-        if (ISOIndex >= 0 && ISOIndex <= m_captureModule->mainCamera()->captureISOS->count())
-            m_currentFrame[trainname].iso = m_captureModule->mainCamera()->captureISOS->itemText(ISOIndex);
+        auto *const captureISOs = m_captureModule != nullptr && m_captureModule->mainCamera() != nullptr
+                                  ? m_captureModule->mainCamera()->captureISOS
+                                  : nullptr;
+        if (captureISOs != nullptr && ISOIndex >= 0 && ISOIndex < captureISOs->count())
+            m_currentFrame[trainname].iso = captureISOs->itemText(ISOIndex);
         else
             m_currentFrame[trainname].iso = "";
     }
@@ -290,6 +306,19 @@ void CapturePreviewWidget::setEnabled(bool enabled)
 
 void CapturePreviewWidget::reset()
 {
+    shareCaptureModule(nullptr);
+    shareMountModule(nullptr);
+    shareSchedulerModuleState(nullptr);
+
+    m_currentFrame.clear();
+    m_trainNames.clear();
+    trainSelectionCB->clear();
+    trainSelectionCB->setVisible(false);
+    captureLabel->setVisible(true);
+    targetLabel->setVisible(false);
+    mountTarget->setVisible(false);
+    m_mountTarget.clear();
+
     if (m_overlay->hasFrames())
         m_overlay->captureHistory().reset();
     m_overlay->setVisible(false);

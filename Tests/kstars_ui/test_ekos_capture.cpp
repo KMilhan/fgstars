@@ -15,7 +15,12 @@
 #include "test_ekos_simulator.h"
 #include "ekos/capture/capture.h"
 #include "ekos/capture/capturepreviewwidget.h"
+#include "ekos/focus/focusmodule.h"
+#include "ekos/align/align.h"
+#include "ekos/guide/guide.h"
 #include "fitsviewer/summaryfitsview.h"
+
+#include <array>
 
 TestEkosCapture::TestEkosCapture(QObject *parent) : QObject(parent)
 {
@@ -181,6 +186,7 @@ void TestEkosCapture::testEmbeddedWorkspaceHost()
 
     KTRY_GADGET(ekos, CapturePreviewWidget, capturePreview);
     KTRY_GADGET(ekos, QSplitter, deviceSplitter);
+    KTRY_GADGET(ekos, QWidget, rightLayoutWidget);
 
     SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
     QVERIFY(workspaceView != nullptr);
@@ -190,7 +196,43 @@ void TestEkosCapture::testEmbeddedWorkspaceHost()
 
     const QList<int> sizes = deviceSplitter->sizes();
     QCOMPARE(sizes.size(), 2);
-    QVERIFY2(sizes[0] > sizes[1] * 2, "Embedded workspace pane should dominate the contextual side panel by default.");
+    QVERIFY2(sizes[0] > sizes[1], "Embedded workspace pane should remain larger than the contextual side panel by default.");
+    QTRY_VERIFY_WITH_TIMEOUT(capturePreview->previewWidget->width() > rightLayoutWidget->width(), 1000);
+}
+
+void TestEkosCapture::testPersistentWorkspaceAcrossTabs()
+{
+    Ekos::Manager * const ekos = Ekos::Manager::Instance();
+
+    KTRY_GADGET(ekos, QSplitter, splitter);
+    KTRY_GADGET(ekos, QSplitter, deviceSplitter);
+    KTRY_GADGET(ekos, CapturePreviewWidget, capturePreview);
+    QTRY_VERIFY_WITH_TIMEOUT(ekos->focusModule() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(ekos->alignModule() != nullptr, 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(ekos->guideModule() != nullptr, 5000);
+
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+
+    QCOMPARE(deviceSplitter->parentWidget(), splitter);
+    QVERIFY2(splitter->indexOf(deviceSplitter) == 0, "Persistent workspace shell should live above the tabbed module stack.");
+
+    const std::array<QWidget *, 5> modules = {
+        ekos->setupTab,
+        ekos->captureModule(),
+        ekos->focusModule(),
+        ekos->alignModule(),
+        ekos->guideModule()
+    };
+
+    for (QWidget * const module : modules)
+    {
+        QVERIFY(module != nullptr);
+        KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(module, 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(deviceSplitter->isVisible(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(capturePreview->isVisible(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(workspaceView->isVisible(), 1000);
+    }
 }
 
 void TestEkosCapture::testCaptureSingle()

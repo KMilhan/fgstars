@@ -117,12 +117,25 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     capturePreview->targetLabel->setVisible(false);
     capturePreview->mountTarget->setVisible(false);
 
+    // Lift the workspace shell out of the Setup tab so it remains visible while the user
+    // switches between image-heavy modules.
+    verticalLayout->removeWidget(deviceSplitter);
+    splitter->insertWidget(0, deviceSplitter);
+    deviceSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    toolsWidget->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Expanding);
+
+    splitter->setStretchFactor(0, 5);
+    splitter->setStretchFactor(1, 3);
+    splitter->setStretchFactor(2, 1);
+    splitter->setSizes(QList<int>({36000, 18000, 7000}));
+
     // Give the embedded workspace clear visual priority over the contextual side panel.
-    deviceSplitter->setStretchFactor(0, 3);
+    deviceSplitter->setStretchFactor(0, 4);
     deviceSplitter->setStretchFactor(1, 1);
-    deviceSplitter->setSizes(QList<int>({30000, 10000}));
+    deviceSplitter->setSizes(QList<int>({36000, 9000}));
     capturePreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     rightLayoutWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
+    rightLayoutWidget->setMaximumWidth(480);
 
     qRegisterMetaType<Ekos::CommunicationStatus>("Ekos::CommunicationStatus");
     qDBusRegisterMetaType<Ekos::CommunicationStatus>();
@@ -1010,6 +1023,9 @@ void Manager::reset()
     m_syncedDevices.clear();
     m_ProfileManagedDevices.clear();
 
+    capturePreview->shareCaptureModule(nullptr);
+    capturePreview->shareMountModule(nullptr);
+    capturePreview->shareSchedulerModuleState(nullptr);
     removeTabs();
 
     captureProcess.reset();
@@ -3190,6 +3206,9 @@ void Manager::updateMountCoords(const SkyPoint position, ISD::Mount::PierSide pi
 
 void Manager::updateCaptureStatus(Ekos::CaptureState status, const QString &trainname)
 {
+    if (captureModule() == nullptr)
+        return;
+
     capturePreview->updateCaptureStatus(status, captureModule()->isActiveJobPreview(), trainname);
 
     switch (status)
@@ -3222,6 +3241,9 @@ void Manager::updateCaptureStatus(Ekos::CaptureState status, const QString &trai
 void Manager::updateCaptureProgress(const QSharedPointer<SequenceJob> &job, const QSharedPointer<FITSData> &data,
                                     const QString &trainname)
 {
+    if (captureModule() == nullptr)
+        return;
+
     capturePreview->updateJobProgress(job, data, trainname);
 
     QJsonObject status =

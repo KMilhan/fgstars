@@ -129,7 +129,7 @@ void CaptureCountsWidget::updateCaptureCountDown(int delta)
         overallRemainingTime->setText(totalCounts[m_currentTrainName].countDown.toString("hh:mm:ss"));
         gr_overallRemainingTime->setText(overallRemainingTime->text());
     }
-    if (!m_captureProcess->isActiveJobPreview() && isCaptureActive(m_currentTrainName))
+    if (m_captureProcess != nullptr && !m_captureProcess->isActiveJobPreview() && isCaptureActive(m_currentTrainName))
     {
         jobRemainingTime->setText(jobCounts[m_currentTrainName].countDown.toString("hh:mm:ss"));
         sequenceRemainingTime->setText(sequenceCounts[m_currentTrainName].countDown.toString("hh:mm:ss"));
@@ -226,6 +226,12 @@ void CaptureCountsWidget::updateCaptureStatus(Ekos::CaptureState status, bool is
     // update the attribute whether the current capture is a preview
     m_isPreview = isPreview;
 
+    if (m_captureProcess == nullptr)
+    {
+        refreshCaptureCounters(trainname);
+        return;
+    }
+
     // find the corresponding camera
     QSharedPointer<Ekos::Camera> selected_cam;
     for (QSharedPointer<Ekos::Camera> camera : m_captureProcess->cameras())
@@ -254,8 +260,8 @@ void CaptureCountsWidget::updateCaptureStatus(Ekos::CaptureState status, bool is
         jobCounts[trainname].completed += selected_cam->state()->jobImageProgress(i);
     }
 
-    Ekos::SchedulerJob *activeJob = m_schedulerModuleState->activeJob(trainname);
-    if (m_schedulerModuleState != nullptr && activeJob != nullptr)
+    Ekos::SchedulerJob *activeJob = m_schedulerModuleState != nullptr ? m_schedulerModuleState->activeJob(trainname) : nullptr;
+    if (activeJob != nullptr)
     {
         // FIXME: accessing the completed count might be one too low due to concurrency of updating the count and this loop
         totalCounts[trainname].completed = activeJob->getCompletedCount();
@@ -339,9 +345,9 @@ void CaptureCountsWidget::refreshCaptureCounters(const QString &trainname)
 {
     QString total_label = "Total";
     bool infinite_loop = false;
-    Ekos::SchedulerJob *activeJob = m_schedulerModuleState->activeJob(trainname);
+    Ekos::SchedulerJob *activeJob = m_schedulerModuleState != nullptr ? m_schedulerModuleState->activeJob(trainname) : nullptr;
     bool isCapturing = isCaptureActive(trainname);
-    if (m_schedulerModuleState != nullptr && activeJob != nullptr)
+    if (activeJob != nullptr)
     {
         infinite_loop = (activeJob->getCompletionCondition() == Ekos::FINISH_LOOP);
         total_label = activeJob->getName();

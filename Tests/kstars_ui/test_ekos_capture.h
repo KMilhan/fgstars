@@ -54,6 +54,9 @@ class TestEkosCapture : public QObject
         /** @brief Test embedded workspace ownership and default prominence. */
         void testEmbeddedWorkspaceHost();
 
+        /** @brief Test that the embedded workspace remains visible across image-heavy module switches. */
+        void testPersistentWorkspaceAcrossTabs();
+
         /** @brief Test capturing a single frame in multiple attempts. */
         void testCaptureSingle();
 
