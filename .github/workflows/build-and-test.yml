@@ -41,7 +41,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-qt6-ccache-${{ github.sha }}
+          key: ${{ runner.os }}-qt6-build
           max-size: 2G
 
       - name: Configure app build
@@ -70,7 +70,6 @@ jobs:
   test-shards:
     needs:
       - plan-ci
-      - build-app
     runs-on: ubuntu-24.04
     container:
       image: sternejaeger/kstars-ci:qt6
@@ -86,7 +85,7 @@ jobs:
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-qt6-ccache-${{ github.sha }}
+          key: ${{ runner.os }}-qt6-tests
           max-size: 2G
 
       - name: Install UI test runtime
