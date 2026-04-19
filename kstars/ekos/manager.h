@@ -556,6 +556,8 @@ class Manager : public QDialog, public Ui::Manager
         void initAlign();
         void initMount();
         void initObservatory();
+        void rememberWorkspacePriorityRatio();
+        void repairWorkspacePriorityAfterResize();
 
         void loadDrivers();
         void loadProfiles();
@@ -668,6 +670,8 @@ class Manager : public QDialog, public Ui::Manager
         QSet<QString> m_syncedDevices;
         QSet<QString> m_ProfileManagedDevices;
         std::unique_ptr<WorkspaceSession> m_workspaceSession;
+        double m_workspacePriorityRatio { 0.8 };
+        bool m_workspaceRepairQueued { false };
 
         friend class EkosLive::Client;
         friend class EkosLive::Message;

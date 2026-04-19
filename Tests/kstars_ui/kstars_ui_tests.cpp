@@ -12,7 +12,6 @@
 #include "test_kstars_startup.h"
 
 #if defined(HAVE_INDI)
-#include "test_ekos_wizard.h"
 #include "test_ekos.h"
 #include "test_ekos_simulator.h"
 #include "test_ekos_focus.h"
@@ -227,16 +226,6 @@ int run_wizards(int argc, char *argv[])
         failure |= QTest::qExec(ti);//, argc, argv);
         delete ti;
     }
-
-#if defined(HAVE_INDI)
-    // If we test with INDI, this takes care of the Ekos startup wizard
-    if (!failure)
-    {
-        TestEkosWizard * ew = new TestEkosWizard();
-        failure |= QTest::qExec(ew);//, argc, argv);
-        delete ew;
-    }
-#endif
 
     Q_UNUSED(argc);
     Q_UNUSED(argv);

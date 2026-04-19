@@ -223,6 +223,51 @@ void TestEkosCapture::testEmbeddedWorkspaceHost()
     QTRY_VERIFY_WITH_TIMEOUT(capturePreview->previewWidget->width() > rightLayoutWidget->width(), 1000);
 }
 
+void TestEkosCapture::testWorkspacePrioritySurvivesResize()
+{
+    Ekos::Manager * const ekos = Ekos::Manager::Instance();
+
+    KTRY_GADGET(ekos, CapturePreviewWidget, capturePreview);
+    KTRY_GADGET(ekos, QSplitter, deviceSplitter);
+    KTRY_GADGET(ekos, QWidget, rightLayoutWidget);
+
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    QVERIFY(workspaceView != nullptr);
+
+    const QSize originalSize = ekos->size();
+    const QList<int> originalSplitterSizes = deviceSplitter->sizes();
+
+    ekos->resize(QSize(700, 700));
+    QTRY_VERIFY_WITH_TIMEOUT(ekos->width() >= 700, 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(ekos->height() >= 700, 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(workspaceView->isVisible(), 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(capturePreview->previewWidget->width() > rightLayoutWidget->width(), 1000);
+
+    deviceSplitter->setSizes(QList<int>({1, 1000}));
+    QTRY_VERIFY_WITH_TIMEOUT(deviceSplitter->sizes().size() == 2, 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(deviceSplitter->sizes()[0] < deviceSplitter->sizes()[1], 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(capturePreview->previewWidget->width() < rightLayoutWidget->width(), 1000);
+
+    const std::array recoverySizes { QSize(760, 700), QSize(1180, 860) };
+    for (const QSize &targetSize : recoverySizes)
+    {
+        ekos->resize(targetSize);
+        QTRY_VERIFY_WITH_TIMEOUT(ekos->width() >= targetSize.width(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(ekos->height() >= targetSize.height(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(workspaceView->isVisible(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(capturePreview->previewWidget->width() > rightLayoutWidget->width(), 1000);
+
+        const QList<int> sizes = deviceSplitter->sizes();
+        QCOMPARE(sizes.size(), 2);
+        QVERIFY2(sizes[0] > sizes[1],
+                 "Embedded workspace pane should recover and remain larger than the contextual side panel after resizing.");
+    }
+
+    deviceSplitter->setSizes(originalSplitterSizes);
+    ekos->resize(originalSize);
+    QTRY_VERIFY_WITH_TIMEOUT(ekos->size() == originalSize, 1000);
+}
+
 void TestEkosCapture::testPersistentWorkspaceAcrossTabs()
 {
     Ekos::Manager * const ekos = Ekos::Manager::Instance();

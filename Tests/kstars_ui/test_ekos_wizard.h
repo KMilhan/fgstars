@@ -13,10 +13,13 @@ class TestEkosWizard : public QObject
         explicit TestEkosWizard(QObject *parent = nullptr);
 
     private Q_SLOTS:
+        void initTestCase();
+        void cleanupTestCase();
         void init();
         void cleanup();
 
-        void testProfileWizard();
+        void testProfileWizardDoesNotAutoOpen();
+        void testProfileWizardCanBeOpenedManually();
 };
 
 #endif // HAVE_INDI

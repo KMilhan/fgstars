@@ -23,6 +23,26 @@ TestEkosWizard::TestEkosWizard(QObject *parent) : QObject(parent)
 {
 }
 
+void TestEkosWizard::initTestCase()
+{
+    if (!KStarsUiTests::configureTestIndiRuntime())
+        QSKIP("INDI server binary not found; skipping TestEkosWizard.", SkipAll);
+    QVERIFY(QDir(Options::indiDriversDir()).exists());
+
+    KTRY_OPEN_EKOS();
+    KVERIFY_EKOS_IS_OPENED();
+}
+
+void TestEkosWizard::cleanupTestCase()
+{
+    for (auto d : KStars::Instance()->findChildren<QDialog *>())
+        if (d->isVisible())
+            d->hide();
+
+    KTRY_CLOSE_EKOS();
+    KVERIFY_EKOS_IS_HIDDEN();
+}
+
 void TestEkosWizard::init()
 {
 }
@@ -34,48 +54,35 @@ void TestEkosWizard::cleanup()
             d->hide();
 }
 
-void TestEkosWizard::testProfileWizard()
+void TestEkosWizard::testProfileWizardDoesNotAutoOpen()
 {
-    // Update our INDI installation specs
-    if (!KStarsUiTests::configureTestIndiRuntime())
-        QSKIP("INDI server binary not found; skipping TestEkosWizard.", SkipSingle);
-    QVERIFY(QDir(Options::indiDriversDir()).exists());
-    QVERIFY(QDir(Options::indiDriversDir()).exists());
+    QTest::qWait(1000);
+    auto * const wizard = KStars::Instance()->findChild<ProfileWizard *>();
+    QVERIFY2(wizard == nullptr || wizard->isVisible() == false,
+             "Ekos should not auto-launch the profile wizard over the shared workspace.");
+}
 
-    // The Ekos new profile wizard opens when starting Ekos for the first time
-    bool wizardDone = false;
-    std::function <void()> closeWizard = [&]
+void TestEkosWizard::testProfileWizardCanBeOpenedManually()
+{
+    auto * const wizardButton = Ekos::Manager::Instance()->findChild<QPushButton *>("wizardProfileB");
+    QVERIFY(wizardButton != nullptr);
+
+    bool wizardWasShown = false;
+    QTimer::singleShot(0, KStars::Instance(), [&wizardWasShown]()
     {
-        KStars * const k = KStars::Instance();
-        QVERIFY(k != nullptr);
-
-        // Wait for the KStars Wizard to appear
-        if(k->findChild <ProfileWizard * >() == nullptr)
-        {
-            QTimer::singleShot(500, KStars::Instance(), closeWizard);
+        auto * const wizard = KStars::Instance()->findChild<ProfileWizard *>();
+        if (wizard == nullptr)
             return;
-        }
-        ProfileWizard * const w = k->findChild <ProfileWizard*>();
-        QVERIFY(w != nullptr);
-        QTRY_VERIFY_WITH_TIMEOUT(w->isVisible(), 1000);
 
-        // Just dismiss the wizard for now
-        QDialogButtonBox* buttons = w->findChild<QDialogButtonBox*>();
-        QVERIFY(nullptr != buttons);
-        QTest::mouseClick(buttons->button(QDialogButtonBox::Close), Qt::LeftButton);
-        QTRY_VERIFY_WITH_TIMEOUT(!w->isVisible(), 1000);
-        wizardDone = true;
-    };
-    QTimer::singleShot(500, Ekos::Manager::Instance(), closeWizard);
+        wizardWasShown = wizard->isVisible();
+        wizard->reject();
+    });
 
-    KTRY_OPEN_EKOS();
-    KVERIFY_EKOS_IS_OPENED();
-    QTRY_VERIFY_WITH_TIMEOUT(wizardDone, 1000);
-
-    KTRY_CLOSE_EKOS();
-    KVERIFY_EKOS_IS_HIDDEN();
+    QTest::mouseClick(wizardButton, Qt::LeftButton);
+    QVERIFY2(wizardWasShown, "The profile wizard should open when the user explicitly requests it.");
 }
 
 // There is no test-main macro in this test because that sequence is done systematically
+QTEST_KSTARS_MAIN(TestEkosWizard)
 
 #endif // HAVE_INDI

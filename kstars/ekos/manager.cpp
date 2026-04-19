@@ -66,8 +66,12 @@
 #include <QFutureWatcher>
 #include <QComboBox>
 #include <QDesktopServices>
+#include <QSignalBlocker>
 
 #include <ekos_debug.h>
+
+#include <algorithm>
+#include <cmath>
 
 #define MAX_REMOTE_INDI_TIMEOUT 15000
 #define MAX_LOCAL_INDI_TIMEOUT  10000
@@ -135,6 +139,12 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     deviceSplitter->setStretchFactor(0, 4);
     deviceSplitter->setStretchFactor(1, 1);
     deviceSplitter->setSizes(QList<int>({36000, 9000}));
+    deviceSplitter->setChildrenCollapsible(false);
+    rememberWorkspacePriorityRatio();
+    connect(deviceSplitter, &QSplitter::splitterMoved, this, [this]()
+    {
+        rememberWorkspacePriorityRatio();
+    });
     capturePreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     rightLayoutWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     rightLayoutWidget->setMaximumWidth(480);
@@ -707,8 +717,10 @@ void Manager::showEvent(QShowEvent * /*event*/)
     QAction * a = KStars::Instance()->actionCollection()->action("show_ekos");
     a->setChecked(true);
 
-    // Just show the profile wizard ONCE per session
-    if (profileWizardLaunched == false && profiles.count() == 1)
+    // Keep the image workspace unobstructed on normal first launch. The wizard
+    // remains available as an explicit action and only auto-opens when no
+    // profiles exist at all.
+    if (profileWizardLaunched == false && profiles.isEmpty())
     {
         profileWizardLaunched = true;
         wizardProfile();
@@ -720,8 +732,57 @@ void Manager::resizeEvent(QResizeEvent *)
     if (qgetenv("KDE_FULL_SESSION") != "true")
         Options::setEkosGeometry(QString::fromLatin1(saveGeometry().toBase64()));
 
+    if (m_workspaceRepairQueued == false)
+    {
+        m_workspaceRepairQueued = true;
+        QTimer::singleShot(0, this, [this]()
+        {
+            m_workspaceRepairQueued = false;
+            repairWorkspacePriorityAfterResize();
+        });
+    }
+
     focusProgressWidget->updateFocusDetailView();
     guideManager->updateGuideDetailView();
+}
+
+void Manager::rememberWorkspacePriorityRatio()
+{
+    const QList<int> sizes = deviceSplitter->sizes();
+    if (sizes.size() != 2)
+        return;
+
+    const int totalWidth = sizes[0] + sizes[1];
+    if (totalWidth <= 1 || sizes[0] <= sizes[1])
+        return;
+
+    m_workspacePriorityRatio = static_cast<double>(sizes[0]) / static_cast<double>(totalWidth);
+}
+
+void Manager::repairWorkspacePriorityAfterResize()
+{
+    const QList<int> sizes = deviceSplitter->sizes();
+    if (sizes.size() != 2)
+        return;
+
+    const int totalWidth = sizes[0] + sizes[1];
+    if (totalWidth <= 1)
+        return;
+
+    const int minimumWorkspaceWidth = totalWidth / 2 + 1;
+    if (sizes[0] >= minimumWorkspaceWidth)
+    {
+        rememberWorkspacePriorityRatio();
+        return;
+    }
+
+    const int preferredWorkspaceWidth = std::clamp(
+        static_cast<int>(std::lround(totalWidth * m_workspacePriorityRatio)),
+        minimumWorkspaceWidth,
+        totalWidth - 1);
+
+    QSignalBlocker blocker(deviceSplitter);
+    deviceSplitter->setSizes(QList<int>({preferredWorkspaceWidth, totalWidth - preferredWorkspaceWidth}));
 }
 
 void Manager::loadProfiles()

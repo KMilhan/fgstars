@@ -42,7 +42,7 @@ else()
         "${KSTARS_UI_DISPLAY_ENVIRONMENT}"
     )
 endif()
-SET(KSTARS_UI_EKOS_SRC ${KSTARS_UI_TESTS_SRC} test_ekos_wizard.cpp test_ekos_wizard.h)
+SET(KSTARS_UI_EKOS_SRC ${KSTARS_UI_TESTS_SRC})
 SET(KSTARS_UI_EKOS_LIBS ${TEST_LIBRARIES} ${CFITSIO_LIBRARIES} ${INDI_CLIENT_LIBRARIES} ${NOVA_LIBRARIES} z)
 
 SET(KSTARS_UI_MOCK_SRC mockmodules.cpp)
@@ -60,6 +60,14 @@ qt6_add_dbus_adaptor(KSTARS_UI_MOCK_SRC org.kde.mockkstars.MockEkos.xml mockmodu
 # TARGET_LINK_LIBRARIES(test_ekos ${KSTARS_UI_EKOS_LIBS})
 # ADD_TEST(NAME TestEkosProfiles COMMAND test_ekos)
 # SET_TESTS_PROPERTIES( TestEkosProfiles PROPERTIES LABELS "stable;ui")
+
+ADD_EXECUTABLE(test_ekos_wizard ${KSTARS_UI_TESTS_SRC} test_ekos_wizard.cpp test_ekos_wizard.h)
+TARGET_LINK_LIBRARIES(test_ekos_wizard ${KSTARS_UI_EKOS_LIBS})
+ADD_TEST(NAME TestEkosWizard COMMAND test_ekos_wizard)
+set_tests_properties(TestEkosWizard PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_ekos_wizard kstars_indi_test_runtime)
+endif()
 
 ADD_EXECUTABLE(test_ekos_simulator ${KSTARS_UI_EKOS_SRC} test_ekos_simulator.cpp test_ekos_simulator.h)
 TARGET_LINK_LIBRARIES(test_ekos_simulator ${KSTARS_UI_EKOS_LIBS})
@@ -87,6 +95,7 @@ ADD_TEST(
     NAME TestEkosWorkspaceCapture
     COMMAND test_ekos_capture
             testEmbeddedWorkspaceHost
+            testWorkspacePrioritySurvivesResize
             testPersistentWorkspaceAcrossTabs
             testDetachedViewerFallbackFromWorkspaceHistory
             testWorkspaceSessionTracksCaptureState

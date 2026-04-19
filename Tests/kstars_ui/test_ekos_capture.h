@@ -58,6 +58,9 @@ class TestEkosCapture : public QObject
         /** @brief Test embedded workspace ownership and default prominence. */
         void testEmbeddedWorkspaceHost();
 
+        /** @brief Test that resizing Ekos keeps the shared workspace visually primary. */
+        void testWorkspacePrioritySurvivesResize();
+
         /** @brief Test that the embedded workspace remains visible across image-heavy module switches. */
         void testPersistentWorkspaceAcrossTabs();
 
