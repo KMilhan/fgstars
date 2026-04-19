@@ -1,0 +1,46 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+jobs:
+  ubuntu-qt6:
+    runs-on: ubuntu-24.04
+    container:
+      image: sternejaeger/kstars-ci:qt6
+      options: --privileged # Some Qt/DBus tests might require privileges depending on the environment, safe default for Docker CI
+    
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Build Environment
+        run: |
+          mkdir -p kstars-build
+
+      - name: Configure CMake
+        working-directory: kstars-build
+        run: |
+          cmake -GNinja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCCACHE_SUPPORT=OFF \
+            -DBUILD_TESTING=ON \
+            -DBUILD_DOC=OFF \
+            -DBUILD_WITH_QT6=ON ..
+
+      - name: Build
+        working-directory: kstars-build
+        run: |
+          ninja -j$(nproc) all install
+
+      - name: Run Tests
+        working-directory: kstars-build
+        run: |
+          mkdir -p /var/run/dbus
+          dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address &
+          apt update && apt install -y --no-install-recommends dbus-x11 xvfb
+          export $(dbus-launch)
+          xvfb-run -a ctest -T test -L stable -LE unstable --output-on-failure

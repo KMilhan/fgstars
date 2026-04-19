@@ -1,0 +1,66 @@
+name: Validation
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+jobs:
+  astyle-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install astyle
+        run: |
+          ASTYLE_VERSION="$(cat .astyle-version)"
+          python -m pip install "astyle==${ASTYLE_VERSION}"
+          astyle --version
+          astyle --version | grep -q "Version ${ASTYLE_VERSION}" || {
+            echo "ERROR: CI astyle version mismatch (expected ${ASTYLE_VERSION})." >&2
+            exit 1
+          }
+
+      - name: Run AStyle Check
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            bash tools/run_astyle.sh --check --changed-since "${{ github.event.pull_request.base.sha }}"
+          else
+            # For pushes to main, check against previous commit
+            bash tools/run_astyle.sh --check --changed-since "${{ github.event.before }}"
+          fi
+
+  accessibility-check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run UI Accessibility Check
+        run: |
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            CHANGED_FILES=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" | grep '\.ui$' || true)
+          else
+            CHANGED_FILES=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep '\.ui$' || true)
+          fi
+          
+          if [ -n "$CHANGED_FILES" ]; then
+            python scripts/check_ui_accessibility.py $CHANGED_FILES
+          else
+            echo "No .ui files changed."
+          fi
