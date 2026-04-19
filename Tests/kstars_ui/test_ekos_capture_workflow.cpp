@@ -23,6 +23,14 @@
 #define SHUTTER_NO       0
 #define SHUTTER_YES      1
 
+namespace
+{
+bool captureIsStopped()
+{
+    const auto status = Ekos::Manager::Instance()->captureModule()->status();
+    return status == Ekos::CAPTURE_IDLE || status == Ekos::CAPTURE_ABORTED || status == Ekos::CAPTURE_COMPLETE;
+}
+}
 
 TestEkosCaptureWorkflow::TestEkosCaptureWorkflow(QObject *parent) :
     TestEkosCaptureWorkflow::TestEkosCaptureWorkflow("Internal", parent) {}
@@ -652,9 +660,8 @@ void TestEkosCaptureWorkflow::testFlatManualSource()
             // click Cancel in the modal dialog for uncovering the telescope
             CLOSE_MODAL_DIALOG(1);
             // check if capturing has not been started
-            KTRY_CAPTURE_GADGET(QPushButton, startB);
-            // within 5 secs the job must be stopped ...
-            QTRY_VERIFY_WITH_TIMEOUT(startB->icon().name() == QString("media-playback-start"), 5000);
+            // within 5 secs the job must remain in a stopped capture state ...
+            QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 5000);
             // ... and capturing has not been started
             QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->expectedCaptureStates.size() > 0, 5000);
         }
@@ -668,9 +675,8 @@ void TestEkosCaptureWorkflow::testFlatManualSource()
         // click Cancel in the modal dialog for covering the telescope
         CLOSE_MODAL_DIALOG(1);
         // check if capturing has not been started
-        KTRY_CAPTURE_GADGET(QPushButton, startB);
-        // within 5 secs the job mus be stopped ...
-        QTRY_VERIFY_WITH_TIMEOUT(startB->icon().name() == QString("media-playback-start"), 5000);
+        // within 5 secs the job must remain in a stopped capture state ...
+        QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 5000);
         // ... and capturing has not been started
         QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->expectedCaptureStates.size() > 0, 5000);
     }
@@ -1016,9 +1022,8 @@ void TestEkosCaptureWorkflow::testDarkManualCovering()
             // click Cancel in the modal dialog for uncovering the telescope
             CLOSE_MODAL_DIALOG(1);
             // check if capturing has not been started
-            KTRY_CAPTURE_GADGET(QPushButton, startB);
-            // within 5 secs the job must be stopped ...
-            QTRY_VERIFY_WITH_TIMEOUT(startB->icon().name() == QString("media-playback-start"), 5000);
+            // within 5 secs the job must remain in a stopped capture state ...
+            QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 5000);
             // ... and capturing has not been started
             QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->expectedCaptureStates.size() > 0, 5000);
         }
@@ -1032,9 +1037,8 @@ void TestEkosCaptureWorkflow::testDarkManualCovering()
         // click Cancel in the modal dialog for covering the telescope
         CLOSE_MODAL_DIALOG(1);
         // check if capturing has not been started
-        KTRY_CAPTURE_GADGET(QPushButton, startB);
-        // within 5 secs the job mus be stopped ...
-        QTRY_VERIFY_WITH_TIMEOUT(startB->icon().name() == QString("media-playback-start"), 5000);
+        // within 5 secs the job must remain in a stopped capture state ...
+        QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 5000);
         // ... and capturing has not been started
         QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->expectedCaptureStates.size() > 0, 5000);
     }

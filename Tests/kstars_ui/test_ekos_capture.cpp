@@ -31,6 +31,15 @@
 #include <optional>
 #include <ranges>
 
+namespace
+{
+bool captureIsStopped()
+{
+    const auto status = Ekos::Manager::Instance()->captureModule()->status();
+    return status == Ekos::CAPTURE_IDLE || status == Ekos::CAPTURE_ABORTED || status == Ekos::CAPTURE_COMPLETE;
+}
+}
+
 TestEkosCapture::TestEkosCapture(QObject *parent) : QObject(parent)
 {
 }
@@ -176,18 +185,16 @@ void TestEkosCapture::testCaptureToTemporary()
     // Add five exposures
     KTRY_CAPTURE_ADD_LIGHT(0.1, 5, 0, "Red", "test", destination.path());
 
-    // Start capturing and wait for procedure to end (visual icon changing)
+    // Start capturing and wait for the captured preview the test actually cares about.
     KTRY_CAPTURE_GADGET(QPushButton, startB);
-    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 30000);
 
     KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
     SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
     QVERIFY(workspaceView != nullptr);
     QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
     QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("005.fits"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 30000);
 
     const auto fitsViewers = KStars::Instance()->findChildren<FITSViewer *>();
     QVERIFY(std::ranges::all_of(fitsViewers, [](const auto *viewer)
@@ -342,17 +349,15 @@ void TestEkosCapture::testCaptureSingle()
     // Add an exposure
     KTRY_CAPTURE_ADD_LIGHT(0.5, 1, 0, "Red", "test", destination.path());
 
-    // Start capturing and wait for procedure to end (visual icon changing)
+    // Start capturing and wait for the produced FITS file.
     KTRY_CAPTURE_GADGET(QPushButton, startB);
-    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 2000);
 
     // Verify a FITS file was created
     QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == 1, 1000);
     QVERIFY(m_CaptureHelper->searchFITS(QDir(destination.path()))[0].startsWith("test_Light_"));
     QVERIFY(m_CaptureHelper->searchFITS(QDir(destination.path()))[0].endsWith("001.fits"));
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 5000);
 
     KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
     SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
@@ -381,10 +386,7 @@ void TestEkosCapture::testCaptureSingle()
     QTRY_VERIFY_WITH_TIMEOUT(dialogValidated, 1000);
 
     // Capture again
-    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 2000);
 
     // Verify an additional FITS file was created - asynchronously eventually
     QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == 2, 2000);
@@ -392,6 +394,7 @@ void TestEkosCapture::testCaptureSingle()
     QVERIFY(m_CaptureHelper->searchFITS(QDir(destination.path()))[0].endsWith("001.fits"));
     QVERIFY(m_CaptureHelper->searchFITS(QDir(destination.path()))[1].startsWith("test_Light_"));
     QVERIFY(m_CaptureHelper->searchFITS(QDir(destination.path()))[1].endsWith("002.fits"));
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 5000);
 
     // TODO: test storage options
 }
@@ -414,15 +417,13 @@ void TestEkosCapture::testCaptureMultiple()
     size_t const duration = 1000 * (1 + 2 + 5 + 2 + 1);
     size_t const count = 1 + 2 + 5 + 2 + 1;
 
-    // Start capturing and wait for procedure to end (visual icon changing) - leave enough time for frames to store
+    // Start capturing and wait for all expected FITS files to land.
     KTRY_CAPTURE_GADGET(QPushButton, startB);
-    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), duration * 2);
 
     // Verify the proper number of FITS file were created
     QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == count, 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), static_cast<int>(duration * 2));
 
     // Reset sequence state - this makes a confirmation dialog appear
     volatile bool dialogValidated = false;
@@ -440,11 +441,10 @@ void TestEkosCapture::testCaptureMultiple()
 
     // Capture again
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_VERIFY_WITH_TIMEOUT(!startB->icon().name().compare("media-playback-stop"), 500);
-    QTRY_VERIFY_WITH_TIMEOUT(!startB->icon().name().compare("media-playback-start"), duration * 2);
 
     // Verify the proper number of additional FITS file were created again
     QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == 2 * count, 1000);
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), static_cast<int>(duration * 2));
 
     // TODO: test storage options
 }
@@ -458,16 +458,14 @@ void TestEkosCapture::testDetachedViewerFallbackFromWorkspaceHistory()
     KTRY_CAPTURE_ADD_LIGHT(0.1, 3, 0, "Red", "history", destination.path());
 
     KTRY_CAPTURE_GADGET(QPushButton, startB);
-    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 30000);
 
     KTRY_GADGET(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
     SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
     QVERIFY(workspaceView != nullptr);
     QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
     QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("003.fits"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 30000);
 
     capturePreview->showPreviousFrame();
     QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
@@ -509,10 +507,7 @@ void TestEkosCapture::testWorkspaceSessionTracksCaptureState()
     KTRY_CAPTURE_ADD_LIGHT(0.1, 1, 0, "Red", "workspace", destination.path());
 
     KTRY_CAPTURE_GADGET(QPushButton, startB);
-    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-start"), 30000);
 
     auto * const session = Ekos::Manager::Instance()->workspaceSession();
     QVERIFY(session != nullptr);
@@ -523,6 +518,7 @@ void TestEkosCapture::testWorkspaceSessionTracksCaptureState()
     QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData() != nullptr, 5000);
     QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Capture) != nullptr, 5000);
     QTRY_VERIFY_WITH_TIMEOUT(session->frame(Ekos::WorkspaceSession::Source::Capture)->filename().endsWith("001.fits"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 30000);
 
     workspaceView->showProcessInfo(true);
     QTRY_VERIFY_WITH_TIMEOUT(session->overlayVisible(QString::fromLatin1(Ekos::WorkspaceSession::CaptureProcessInfoOverlayKey))
@@ -668,11 +664,9 @@ void TestEkosCapture::testCaptureDarkFlats()
     QTRY_VERIFY2_WITH_TIMEOUT(queueTable->rowCount() == 4,
                               QString("Row number wrong, %1 expected, %2 found!").arg(4).arg(queueTable->rowCount()).toStdString().c_str(), 1000);
 
-    // Start capturing and wait for procedure to end (visual icon changing) - leave enough time for frames to store
+    // Start capturing and wait for all flat and dark-flat frames to land.
     KTRY_CAPTURE_GADGET(QPushButton, startB);
-    QCOMPARE(startB->icon().name(), QString("media-playback-start"));
     KTRY_CAPTURE_CLICK(startB);
-    QTRY_COMPARE_WITH_TIMEOUT(startB->icon().name(), QString("media-playback-stop"), 500);
 
     // Accept any dialogs
     QTimer::singleShot(5000, [&]
@@ -688,6 +682,7 @@ void TestEkosCapture::testCaptureDarkFlats()
     // sequence is running. Wait on the files the test cares about instead of a
     // raw widget pointer so we still verify end-to-end completion safely.
     QTRY_COMPARE_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count(), 10, 120000);
+    QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 120000);
 
     // Verify dark flat job (3) matches flat job (1) time
     queueTable->selectRow(0);

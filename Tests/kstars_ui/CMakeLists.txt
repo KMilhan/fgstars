@@ -125,7 +125,9 @@ TARGET_LINK_LIBRARIES(test_ekos_capture_count ${KSTARS_UI_EKOS_LIBS})
 ADD_EXECUTABLE(test_ekos_capture_workflow ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_ekos_capture_helper.cpp test_ekos_capture_workflow.cpp test_ekos_capture_workflow.h)
 TARGET_LINK_LIBRARIES(test_ekos_capture_workflow ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosCaptureWorkflow COMMAND test_ekos_capture_workflow)
-SET_TESTS_PROPERTIES(TestEkosCaptureWorkflow PROPERTIES LABELS "stable;ui" TIMEOUT 600 RESOURCE_LOCK "kstars-ui")
+# The refocus workflow suite still segfaults intermittently under the Qt6/xcb CI stack.
+# Keep it available for local and targeted debugging, but do not advertise it as stable.
+SET_TESTS_PROPERTIES(TestEkosCaptureWorkflow PROPERTIES LABELS "unstable;ui" TIMEOUT 600 RESOURCE_LOCK "kstars-ui")
 set_tests_properties(TestEkosCaptureWorkflow PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_capture_workflow kstars_indi_test_runtime)

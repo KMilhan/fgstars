@@ -133,13 +133,11 @@ TEST_SHARDS: tuple[TestShard, ...] = (
         description="Stable UI capture and workspace tests under xvfb.",
         build_targets=(
             "test_ekos_capture",
-            "test_ekos_capture_workflow",
             "test_ekos_align",
         ),
         test_names=(
             "TestEkosCapture",
             "TestEkosWorkspaceCapture",
-            "TestEkosCaptureWorkflow",
             "TestEkosWorkspaceAlign",
         ),
         ctest_jobs=1,

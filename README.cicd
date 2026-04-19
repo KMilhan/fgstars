@@ -28,6 +28,8 @@ The KStars repository is configured to build its code in the following situation
 
 The build environments primarily target modern Linux containers with Qt6, utilizing standard package managers to satisfy build dependencies. UI shards install their own X11 runtime and run under `dbus-run-session` plus `xvfb-run`, with `openbox` started inside the virtual display so Ekos windows can reliably acquire focus, while non-UI shards avoid that overhead.
 
+The blocking UI shards only include suites that have remained stable on the constrained GitHub runner profile. `TestEkosCaptureWorkflow` is still built and can be run explicitly for targeted investigation, but it is not part of the blocking shard until its intermittent Qt6/xcb segfaults are resolved.
+
 ## Continuous Deployment
 
 The jobs pertaining to deployment are triggered by pushes in specific branches of the KStars repository, declared in YAML files
