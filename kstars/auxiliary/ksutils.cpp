@@ -1366,7 +1366,7 @@ QStringList getAstrometryDefaultIndexFolderPaths()
     QDir writableDir(confDir);
     if (writableDir.exists() == false)
     {
-        if (writableDir.mkdir(confDir) == false)
+        if (writableDir.mkpath(confDir) == false)
         {
             qCCritical(KSTARS) << "Failed to create local astrometry directory";
             folderPaths.clear();
