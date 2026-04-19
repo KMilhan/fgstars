@@ -12,6 +12,7 @@
       <arg type="s" direction="out"/>
     </method>
     <method name="abort">
+      <arg name="train" type="s" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
     </method>
     <method name="loadSequenceQueue">
@@ -22,7 +23,13 @@
       <arg name="targetName" type="s" direction="in"/>
     </method>
     <method name="clearAutoFocusHFR">
+      <arg name="train" type="s" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="findCameraPosition">
+      <arg name="train" type="s" direction="in"/>
+      <arg name="addIfNecessary" type="b" direction="in"/>
+      <arg type="i" direction="out"/>
     </method>
     <method name="setCapturedFramesMap">
       <arg name="signature" type="s" direction="in"/>

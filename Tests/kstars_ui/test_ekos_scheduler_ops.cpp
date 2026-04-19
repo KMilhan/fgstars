@@ -389,6 +389,8 @@ bool TestEkosSchedulerOps::iterateScheduler(const QString &label, int iterations
             QString(" will send CAPTURE_COMPLETE at %1 ***************************")
             .arg(captureCompleteUTime.toString()).toLatin1().data() : "");
     bool captureCompleteDone = false;
+    KStarsDateTime currentLocalTime = KStarsData::Instance()->geo()->UTtoLT(*currentUTime);
+    Ekos::SchedulerModuleState::setLocalTime(&currentLocalTime);
     for (int i = 0; i < iterations; ++i)
     {
         scheduler->moduleState()->iterationTimer().stop();
@@ -409,8 +411,7 @@ bool TestEkosSchedulerOps::iterateScheduler(const QString &label, int iterations
                     currentUTime->toString().toLatin1().data());
             capture->setStatus(Ekos::CAPTURE_COMPLETE);
         }
-        KStarsDateTime currentLocalTime = KStarsData::Instance()->geo()->UTtoLT(*currentUTime);
-        Ekos::SchedulerModuleState::setLocalTime(&currentLocalTime);
+        currentLocalTime = KStarsData::Instance()->geo()->UTtoLT(*currentUTime);
         restoreSimulatedClock(*currentUTime);
         *sleepMs = scheduler->process()->runSchedulerIteration();
 
@@ -804,6 +805,7 @@ void TestEkosSchedulerOps::runSimpleJob(const GeoLocation &geo, const SkyObject 
         return (scheduler->activeJob() != nullptr &&
                 scheduler->activeJob()->getStage() == Ekos::SCHEDSTAGE_CAPTURING);
     }));
+    QVERIFY2(guider->autoStarEnabled, "Scheduler should enable guide auto-star before capturing");
 
     {
         WithInterval interval(1000, scheduler);

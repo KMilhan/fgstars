@@ -53,7 +53,7 @@ class MockFocus : public QObject
             fprintf(stderr, "MockFocus::abort called\n");
             setStatus(Ekos::FOCUS_IDLE);
         }
-        Q_SCRIPTABLE Q_NOREPLY bool canAutoFocus(const QString &trainname)
+        Q_SCRIPTABLE bool canAutoFocus(const QString &trainname)
         {
             Q_UNUSED(trainname);
             fprintf(stderr, "MockFocus::canAutoFocus called\n");
@@ -231,7 +231,17 @@ class MockCapture : public QObject
 
     public:
         MockCapture();
-        Q_SCRIPTABLE Q_NOREPLY void clearAutoFocusHFR() {}
+        Q_SCRIPTABLE Q_NOREPLY void clearAutoFocusHFR(const QString &train = "")
+        {
+            Q_UNUSED(train)
+        }
+        Q_SCRIPTABLE int findCameraPosition(const QString &train, bool addIfNecessary)
+        {
+            Q_UNUSED(addIfNecessary)
+            if (!train.isEmpty())
+                m_opticalTrain = train;
+            return 0;
+        }
         Q_SCRIPTABLE bool loadSequenceQueue(const QString &fileURL, QString train = "", bool isLead = true, QString targetName = "")
         {
             Q_UNUSED(train)
@@ -302,7 +312,7 @@ class MockCapture : public QObject
 
     Q_SIGNALS:
         Q_SCRIPTABLE void newStatus(Ekos::CaptureState status, const QString &trainname = "MockCamera", int cameraID = 0);
-        Q_SCRIPTABLE void captureComplete(const QVariantMap &metadata);
+        Q_SCRIPTABLE void captureComplete(const QVariantMap &metadata, const QString &train = "MockCamera");
         void ready();
 
     private:
@@ -413,7 +423,13 @@ class MockGuide : public QObject
         {
             fprintf(stderr, "%d @@@MockGuide::setCalibrationAutoStar()\n", __LINE__);
             calAutoStar = enable;
+            autoStarEnabled = enable;
             Q_UNUSED(enable);
+        }
+        Q_SCRIPTABLE Q_NOREPLY void setAutoStarEnabled(bool enable)
+        {
+            fprintf(stderr, "%d @@@MockGuide::setAutoStarEnabled(%d)\n", __LINE__, enable);
+            autoStarEnabled = enable;
         }
         Q_SCRIPTABLE Ekos::GuideState status()
         {
@@ -428,6 +444,7 @@ class MockGuide : public QObject
 
         // I believe this is really autoStar in general!
         bool calAutoStar { false };
+        bool autoStarEnabled { false };
 
         static const QString mockPath;
 

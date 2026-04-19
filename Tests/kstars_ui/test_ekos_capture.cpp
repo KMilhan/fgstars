@@ -229,6 +229,7 @@ void TestEkosCapture::testWorkspacePrioritySurvivesResize()
 
     KTRY_GADGET(ekos, CapturePreviewWidget, capturePreview);
     KTRY_GADGET(ekos, QSplitter, deviceSplitter);
+    KTRY_GADGET(ekos, QSplitter, splitter);
     KTRY_GADGET(ekos, QWidget, rightLayoutWidget);
 
     SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
@@ -236,6 +237,7 @@ void TestEkosCapture::testWorkspacePrioritySurvivesResize()
 
     const QSize originalSize = ekos->size();
     const QList<int> originalSplitterSizes = deviceSplitter->sizes();
+    const QList<int> originalShellSizes = splitter->sizes();
 
     ekos->resize(QSize(700, 700));
     QTRY_VERIFY_WITH_TIMEOUT(ekos->width() >= 700, 1000);
@@ -263,7 +265,34 @@ void TestEkosCapture::testWorkspacePrioritySurvivesResize()
                  "Embedded workspace pane should recover and remain larger than the contextual side panel after resizing.");
     }
 
+    const auto supportedWindowSizes = std::to_array<QSize>({
+        QSize(700, 700),
+        QSize(700, 920),
+        QSize(980, 700),
+        QSize(1280, 860),
+    });
+    for (const QSize &targetSize : supportedWindowSizes)
+    {
+        ekos->resize(targetSize);
+        QTRY_VERIFY_WITH_TIMEOUT(ekos->width() >= targetSize.width(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(ekos->height() >= targetSize.height(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(workspaceView->isVisible(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(capturePreview->previewWidget->width() > rightLayoutWidget->width(), 1000);
+        QTRY_VERIFY_WITH_TIMEOUT(capturePreview->previewWidget->height() > capturePreview->captureCountsWidget->height(), 1000);
+
+        const QList<int> shellSizes = splitter->sizes();
+        QVERIFY(shellSizes.size() >= 2);
+        QVERIFY2(shellSizes[0] >= shellSizes[1],
+                 "Persistent workspace shell should not become smaller than the tab stack at supported window sizes.");
+
+        const QList<int> workspaceSizes = deviceSplitter->sizes();
+        QCOMPARE(workspaceSizes.size(), 2);
+        QVERIFY2(workspaceSizes[0] > workspaceSizes[1],
+                 "Embedded workspace pane should stay larger than the contextual side panel at supported window sizes.");
+    }
+
     deviceSplitter->setSizes(originalSplitterSizes);
+    splitter->setSizes(originalShellSizes);
     ekos->resize(originalSize);
     QTRY_VERIFY_WITH_TIMEOUT(ekos->size() == originalSize, 1000);
 }
