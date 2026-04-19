@@ -197,7 +197,7 @@ void TestEkosCapture::testCaptureToTemporary()
     QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), 30000);
 
     const auto fitsViewers = KStars::Instance()->findChildren<FITSViewer *>();
-    QVERIFY(std::ranges::all_of(fitsViewers, [](const auto *viewer)
+    QVERIFY(std::ranges::all_of(fitsViewers, [](const auto * viewer)
     {
         return viewer == nullptr || viewer->isVisible() == false;
     }));
@@ -272,7 +272,8 @@ void TestEkosCapture::testWorkspacePrioritySurvivesResize()
                  "Embedded workspace pane should recover and remain larger than the contextual side panel after resizing.");
     }
 
-    const auto supportedWindowSizes = std::to_array<QSize>({
+    const auto supportedWindowSizes = std::to_array<QSize>(
+    {
         QSize(700, 700),
         QSize(700, 920),
         QSize(980, 700),
@@ -321,7 +322,8 @@ void TestEkosCapture::testPersistentWorkspaceAcrossTabs()
     QCOMPARE(deviceSplitter->parentWidget(), splitter);
     QVERIFY2(splitter->indexOf(deviceSplitter) == 0, "Persistent workspace shell should live above the tabbed module stack.");
 
-    const std::array<QWidget *, 5> modules = {
+    const std::array<QWidget *, 5> modules =
+    {
         ekos->setupTab,
         ekos->captureModule(),
         ekos->focusModule(),
@@ -366,7 +368,7 @@ void TestEkosCapture::testCaptureSingle()
     QTRY_VERIFY_WITH_TIMEOUT(workspaceView->imageData()->filename().endsWith("001.fits"), 5000);
 
     const auto fitsViewers = KStars::Instance()->findChildren<FITSViewer *>();
-    QVERIFY(std::ranges::all_of(fitsViewers, [](const auto *viewer)
+    QVERIFY(std::ranges::all_of(fitsViewers, [](const auto * viewer)
     {
         return viewer == nullptr || viewer->isVisible() == false;
     }));
@@ -477,7 +479,7 @@ void TestEkosCapture::testDetachedViewerFallbackFromWorkspaceHistory()
     QTRY_VERIFY_WITH_TIMEOUT(([&]()
     {
         const auto &viewers = KStars::Instance()->getFITSViewers();
-        const auto viewerIt = std::ranges::find_if(viewers, [](const auto &viewer)
+        const auto viewerIt = std::ranges::find_if(viewers, [](const auto & viewer)
         {
             return viewer && viewer->isVisible();
         });
