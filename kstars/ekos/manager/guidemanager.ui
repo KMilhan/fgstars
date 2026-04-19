@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>GuideManager</class>
  <widget class="QWidget" name="GuideManager">
@@ -85,9 +85,6 @@
              <height>20</height>
             </size>
            </property>
-           <property name="styleSheet">
-            <string notr="true">font-weight:bold;</string>
-           </property>
            <property name="text">
             <string>Guide: </string>
            </property>
@@ -109,9 +106,6 @@
              <width>16777215</width>
              <height>20</height>
             </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true"/>
            </property>
            <property name="text">
             <string>Idle</string>
@@ -208,7 +202,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="textFormat">
             <enum>Qt::RichText</enum>
@@ -276,7 +270,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="textFormat">
             <enum>Qt::RichText</enum>
@@ -347,7 +341,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="textFormat">
             <enum>Qt::RichText</enum>
@@ -422,12 +416,8 @@
         <number>0</number>
        </property>
        <widget class="GuideDriftGraph" name="driftGraph">
-        <property name="styleSheet">
-         <string notr="true">background-color: qlineargradient(x1:0, y1:0, x2:0, y2:0.5,
-                                      stop:0 darkgray, stop:1 black);</string>
-        </property>
-       </widget>
-       <widget class="GuideTargetPlot" name="targetPlot"/>
+        </widget>
+       <widget class="GuideTargetPlot" name="targetPlot" />
        <widget class="QWidget" name="guideStarPage">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -455,10 +445,6 @@
           <widget class="QLabel" name="guideStarView">
            <property name="toolTip">
             <string>Guide star</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background-color: qlineargradient(x1:0, y1:0, x2:0, y2:0.5,
-                                      stop:0 darkgray, stop:1 black);</string>
            </property>
            <property name="text">
             <string>guide star</string>
@@ -522,6 +508,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

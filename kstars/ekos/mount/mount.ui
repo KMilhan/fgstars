@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>Mount</class>
  <widget class="QWidget" name="Mount">
@@ -103,7 +103,7 @@
           <item row="2" column="0" colspan="3">
            <widget class="QLabel" name="pierSideLabel">
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -351,7 +351,7 @@
              <bool>false</bool>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use altitude limits only while the mount tracking. This is necessary for some mounts that intentionally pass this limit, e.g. for parking.&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;WARNING&lt;/span&gt;: leave unchecked if unsure, use only if you know what you are doing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Use altitude limits only while the mount tracking. This is necessary for some mounts that intentionally pass this limit, e.g. for parking.&lt;/p&gt;&lt;p&gt;&lt;span style=" font-weight:600;"&gt;WARNING&lt;/span&gt;: leave unchecked if unsure, use only if you know what you are doing.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Tracking only</string>
@@ -473,10 +473,10 @@
           </size>
          </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="icon">
-          <iconset theme="document-edit"/>
+          <iconset theme="document-edit" />
          </property>
          <property name="iconSize">
           <size>
@@ -599,10 +599,10 @@
            </size>
           </property>
           <property name="text">
-           <string/>
+           <string />
           </property>
           <property name="icon">
-           <iconset theme="media-playback-start"/>
+           <iconset theme="media-playback-start" />
           </property>
           <property name="iconSize">
            <size>
@@ -627,10 +627,10 @@
            </size>
           </property>
           <property name="text">
-           <string/>
+           <string />
           </property>
           <property name="icon">
-           <iconset theme="media-playback-stop"/>
+           <iconset theme="media-playback-stop" />
           </property>
           <property name="iconSize">
            <size>
@@ -668,14 +668,6 @@
               <height>48</height>
              </size>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-            </property>
             <property name="text">
              <string>OFF</string>
             </property>
@@ -697,14 +689,6 @@ font-weight:bold;
               <width>48</width>
               <height>48</height>
              </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
             </property>
             <property name="text">
              <string>ON</string>
@@ -734,14 +718,6 @@ font-weight:bold;
               <height>48</height>
              </size>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-            </property>
             <property name="text">
              <string>Park</string>
             </property>
@@ -763,14 +739,6 @@ font-weight:bold;
               <width>64</width>
               <height>48</height>
              </size>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
             </property>
             <property name="text">
              <string>UnPark</string>
@@ -811,10 +779,10 @@ font-weight:bold;
            </widget>
           </item>
           <item row="1" column="1">
-           <widget class="QComboBox" name="locationSource"/>
+           <widget class="QComboBox" name="locationSource" />
           </item>
           <item row="0" column="1">
-           <widget class="QComboBox" name="timeSource"/>
+           <widget class="QComboBox" name="timeSource" />
           </item>
           <item row="1" column="0">
            <widget class="QCheckBox" name="useGeographicUpdate">
@@ -859,7 +827,7 @@ font-weight:bold;
              <string>Clear  Model</string>
             </property>
             <property name="icon">
-             <iconset theme="edit-clear-all"/>
+             <iconset theme="edit-clear-all" />
             </property>
             <property name="iconSize">
              <size>
@@ -875,7 +843,7 @@ font-weight:bold;
              <string>Clear Parking</string>
             </property>
             <property name="icon">
-             <iconset theme="xml-attribute-delete"/>
+             <iconset theme="xml-attribute-delete" />
             </property>
             <property name="iconSize">
              <size>
@@ -891,7 +859,7 @@ font-weight:bold;
              <string>Purge All Configuration</string>
             </property>
             <property name="icon">
-             <iconset theme="delete"/>
+             <iconset theme="delete" />
             </property>
             <property name="iconSize">
              <size>
@@ -930,7 +898,7 @@ font-weight:bold;
         <string>Mount Control</string>
        </property>
        <property name="icon">
-        <iconset theme="draw-text"/>
+        <iconset theme="draw-text" />
        </property>
        <property name="iconSize">
         <size>
@@ -1005,6 +973,6 @@ font-weight:bold;
  <tabstops>
   <tabstop>minimumAltLimit</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

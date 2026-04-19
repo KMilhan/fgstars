@@ -25,30 +25,29 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ runner.os }}-qt6
-      - name: Configure CMake
+      - name: Build and Test with Xvfb
         working-directory: kstars-build
         run: |
+          # Install necessary display tools
+          apt update && apt install -y --no-install-recommends dbus-x11 xvfb libxcb-cursor0
+          
+          # Setup virtual display and dbus
+          export LC_ALL=C.UTF-8
+          export DISPLAY=:99.0
+          Xvfb :99 -screen 0 1024x768x16 &
+          sleep 2
+          export $(dbus-launch)
+          
+          # Configure CMake with the display environment captured
           cmake -GNinja \
             -DCMAKE_BUILD_TYPE=Release \
             -DCCACHE_SUPPORT=ON \
             -DBUILD_TESTING=ON \
             -DBUILD_DOC=OFF \
             -DBUILD_WITH_QT6=ON ..
-
-      - name: Build
-        working-directory: kstars-build
-        run: |
+            
+          # Build
           ninja -j$(nproc) all install
-
-      - name: Run Tests
-        working-directory: kstars-build
-        run: |
-          mkdir -p /var/run/dbus
-          dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address &
-          apt update && apt install -y --no-install-recommends dbus-x11 xvfb
-          export LC_ALL=C.UTF-8
-          export DISPLAY=:0.0
-          Xvfb :0 -screen 0 1024x768x16 &
-          export $(dbus-launch)
-          sleep 2
-          ctest -T test -L stable -LE unstable --output-on-failure
+          
+          # Run Tests in parallel
+          ctest -T test -L stable -LE unstable --output-on-failure -j$(nproc)

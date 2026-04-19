@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>Guide</class>
  <widget class="QWidget" name="Guide">
@@ -73,10 +73,10 @@
             </size>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="icon">
-            <iconset theme="document-edit"/>
+            <iconset theme="document-edit" />
            </property>
            <property name="iconSize">
             <size>
@@ -149,7 +149,7 @@
             <item row="1" column="1">
              <widget class="QCheckBox" name="guideSubframe">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Subframe the image around the guide star. Or for PHD2, receive the Guide Star Image instead of the full image frame. For the Internal Guider, before checking this option, you must &lt;span style=&quot; font-weight:600;&quot;&gt;first&lt;/span&gt; capture an image and select a guide star. Uncheck it to take a full frame again. &lt;br/&gt;Please note: 'SEP Multi Star' &lt;span style=&quot; font-weight:600;&quot;&gt;cannot&lt;/span&gt; use subframe.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Subframe the image around the guide star. Or for PHD2, receive the Guide Star Image instead of the full image frame. For the Internal Guider, before checking this option, you must &lt;span style=" font-weight:600;"&gt;first&lt;/span&gt; capture an image and select a guide star. Uncheck it to take a full frame again. &lt;br/&gt;Please note: 'SEP Multi Star' &lt;span style=" font-weight:600;"&gt;cannot&lt;/span&gt; use subframe.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Subframe</string>
@@ -168,7 +168,7 @@
                <string>Show in FITS Viewer...</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="iconSize">
                <size>
@@ -188,7 +188,7 @@
             <item row="2" column="1">
              <widget class="QCheckBox" name="guideAutoStar">
               <property name="toolTip">
-               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically select the calibration star. &lt;br/&gt;Please note: 'SEP Multi Star' does  &lt;span style=&quot; font-weight:600;&quot;&gt;always&lt;/span&gt; use 'auto star' detection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Automatically select the calibration star. &lt;br/&gt;Please note: 'SEP Multi Star' does  &lt;span style=" font-weight:600;"&gt;always&lt;/span&gt; use 'auto star' detection.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
               <property name="text">
                <string>Auto Star</string>
@@ -220,10 +220,10 @@
                <string>Clear calibration data.</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="edit-delete"/>
+               <iconset theme="edit-delete" />
               </property>
               <property name="iconSize">
                <size>
@@ -274,10 +274,10 @@
                <string>Manual Dither</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="path-simplify"/>
+               <iconset theme="path-simplify" />
               </property>
               <property name="iconSize">
                <size>
@@ -342,9 +342,6 @@
               <property name="toolTip">
                <string>Guide Declination Axis</string>
               </property>
-              <property name="styleSheet">
-               <string notr="true"/>
-              </property>
               <property name="text">
                <string>DEC</string>
               </property>
@@ -406,7 +403,7 @@
             <item row="2" column="2">
              <widget class="QLabel" name="label_8">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>Bin:</string>
@@ -416,7 +413,7 @@
             <item row="1" column="2">
              <widget class="QLabel" name="label_4">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>Delay:</string>
@@ -427,9 +424,6 @@
              <widget class="QCheckBox" name="rAGuideEnabled">
               <property name="toolTip">
                <string>Guide Right Ascention Axis</string>
-              </property>
-              <property name="styleSheet">
-               <string notr="true"/>
               </property>
               <property name="text">
                <string>RA</string>
@@ -486,10 +480,10 @@
                <string>Manual Pulse...</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="go-jump"/>
+               <iconset theme="go-jump" />
               </property>
               <property name="iconSize">
                <size>
@@ -553,10 +547,10 @@
                <string>Toggle the Guider Image...</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="kstars_stars"/>
+               <iconset theme="kstars_stars" />
               </property>
               <property name="iconSize">
                <size>
@@ -629,7 +623,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -648,7 +642,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -683,7 +677,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -702,7 +696,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -763,7 +757,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -806,7 +800,7 @@
             <item row="0" column="0">
              <widget class="QLabel" name="l_16">
               <property name="text">
-               <string>Guiding delta &quot;:</string>
+               <string>Guiding delta ":</string>
               </property>
              </widget>
             </item>
@@ -882,7 +876,7 @@
                <string>Guiding RMS error</string>
               </property>
               <property name="text">
-               <string>RMS&quot; (RA/DEC):</string>
+               <string>RMS" (RA/DEC):</string>
               </property>
              </widget>
             </item>
@@ -922,7 +916,7 @@
             <item row="3" column="0">
              <widget class="QLabel" name="label_7">
               <property name="text">
-               <string>Total RMS&quot;:</string>
+               <string>Total RMS":</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -962,7 +956,7 @@
             <item row="5" column="0">
              <widget class="QLabel" name="guideInfoLabel">
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignLeading|Qt::AlignmentFlag::AlignLeft|Qt::AlignmentFlag::AlignVCenter</set>
@@ -972,7 +966,7 @@
             <item row="5" column="1">
              <widget class="QLabel" name="guideInfoText">
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="alignment">
                <set>Qt::AlignmentFlag::AlignCenter</set>
@@ -1050,7 +1044,7 @@
             </sizepolicy>
            </property>
            <property name="title">
-            <string/>
+            <string />
            </property>
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <property name="spacing">
@@ -1387,7 +1381,7 @@
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom in for the X-Axis.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="iconSize">
                 <size>
@@ -1415,7 +1409,7 @@
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Zoom out for the X-Axis.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="iconSize">
                 <size>
@@ -1487,7 +1481,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Autoscale both Guide Graphs to their default scale. If any points are located outside this range, the view is expanded to include them (with the exception of the time axis in the drift graphics).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="iconSize">
             <size>
@@ -1509,7 +1503,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Export the guide data from the current session to a CSV file readable by a spreadsheet program.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="iconSize">
             <size>
@@ -1531,7 +1525,7 @@
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear all the recent guide data.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="iconSize">
             <size>
@@ -1637,6 +1631,6 @@
   <tabstop>correctionSlider</tabstop>
   <tabstop>tabWidget</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

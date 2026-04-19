@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>MountMotionWidget</class>
  <widget class="QWidget" name="MountMotionWidget">
@@ -65,21 +65,8 @@
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -106,21 +93,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -147,21 +121,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -188,21 +149,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -229,21 +177,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -267,21 +202,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -308,21 +230,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -349,21 +258,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -387,21 +283,8 @@ QPushButton:!pressed
            <height>48</height>
           </size>
          </property>
-         <property name="styleSheet">
-          <string notr="true">QPushButton:pressed
-{
-  background-color: &quot;red&quot;
-}
-
-QPushButton:!pressed
-{
-  background-color: &quot;#ccc7ba&quot;
-}
-
-</string>
-         </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="iconSize">
           <size>
@@ -466,6 +349,6 @@ QPushButton:!pressed
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

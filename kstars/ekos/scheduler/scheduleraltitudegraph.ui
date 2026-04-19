@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>SchedulerAltitudeGraph</class>
  <widget class="QFrame" name="SchedulerAltitudeGraph">
@@ -9,9 +9,6 @@
     <width>188</width>
     <height>171</height>
    </rect>
-  </property>
-  <property name="styleSheet">
-   <string notr="true">background-color: black; color: white;</string>
   </property>
   <layout class="QVBoxLayout" name="altGraphLayoutV">
    <property name="spacing">
@@ -49,11 +46,8 @@
        <height>16</height>
       </size>
      </property>
-     <property name="styleSheet">
-      <string notr="true">background-color: black; color: white;</string>
-     </property>
      <property name="text">
-      <string/>
+      <string />
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
@@ -151,6 +145,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

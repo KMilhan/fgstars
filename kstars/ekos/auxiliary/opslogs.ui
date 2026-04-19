@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>OpsLogs</class>
  <widget class="QWidget" name="OpsLogs">
@@ -43,7 +43,7 @@
         </size>
        </property>
        <property name="text">
-        <string/>
+        <string />
        </property>
        <property name="pixmap">
         <pixmap resource="../../data/kstars.qrc">:/icons/AlignWarning.svg</pixmap>
@@ -456,9 +456,6 @@
      </item>
      <item>
       <widget class="QPushButton" name="showLogsB">
-       <property name="styleSheet">
-        <string notr="true">font-weight:bold;</string>
-       </property>
        <property name="text">
         <string>Open Logs Directory...</string>
        </property>
@@ -482,7 +479,7 @@
         <string>Clear all logs</string>
        </property>
        <property name="text">
-        <string/>
+        <string />
        </property>
        <property name="icon">
         <iconset theme="edit-delete">
@@ -501,9 +498,9 @@
   </layout>
  </widget>
  <resources>
-  <include location="../../data/kstars.qrc"/>
+  <include location="../../data/kstars.qrc" />
  </resources>
- <connections/>
+ <connections />
  <buttongroups>
   <buttongroup name="driversGroup">
    <property name="exclusive">
@@ -515,6 +512,6 @@
     <bool>false</bool>
    </property>
   </buttongroup>
-  <buttongroup name="verbosityButtonGroup"/>
+  <buttongroup name="verbosityButtonGroup" />
  </buttongroups>
 </ui>

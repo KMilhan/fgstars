@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>FocusProgressWidget</class>
  <widget class="QWidget" name="FocusProgressWidget">
@@ -93,9 +93,6 @@
              <width>16777215</width>
              <height>20</height>
             </size>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">font-weight:bold;</string>
            </property>
            <property name="text">
             <string>Focus</string>
@@ -196,7 +193,7 @@
             </size>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="textFormat">
             <enum>Qt::RichText</enum>
@@ -274,27 +271,15 @@
         <property name="toolTip">
          <string>Focus HFR profile</string>
         </property>
-        <property name="styleSheet">
-         <string notr="true">background-color: qlineargradient(x1:0, y1:0, x2:0, y2:0.5,
-                                      stop:0 darkgray, stop:1 black);</string>
-        </property>
-       </widget>
+        </widget>
        <widget class="FocusHFRVPlot" name="hfrVPlot">
-        <property name="styleSheet">
-         <string notr="true">background-color: qlineargradient(x1:0, y1:0, x2:0, y2:0.5,
-                                      stop:0 darkgray, stop:1 black);</string>
-        </property>
-       </widget>
+        </widget>
        <widget class="QWidget" name="focusStarPage">
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QLabel" name="focusStarView">
            <property name="toolTip">
             <string>Focus star</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true">background-color: qlineargradient(x1:0, y1:0, x2:0, y2:0.5,
-                                      stop:0 darkgray, stop:1 black);</string>
            </property>
            <property name="text">
             <string>Focus star</string>
@@ -363,6 +348,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

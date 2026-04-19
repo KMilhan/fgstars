@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>FilterSettings</class>
  <widget class="QDialog" name="FilterSettings">
@@ -31,11 +31,8 @@
      </item>
      <item>
       <widget class="QLabel" name="filterNameLabel">
-       <property name="styleSheet">
-        <string notr="true">font-weight:bold;</string>
-       </property>
        <property name="text">
-        <string/>
+        <string />
        </property>
       </widget>
      </item>
@@ -81,7 +78,7 @@
      <item>
       <widget class="QLabel" name="label_2">
        <property name="text">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set &lt;span style=&quot; font-style:italic;&quot;&gt;relative&lt;/span&gt; filter offsets in steps either directly in the table or use the Build Offsets tool.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Set &lt;span style=" font-style:italic;"&gt;relative&lt;/span&gt; filter offsets in steps either directly in the table or use the Build Offsets tool.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="wordWrap">
         <bool>true</bool>
@@ -132,7 +129,7 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources />
  <connections>
   <connection>
    <sender>buttonBox</sender>

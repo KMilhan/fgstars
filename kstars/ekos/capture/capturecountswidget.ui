@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>CaptureCountsWidget</class>
  <widget class="QWidget" name="CaptureCountsWidget">
@@ -93,11 +93,6 @@
         </property>
         <property name="toolTip">
          <string>Progress of the currently active capture.</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QProgressBar::chunk {
-background-color: rgb(164, 0, 0);
-}</string>
         </property>
         <property name="value">
          <number>24</number>
@@ -276,10 +271,10 @@ background-color: rgb(164, 0, 0);
            <string>Switch to the text display of capture counts display.</string>
           </property>
           <property name="text">
-           <string/>
+           <string />
           </property>
           <property name="icon">
-           <iconset theme="arrow-down"/>
+           <iconset theme="arrow-down" />
           </property>
          </widget>
         </item>
@@ -369,11 +364,6 @@ background-color: rgb(164, 0, 0);
         </property>
         <property name="toolTip">
          <string>Progress of the currently active capture.</string>
-        </property>
-        <property name="styleSheet">
-         <string notr="true">QProgressBar::chunk {
-background-color: rgb(164, 0, 0);
-}</string>
         </property>
         <property name="value">
          <number>24</number>
@@ -614,10 +604,10 @@ background-color: rgb(164, 0, 0);
            <string>Switch display to the graphical mode of capture counts display.</string>
           </property>
           <property name="text">
-           <string/>
+           <string />
           </property>
           <property name="icon">
-           <iconset theme="arrow-up"/>
+           <iconset theme="arrow-up" />
           </property>
          </widget>
         </item>
@@ -636,6 +626,6 @@ background-color: rgb(164, 0, 0);
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

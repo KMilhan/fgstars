@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>MountPositionWidget</class>
  <widget class="QWidget" name="MountPositionWidget">
@@ -78,9 +78,6 @@
        <bold>true</bold>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">color:&quot;orange&quot;</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Box</enum>
      </property>
@@ -103,9 +100,6 @@
        <pointsize>12</pointsize>
        <bold>true</bold>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color:&quot;orange&quot;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Box</enum>
@@ -161,9 +155,6 @@
        <pointsize>12</pointsize>
        <bold>true</bold>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color:&quot;orange&quot;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Box</enum>
@@ -238,9 +229,6 @@
        <bold>true</bold>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">color:&quot;orange&quot;</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Box</enum>
      </property>
@@ -296,9 +284,6 @@
        <bold>true</bold>
       </font>
      </property>
-     <property name="styleSheet">
-      <string notr="true">color:&quot;orange&quot;</string>
-     </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Box</enum>
      </property>
@@ -321,9 +306,6 @@
        <pointsize>12</pointsize>
        <bold>true</bold>
       </font>
-     </property>
-     <property name="styleSheet">
-      <string notr="true">color:&quot;orange&quot;</string>
      </property>
      <property name="frameShape">
       <enum>QFrame::Shape::Box</enum>
@@ -351,9 +333,9 @@
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
  <buttongroups>
-  <buttongroup name="coordinateEpochGroup"/>
+  <buttongroup name="coordinateEpochGroup" />
  </buttongroups>
 </ui>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>Camera</class>
  <widget class="QWidget" name="Camera">
@@ -35,7 +35,7 @@
       <bool>false</bool>
      </property>
      <property name="text">
-      <string/>
+      <string />
      </property>
      <property name="WordWrap" stdset="0">
       <bool>true</bool>
@@ -63,10 +63,10 @@
          <item>
           <widget class="QLabel" name="opticalTrainLabel">
            <property name="toolTip">
-            <string/>
+            <string />
            </property>
            <property name="whatsThis">
-            <string/>
+            <string />
            </property>
            <property name="text">
             <string>Train:</string>
@@ -107,10 +107,10 @@
             </size>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="icon">
-            <iconset theme="document-edit"/>
+            <iconset theme="document-edit" />
            </property>
            <property name="iconSize">
             <size>
@@ -160,10 +160,10 @@
             <string>Restart camera driver</string>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="icon">
-            <iconset theme="system-shutdown"/>
+            <iconset theme="system-shutdown" />
            </property>
            <property name="iconSize">
             <size>
@@ -191,10 +191,10 @@
             <string>Clear camera configuration</string>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="icon">
-            <iconset theme="delete"/>
+            <iconset theme="delete" />
            </property>
            <property name="iconSize">
             <size>
@@ -222,10 +222,10 @@
             <string>Reset CCD frame &amp; size values to default values</string>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="icon">
-            <iconset theme="edit-reset"/>
+            <iconset theme="edit-reset" />
            </property>
            <property name="iconSize">
             <size>
@@ -279,7 +279,7 @@
              <string>Horizontal and Vertical binning</string>
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Binning:</string>
@@ -327,10 +327,10 @@
           <item row="2" column="0">
            <widget class="QLabel" name="exposureLabel">
             <property name="toolTip">
-             <string/>
+             <string />
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Exposure:</string>
@@ -370,13 +370,13 @@
                <string>Filter Settings</string>
               </property>
               <property name="statusTip">
-               <string/>
+               <string />
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="view-filter"/>
+               <iconset theme="view-filter" />
               </property>
               <property name="iconSize">
                <size>
@@ -407,10 +407,10 @@
                <string>Edit filter names</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="document-edit"/>
+               <iconset theme="document-edit" />
               </property>
               <property name="iconSize">
                <size>
@@ -430,10 +430,10 @@
             <item>
              <widget class="QLabel" name="textLabel1_15">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>W:</string>
@@ -456,10 +456,10 @@
             <item>
              <widget class="QLabel" name="textLabel1_16">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>H:</string>
@@ -512,14 +512,6 @@
               <property name="toolTip">
                <string>Turn cooler on</string>
               </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-              </property>
               <property name="text">
                <string>On</string>
               </property>
@@ -554,14 +546,6 @@ font-weight:bold;
               <property name="toolTip">
                <string>Turn cooler off</string>
               </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-              </property>
               <property name="text">
                <string>Off</string>
               </property>
@@ -580,10 +564,10 @@ font-weight:bold;
             <item>
              <widget class="QLabel" name="captureBinXLabel">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>H:</string>
@@ -615,10 +599,10 @@ font-weight:bold;
             <item>
              <widget class="QLabel" name="captureBinYLabel">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>V:</string>
@@ -652,10 +636,10 @@ font-weight:bold;
           <item row="7" column="0">
            <widget class="QLabel" name="textLabel1_19">
             <property name="toolTip">
-             <string/>
+             <string />
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Size:</string>
@@ -665,10 +649,10 @@ font-weight:bold;
           <item row="6" column="0">
            <widget class="QLabel" name="textLabel1_12">
             <property name="toolTip">
-             <string/>
+             <string />
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Frame:</string>
@@ -685,10 +669,10 @@ font-weight:bold;
           <item row="2" column="3">
            <widget class="QLabel" name="FilterPosLabel">
             <property name="toolTip">
-             <string/>
+             <string />
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Filter:</string>
@@ -703,10 +687,10 @@ font-weight:bold;
             <item>
              <widget class="QLabel" name="textLabel1_13">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>X:</string>
@@ -726,10 +710,10 @@ font-weight:bold;
             <item>
              <widget class="QLabel" name="textLabel1_14">
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
                <string>Y:</string>
@@ -773,10 +757,10 @@ font-weight:bold;
           <item row="5" column="0">
            <widget class="QLabel" name="textLabel1_17">
             <property name="toolTip">
-             <string/>
+             <string />
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Type:</string>
@@ -816,7 +800,7 @@ font-weight:bold;
              <string>Camera Gain</string>
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Gain:</string>
@@ -840,10 +824,10 @@ font-weight:bold;
                <string>Current camera gain</string>
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -880,7 +864,7 @@ font-weight:bold;
              <string>Camera Offset</string>
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Offset:</string>
@@ -904,10 +888,10 @@ font-weight:bold;
                <string>Current camera offset</string>
               </property>
               <property name="whatsThis">
-               <string/>
+               <string />
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -1029,10 +1013,10 @@ font-weight:bold;
                 <string>Rotator Control</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="rotation-allowed"/>
+                <iconset theme="rotation-allowed" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1075,10 +1059,10 @@ font-weight:bold;
                 <string>Create and manage Dark Library</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="lighttable"/>
+                <iconset theme="lighttable" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1112,10 +1096,10 @@ font-weight:bold;
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Exposure calculator&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="clock"/>
+                <iconset theme="clock" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1152,10 +1136,10 @@ font-weight:bold;
                 <string>Dark &amp; Flat frames automatic calibration options</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="lighttable"/>
+                <iconset theme="lighttable" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1207,10 +1191,10 @@ font-weight:bold;
                 <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Generate Dark Flats after adding Flat frames to the sequence queue.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="tools-wizard"/>
+                <iconset theme="tools-wizard" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1259,10 +1243,10 @@ font-weight:bold;
                 <string>Manage INDI sequence properties</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="document-properties"/>
+                <iconset theme="document-properties" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1299,10 +1283,10 @@ font-weight:bold;
                 <string>Configure Guide &amp; Focus limits</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="firewall-applet-panic"/>
+                <iconset theme="firewall-applet-panic" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1345,10 +1329,10 @@ font-weight:bold;
                 <string>Manage sequence scripts</string>
                </property>
                <property name="text">
-                <string/>
+                <string />
                </property>
                <property name="icon">
-                <iconset theme="dialog-scripts"/>
+                <iconset theme="dialog-scripts" />
                </property>
                <property name="iconSize">
                 <size>
@@ -1418,7 +1402,7 @@ font-weight:bold;
                <string>Current CCD temperature</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="alignment">
                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1514,10 +1498,10 @@ font-weight:bold;
                <string>Set CCD temperature</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="checkmark"/>
+               <iconset theme="checkmark" />
               </property>
               <property name="iconSize">
                <size>
@@ -1551,10 +1535,10 @@ font-weight:bold;
                <string>Temperature regulation</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="colors-chromablue"/>
+               <iconset theme="colors-chromablue" />
               </property>
               <property name="iconSize">
                <size>
@@ -1613,7 +1597,7 @@ font-weight:bold;
                  <string>Delay in seconds before capturing an image</string>
                 </property>
                 <property name="whatsThis">
-                 <string/>
+                 <string />
                 </property>
                 <property name="text">
                  <string>Delay:</string>
@@ -1682,10 +1666,10 @@ font-weight:bold;
           <item row="3" column="0">
            <widget class="QLabel" name="exposureOptionsLabel">
             <property name="toolTip">
-             <string/>
+             <string />
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Count:</string>
@@ -1742,7 +1726,7 @@ font-weight:bold;
            </widget>
           </item>
           <item row="1" column="1" colspan="4">
-           <widget class="QLineEdit" name="fileDirectoryT"/>
+           <widget class="QLineEdit" name="fileDirectoryT" />
           </item>
           <item row="0" column="1" colspan="5">
            <widget class="QLineEdit" name="targetNameT">
@@ -1760,7 +1744,7 @@ font-weight:bold;
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Base local capture directory&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Directory:</string>
@@ -1791,10 +1775,10 @@ font-weight:bold;
              <string>Reset placeholder format to default</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="edit-clear"/>
+             <iconset theme="edit-clear" />
             </property>
             <property name="iconSize">
              <size>
@@ -1810,7 +1794,7 @@ font-weight:bold;
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Target is the name of the targeted object.&lt;/p&gt;&lt;p&gt;It is available to be used in the filename Format via the %t or %type placeholder tag.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Target:</string>
@@ -1830,7 +1814,7 @@ font-weight:bold;
           <item row="3" column="0">
            <widget class="QLabel" name="label_4">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select how captured images are uploaded:&lt;/p&gt;&lt;ol style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Locally&lt;/span&gt;: Captured images are saved locally on disk in the directory specified above.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Remotely&lt;/span&gt;: When connecting to a remote device, select this option to save images on the remote device only. No images are uploaded to Ekos.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Both&lt;/span&gt;: Captured images are saved on both the remote computer &lt;span style=&quot; font-weight:600;&quot;&gt;and&lt;/span&gt; on the local disk as well.&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;When selecting &lt;span style=&quot; font-style:italic;&quot;&gt;Remotely&lt;/span&gt; or &lt;span style=&quot; font-style:italic;&quot;&gt;Both&lt;/span&gt;, you must specify the remote directory where the remote images are saved to. By default, all captured images are saved &lt;span style=&quot; font-style:italic;&quot;&gt;Locally&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Select how captured images are uploaded:&lt;/p&gt;&lt;ol style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-weight:600;"&gt;Locally&lt;/span&gt;: Captured images are saved locally on disk in the directory specified above.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-weight:600;"&gt;Remotely&lt;/span&gt;: When connecting to a remote device, select this option to save images on the remote device only. No images are uploaded to Ekos.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-weight:600;"&gt;Both&lt;/span&gt;: Captured images are saved on both the remote computer &lt;span style=" font-weight:600;"&gt;and&lt;/span&gt; on the local disk as well.&lt;/li&gt;&lt;/ol&gt;&lt;p&gt;When selecting &lt;span style=" font-style:italic;"&gt;Remotely&lt;/span&gt; or &lt;span style=" font-style:italic;"&gt;Both&lt;/span&gt;, you must specify the remote directory where the remote images are saved to. By default, all captured images are saved &lt;span style=" font-style:italic;"&gt;Locally&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Save:</string>
@@ -1838,7 +1822,7 @@ font-weight:bold;
            </widget>
           </item>
           <item row="2" column="1">
-           <widget class="QLineEdit" name="placeholderFormatT"/>
+           <widget class="QLineEdit" name="placeholderFormatT" />
           </item>
           <item row="2" column="4" colspan="2">
            <widget class="QSpinBox" name="formatSuffixN">
@@ -1862,7 +1846,7 @@ font-weight:bold;
           <item row="2" column="0">
            <widget class="QLabel" name="formatLabel">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Format is used to define the image file names by the use of placeholder tags.&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %f&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%filename&lt;/span&gt;: The name of the .esq file, without extension.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %D&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%Datetime&lt;/span&gt;: The current time and date &lt;span style=&quot; font-weight:704;&quot;&gt;when the file is saved.&lt;/span&gt;&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %T&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%Type&lt;/span&gt;: The frame type eg: 'Light', 'Bias', 'Dark', 'Flat'...&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %e&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%exposure&lt;/span&gt;: The exposure duration in seconds, with '_secs' as suffix.&lt;/li&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %E&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%exp&lt;/span&gt;: The exposure duration in seconds as plain number, without any unit as suffix.&lt;/li&gt;&lt;/ul&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %F&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%Filter&lt;/span&gt;: The active filter name.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %t&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%target&lt;/span&gt;: The Target name.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder &lt;span style=&quot; font-weight:600;&quot;&gt;%C&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;%temperature&lt;/span&gt;: The camera temperature of capturing.&lt;/li&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder &lt;span style=&quot; font-weight:600;&quot;&gt;%B&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;%bin&lt;/span&gt;: The binning configured for capturing.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder &lt;span style=&quot; font-weight:600;&quot;&gt;%G&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;%gain&lt;/span&gt;: The gain configured for capturing.&lt;/li&gt;&lt;/ul&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder &lt;span style=&quot; font-weight:600;&quot;&gt;%O&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;%offset&lt;/span&gt;: The offset configured for capturing.&lt;/li&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder &lt;span style=&quot; font-weight:600;&quot;&gt;%I&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;%iso&lt;/span&gt;: The ISO value (DSLRs only).&lt;/li&gt;&lt;/ul&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder &lt;span style=&quot; font-weight:600;&quot;&gt;%P&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;%pierside&lt;/span&gt;: The current mount's pier side.&lt;/li&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder &lt;span style=&quot; font-weight:600;&quot;&gt;%H&lt;/span&gt; or &lt;span style=&quot; font-weight:600;&quot;&gt;%hostname&lt;/span&gt;: The hostname running EKOS.&lt;/li&gt;&lt;/ul&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Placeholder&lt;span style=&quot; font-weight:704;&quot;&gt; %s*&lt;/span&gt; or &lt;span style=&quot; font-weight:704;&quot;&gt;%sequence&lt;/span&gt;: The image sequence identifier where * is the number of digits used (1-9). &lt;span style=&quot; font-weight:704;&quot;&gt;This tag is mandatory and must be the last element in the format.&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Arbitrary text may also be included within the Format string, &lt;span style=&quot; font-weight:704;&quot;&gt;except the % and \ characters.&lt;/span&gt; The / path character can be used to define arbitrary directories.&lt;/p&gt;&lt;p&gt;Notes:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Tags are case sensitive in both their short and long forms.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;Only use the %Datetime tag in the filename portion of the format, not in the path definition.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Format is used to define the image file names by the use of placeholder tags.&lt;/p&gt;&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %f&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%filename&lt;/span&gt;: The name of the .esq file, without extension.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %D&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%Datetime&lt;/span&gt;: The current time and date &lt;span style=" font-weight:704;"&gt;when the file is saved.&lt;/span&gt;&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %T&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%Type&lt;/span&gt;: The frame type eg: 'Light', 'Bias', 'Dark', 'Flat'...&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %e&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%exposure&lt;/span&gt;: The exposure duration in seconds, with '_secs' as suffix.&lt;/li&gt;&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %E&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%exp&lt;/span&gt;: The exposure duration in seconds as plain number, without any unit as suffix.&lt;/li&gt;&lt;/ul&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %F&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%Filter&lt;/span&gt;: The active filter name.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %t&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%target&lt;/span&gt;: The Target name.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder &lt;span style=" font-weight:600;"&gt;%C&lt;/span&gt; or &lt;span style=" font-weight:600;"&gt;%temperature&lt;/span&gt;: The camera temperature of capturing.&lt;/li&gt;&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder &lt;span style=" font-weight:600;"&gt;%B&lt;/span&gt; or &lt;span style=" font-weight:600;"&gt;%bin&lt;/span&gt;: The binning configured for capturing.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder &lt;span style=" font-weight:600;"&gt;%G&lt;/span&gt; or &lt;span style=" font-weight:600;"&gt;%gain&lt;/span&gt;: The gain configured for capturing.&lt;/li&gt;&lt;/ul&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder &lt;span style=" font-weight:600;"&gt;%O&lt;/span&gt; or &lt;span style=" font-weight:600;"&gt;%offset&lt;/span&gt;: The offset configured for capturing.&lt;/li&gt;&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder &lt;span style=" font-weight:600;"&gt;%I&lt;/span&gt; or &lt;span style=" font-weight:600;"&gt;%iso&lt;/span&gt;: The ISO value (DSLRs only).&lt;/li&gt;&lt;/ul&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder &lt;span style=" font-weight:600;"&gt;%P&lt;/span&gt; or &lt;span style=" font-weight:600;"&gt;%pierside&lt;/span&gt;: The current mount's pier side.&lt;/li&gt;&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder &lt;span style=" font-weight:600;"&gt;%H&lt;/span&gt; or &lt;span style=" font-weight:600;"&gt;%hostname&lt;/span&gt;: The hostname running EKOS.&lt;/li&gt;&lt;/ul&gt;&lt;li style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Placeholder&lt;span style=" font-weight:704;"&gt; %s*&lt;/span&gt; or &lt;span style=" font-weight:704;"&gt;%sequence&lt;/span&gt;: The image sequence identifier where * is the number of digits used (1-9). &lt;span style=" font-weight:704;"&gt;This tag is mandatory and must be the last element in the format.&lt;/span&gt;&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;Arbitrary text may also be included within the Format string, &lt;span style=" font-weight:704;"&gt;except the % and \ characters.&lt;/span&gt; The / path character can be used to define arbitrary directories.&lt;/p&gt;&lt;p&gt;Notes:&lt;/p&gt;&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Tags are case sensitive in both their short and long forms.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;Only use the %Datetime tag in the filename portion of the format, not in the path definition.&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Format:</string>
@@ -1890,7 +1874,7 @@ font-weight:bold;
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -1911,7 +1895,7 @@ font-weight:bold;
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="countDelayLayout"/>
+        <layout class="QHBoxLayout" name="countDelayLayout" />
        </item>
        <item>
         <spacer name="verticalSpacer">
@@ -1991,7 +1975,7 @@ font-weight:bold;
                  </size>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2022,7 +2006,7 @@ font-weight:bold;
                  </size>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2069,7 +2053,7 @@ font-weight:bold;
                  </size>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2100,7 +2084,7 @@ font-weight:bold;
                  </size>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2134,7 +2118,7 @@ font-weight:bold;
                  <string>Reset status of all jobs</string>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2159,7 +2143,7 @@ font-weight:bold;
                  <string>Select Observer...</string>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                </widget>
               </item>
@@ -2200,7 +2184,7 @@ font-weight:bold;
                  <string>Load Capture Sequence from File...</string>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2234,7 +2218,7 @@ font-weight:bold;
                  <string>Save Capture Sequence...</string>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2268,7 +2252,7 @@ font-weight:bold;
                  <string>Save Capture Sequence As...</string>
                 </property>
                 <property name="text">
-                 <string/>
+                 <string />
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">queueEditButtonGroup</string>
@@ -2410,10 +2394,10 @@ font-weight:bold;
               <string>Start Framing (Looping)...</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="media-playlist-repeat"/>
+              <iconset theme="media-playlist-repeat" />
              </property>
              <property name="iconSize">
               <size>
@@ -2450,7 +2434,7 @@ font-weight:bold;
               <string>Start Sequence</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <attribute name="buttonGroup">
               <string notr="true">sequenceControlsButtonGroup</string>
@@ -2477,14 +2461,11 @@ font-weight:bold;
              <property name="toolTip">
               <string>Live Video...</string>
              </property>
-             <property name="styleSheet">
-              <string notr="true"/>
-             </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="camera-off"/>
+              <iconset theme="camera-off" />
              </property>
              <property name="iconSize">
               <size>
@@ -2547,10 +2528,10 @@ font-weight:bold;
               <string>Capture a Preview...</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="camera-photo"/>
+              <iconset theme="camera-photo" />
              </property>
              <property name="iconSize">
               <size>
@@ -2624,7 +2605,7 @@ font-weight:bold;
               <string>Pause Sequence</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="autoDefault">
               <bool>true</bool>
@@ -2717,7 +2698,7 @@ font-weight:bold;
             <item row="2" column="4">
              <widget class="QLabel" name="avgDownloadTime">
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="alignment">
                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2809,7 +2790,7 @@ font-weight:bold;
             <item row="1" column="5">
              <widget class="QLabel" name="targetDriftUnit">
               <property name="text">
-               <string>&quot;</string>
+               <string>"</string>
               </property>
              </widget>
             </item>
@@ -2939,10 +2920,10 @@ font-weight:bold;
   <tabstop>loopB</tabstop>
   <tabstop>liveVideoB</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
  <buttongroups>
-  <buttongroup name="sequenceControlsButtonGroup"/>
+  <buttongroup name="sequenceControlsButtonGroup" />
   <buttongroup name="queueEditButtonGroup">
    <property name="exclusive">
     <bool>false</bool>

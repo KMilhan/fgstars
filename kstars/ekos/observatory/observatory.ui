@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>Observatory</class>
  <widget class="QWidget" name="Observatory">
@@ -14,7 +14,7 @@
    <string>Observatory</string>
   </property>
   <property name="toolTip">
-   <string/>
+   <string />
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -113,7 +113,7 @@
             <item row="4" column="0" colspan="4">
              <widget class="QLabel" name="motionStatusLabel">
               <property name="text">
-               <string/>
+               <string />
               </property>
              </widget>
             </item>
@@ -216,14 +216,6 @@
                  <property name="toolTip">
                   <string>Move the dome for the given degrees and direction.</string>
                  </property>
-                 <property name="styleSheet">
-                  <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-                 </property>
                  <property name="text">
                   <string>Move (rel)</string>
                  </property>
@@ -248,14 +240,6 @@ font-weight:bold;
                  </property>
                  <property name="toolTip">
                   <string>Rotate clockwise</string>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
                  </property>
                  <property name="text">
                   <string>&amp;CW</string>
@@ -284,14 +268,6 @@ font-weight:bold;
                  </property>
                  <property name="toolTip">
                   <string>Rotate counter clockwise</string>
-                 </property>
-                 <property name="styleSheet">
-                  <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
                  </property>
                  <property name="text">
                   <string>CCW</string>
@@ -356,15 +332,7 @@ font-weight:bold;
                 </size>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable slaving, dome motion &lt;span style=&quot; font-weight:600;&quot;&gt;follows telescope motion&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Enable slaving, dome motion &lt;span style=" font-weight:600;"&gt;follows telescope motion&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
                 <string>Enable</string>
@@ -389,15 +357,7 @@ font-weight:bold;
                 </size>
                </property>
                <property name="toolTip">
-                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Disable slaving, dome &lt;span style=&quot; font-weight:600;&quot;&gt;does not follow telescope motion&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-               </property>
-               <property name="styleSheet">
-                <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Disable slaving, dome &lt;span style=" font-weight:600;"&gt;does not follow telescope motion&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
                 <string>Disable</string>
@@ -444,14 +404,6 @@ font-weight:bold;
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Park the dome. For advanced control of the dome please use the INDI tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
               </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-              </property>
               <property name="text">
                <string>Park</string>
               </property>
@@ -485,14 +437,6 @@ font-weight:bold;
               </property>
               <property name="toolTip">
                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Unpark the dome. For advanced control of the dome please use the INDI tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
               </property>
               <property name="text">
                <string>UnPark</string>
@@ -537,14 +481,6 @@ font-weight:bold;
               </property>
               <property name="toolTip">
                <string>Abort dome motion</string>
-              </property>
-              <property name="styleSheet">
-               <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
               </property>
               <property name="text">
                <string>Abort</string>
@@ -619,14 +555,6 @@ font-weight:bold;
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Close the shutter of the dome. For advanced control of the dome please use the INDI tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-            </property>
             <property name="text">
              <string>Close</string>
             </property>
@@ -660,14 +588,6 @@ font-weight:bold;
             </property>
             <property name="toolTip">
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Open the shutter of the dome. For advanced control of the dome please use the INDI tab.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
             </property>
             <property name="text">
              <string comment="opens dome shutter">Open</string>
@@ -769,14 +689,6 @@ font-weight:bold;
 &lt;/ul&gt;
 &lt;/body&gt;&lt;/html&gt;</string>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-            </property>
             <property name="text">
              <string>Ready</string>
             </property>
@@ -859,7 +771,7 @@ font-weight:bold;
           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Clear sensor data history&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
          <property name="icon">
           <iconset theme="edit-delete">
@@ -960,7 +872,7 @@ font-weight:bold;
                <item>
                 <widget class="QLabel" name="weatherAlertStatusLabel">
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Status: inactive&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;Status: inactive&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="textFormat">
                   <enum>Qt::AutoText</enum>
@@ -1034,7 +946,7 @@ font-weight:bold;
                <item>
                 <widget class="QLabel" name="weatherWarningStatusLabel">
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Status: inactive&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-style:italic;"&gt;Status: inactive&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="textFormat">
                   <enum>Qt::AutoText</enum>
@@ -1134,7 +1046,7 @@ font-weight:bold;
           </size>
          </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
         </widget>
        </item>
@@ -1160,7 +1072,7 @@ font-weight:bold;
           </sizepolicy>
          </property>
          <property name="toolTip">
-          <string/>
+          <string />
          </property>
         </widget>
        </item>
@@ -1191,6 +1103,6 @@ font-weight:bold;
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

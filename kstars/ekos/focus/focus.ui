@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>Focus</class>
  <widget class="QWidget" name="Focus">
@@ -106,7 +106,7 @@
             </size>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="icon">
             <iconset theme="document-edit">
@@ -189,7 +189,7 @@
              <string>Capture image</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
              <iconset theme="camera-photo">
@@ -228,7 +228,7 @@
              <string>Start framing</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
              <iconset theme="media-playlist-repeat">
@@ -302,9 +302,6 @@
               <property name="toolTip">
                <string>Current absolute focuser position</string>
               </property>
-              <property name="styleSheet">
-               <string notr="true">QLineEdit[readOnly=&quot;true&quot;] { color: gray }</string>
-              </property>
               <property name="readOnly">
                <bool>true</bool>
               </property>
@@ -347,7 +344,7 @@
                <string>Go to an absolute focus position</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
                <iconset theme="run-build">
@@ -376,7 +373,7 @@
                <string>Stop focuser motion</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
                <iconset theme="process-stop">
@@ -407,10 +404,10 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Focus Out. Use shift and ctrl key for motion speed up. The factors are configured in the focuser's mechanical options.&lt;/p&gt;&lt;p&gt;For SCTs this is usually CW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string/>
+             <string />
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
              <iconset theme="format-align-vertical-top">
@@ -439,10 +436,10 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Focus In. Use shift and ctrl key for motion speed up. The factors are configured in the focuser's mechanical options.&lt;/p&gt;&lt;p&gt;For SCTs this is usually CCW.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string/>
+             <string />
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
              <iconset theme="format-align-vertical-bottom">
@@ -592,7 +589,7 @@
                <string>Filter Settings...</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
                <iconset theme="view-filter">
@@ -638,7 +635,7 @@
                <string>Toggle Full Screen</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="iconSize">
                <size>
@@ -660,7 +657,7 @@
                <string>Show in FITS Viewer...</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="iconSize">
                <size>
@@ -685,7 +682,7 @@
                <string>Live Video...</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
                <iconset theme="camera-off">
@@ -713,7 +710,7 @@
              <string>Number of images to capture</string>
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="text">
              <string>Filter:</string>
@@ -1186,6 +1183,6 @@
   <tabstop>filterManagerB</tabstop>
   <tabstop>resetFrameB</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>Scheduler</class>
  <widget class="QWidget" name="Scheduler">
@@ -78,10 +78,10 @@
              <string>Load the image sequence queue.</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="folder"/>
+             <iconset theme="folder" />
             </property>
            </widget>
           </item>
@@ -159,18 +159,15 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="search"/>
+             <iconset theme="search" />
             </property>
            </widget>
           </item>
           <item row="0" column="1">
            <widget class="QLabel" name="targetStarLabel">
-            <property name="styleSheet">
-             <string notr="true">color:red</string>
-            </property>
             <property name="text">
              <string notr="true">*</string>
             </property>
@@ -315,10 +312,10 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="folder"/>
+             <iconset theme="folder" />
             </property>
            </widget>
           </item>
@@ -338,17 +335,17 @@
              <string>Fill coordinates with Sky Map center</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="snap-orthogonal"/>
+             <iconset theme="snap-orthogonal" />
             </property>
            </widget>
           </item>
           <item row="6" column="0">
            <widget class="QLabel" name="groupLabel">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;Select a group name. Useful if you want several jobs to repeat together--assign them the same group name, and give them &lt;i&gt;repeat for N&lt;/i&gt; or &lt;i&gt;repeat until terminated&lt;/i&gt; completion conditions. Otherwise leave empty. Only applies to the Greedy scheduler algorithm.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="justify"&gt;Select a group name. Useful if you want several jobs to repeat together--assign them the same group name, and give them &lt;i&gt;repeat for N&lt;/i&gt; or &lt;i&gt;repeat until terminated&lt;/i&gt; completion conditions. Otherwise leave empty. Only applies to the Greedy scheduler algorithm.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Group:</string>
@@ -358,7 +355,7 @@
           <item row="0" column="0">
            <widget class="QComboBox" name="leadFollowerSelectionCB">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Define the job's target or select &lt;span style=&quot;font-style:italic&quot;&gt;Follower&lt;/span&gt; if the job should run as multi camera job in combination with the first job above having a target defined.&lt;p&gt;&lt;p&gt;&lt;b&gt;WARNING&lt;/b&gt;: This feature is experimental!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Define the job's target or select &lt;span style="font-style:italic"&gt;Follower&lt;/span&gt; if the job should run as multi camera job in combination with the first job above having a target defined.&lt;p&gt;&lt;p&gt;&lt;b&gt;WARNING&lt;/b&gt;: This feature is experimental!&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
@@ -371,15 +368,12 @@
              </sizepolicy>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;Select a group name. Useful if you want several jobs to repeat together--assign them the same group name, and give them &lt;i&gt;repeat for N&lt;/i&gt; or &lt;i&gt;repeat until terminated&lt;/i&gt; completion conditions. Otherwise leave empty. Only applies to the Greedy scheduler algorithm.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="justify"&gt;Select a group name. Useful if you want several jobs to repeat together--assign them the same group name, and give them &lt;i&gt;repeat for N&lt;/i&gt; or &lt;i&gt;repeat until terminated&lt;/i&gt; completion conditions. Otherwise leave empty. Only applies to the Greedy scheduler algorithm.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
            </widget>
           </item>
           <item row="4" column="1">
            <widget class="QLabel" name="label_5">
-            <property name="styleSheet">
-             <string notr="true">color:red</string>
-            </property>
             <property name="text">
              <string notr="true">*</string>
             </property>
@@ -416,124 +410,6 @@
           </item>
           <item row="1" column="1">
            <widget class="QLabel" name="label_11">
-            <property name="palette">
-             <palette>
-              <active>
-               <colorrole role="WindowText">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="Text">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="ButtonText">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="PlaceholderText">
-                <brush brushstyle="NoBrush">
-                 <color alpha="128">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-              </active>
-              <inactive>
-               <colorrole role="WindowText">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="Text">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="ButtonText">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="PlaceholderText">
-                <brush brushstyle="NoBrush">
-                 <color alpha="128">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-              </inactive>
-              <disabled>
-               <colorrole role="WindowText">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>160</red>
-                  <green>162</green>
-                  <blue>162</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="Text">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>168</red>
-                  <green>169</green>
-                  <blue>169</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="ButtonText">
-                <brush brushstyle="SolidPattern">
-                 <color alpha="255">
-                  <red>160</red>
-                  <green>162</green>
-                  <blue>162</blue>
-                 </color>
-                </brush>
-               </colorrole>
-               <colorrole role="PlaceholderText">
-                <brush brushstyle="NoBrush">
-                 <color alpha="128">
-                  <red>255</red>
-                  <green>0</green>
-                  <blue>0</blue>
-                 </color>
-                </brush>
-               </colorrole>
-              </disabled>
-             </palette>
-            </property>
             <property name="text">
              <string notr="true">*</string>
             </property>
@@ -566,7 +442,7 @@
              <string>Position Angle in Degrees</string>
             </property>
             <property name="whatsThis">
-             <string/>
+             <string />
             </property>
             <property name="minimum">
              <double>-181.000000000000000</double>
@@ -616,7 +492,7 @@
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
              </widget>
             </item>
@@ -636,7 +512,7 @@
                </sizepolicy>
               </property>
               <property name="toolTip">
-               <string/>
+               <string />
               </property>
               <property name="layoutDirection">
                <enum>Qt::LeftToRight</enum>
@@ -652,10 +528,10 @@
                <string>Fill coordinates with current mount position.</string>
               </property>
               <property name="text">
-               <string/>
+               <string />
               </property>
               <property name="icon">
-               <iconset theme="kstars_flag"/>
+               <iconset theme="kstars_flag" />
               </property>
              </widget>
             </item>
@@ -673,16 +549,13 @@
           </item>
           <item row="3" column="1">
            <widget class="QLabel" name="label_10">
-            <property name="styleSheet">
-             <string notr="true">color:red</string>
-            </property>
             <property name="text">
              <string>*</string>
             </property>
            </widget>
           </item>
           <item row="3" column="2">
-           <widget class="QComboBox" name="opticalTrainCombo"/>
+           <widget class="QComboBox" name="opticalTrainCombo" />
           </item>
           <item row="1" column="0">
            <widget class="QComboBox" name="epochCB">
@@ -752,7 +625,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -780,7 +653,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -808,7 +681,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -836,7 +709,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -858,7 +731,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -880,7 +753,7 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -927,7 +800,7 @@
              <string>Open the Mosaic Planner...</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -946,10 +819,10 @@
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::FormatJustifyFill"/>
+             <iconset theme="QIcon::ThemeIcon::FormatJustifyFill" />
             </property>
            </widget>
           </item>
@@ -977,10 +850,10 @@
              <string>Capture Sequence File Editor...</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="document-edit"/>
+             <iconset theme="document-edit" />
             </property>
            </widget>
           </item>
@@ -1024,13 +897,13 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;Load schedule from file and append jobs to queue.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="justify"&gt;Load schedule from file and append jobs to queue.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string/>
+             <string />
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -1058,13 +931,13 @@
              </size>
             </property>
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;justify&quot;&gt;Load schedule from file and replace jobs from queue.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align="justify"&gt;Load schedule from file and replace jobs from queue.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="statusTip">
-             <string/>
+             <string />
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -1089,10 +962,10 @@
              <string>Save Schedule...</string>
             </property>
             <property name="statusTip">
-             <string/>
+             <string />
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -1123,10 +996,10 @@
              <string>Save Schedule As...</string>
             </property>
             <property name="statusTip">
-             <string/>
+             <string />
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -1233,16 +1106,8 @@
             <property name="toolTip">
              <string>Start Scheduler</string>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-            </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -1272,16 +1137,8 @@ font-weight:bold;
             <property name="toolTip">
              <string>Pause Scheduler</string>
             </property>
-            <property name="styleSheet">
-             <string notr="true">QPushButton:checked
-{
-background-color: maroon;
-border: 1px outset;
-font-weight:bold;
-}</string>
-            </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="checkable">
              <bool>true</bool>
@@ -1297,7 +1154,7 @@ font-weight:bold;
              </size>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
            </widget>
           </item>
@@ -1320,7 +1177,7 @@ font-weight:bold;
           <item>
            <widget class="QCheckBox" name="schedulerRepeatEverything">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Repeat all scheduled jobs as soon as all jobs have been completed. This option is only available if the &lt;span style=&quot; font-weight:700;&quot;&gt;Remember Job Progress&lt;/span&gt; option in Ekos  Scheduler settings is &lt;span style=&quot; font-weight:700;&quot;&gt;not&lt;/span&gt; selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Repeat all scheduled jobs as soon as all jobs have been completed. This option is only available if the &lt;span style=" font-weight:700;"&gt;Remember Job Progress&lt;/span&gt; option in Ekos  Scheduler settings is &lt;span style=" font-weight:700;"&gt;not&lt;/span&gt; selected.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
              <string>Repeat all jobs</string>
@@ -1355,9 +1212,6 @@ font-weight:bold;
           </item>
           <item>
            <widget class="QLabel" name="jobStatus">
-            <property name="styleSheet">
-             <string notr="true"/>
-            </property>
             <property name="text">
              <string>Idle</string>
             </property>
@@ -1849,10 +1703,10 @@ font-weight:bold;
         <item row="2" column="1">
          <widget class="QLabel" name="nightTime">
           <property name="toolTip">
-           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Astronomical dawn and dusk for the Scheduler job currently selected, or for today if no job is selected.&lt;/p&gt;&lt;p&gt;- The first value is &lt;span style=&quot; font-weight:600;&quot;&gt;dusk&lt;/span&gt;, specifically the next local time the Sun sets below an altitude of -18° after the job starts.&lt;/p&gt;&lt;p&gt;- The second value is &lt;span style=&quot; font-weight:600;&quot;&gt;dawn&lt;/span&gt;, specifically the next local time the Sun rises higher than an altitude of -18° after the job starts.&lt;/p&gt;&lt;p&gt;A warning symbol indicates the Sun will not travel below the astronomical dusk boundary after the job starts, and that dawn and dusk times are calculated from its minimal altitude. In that situation, the Twilight restriction prevents job execution unless the Ekos Dawn Offset and Dusk Offset options are configured appropriately.&lt;/p&gt;&lt;p&gt;Note that the Ekos Pre-Dawn Offset option virtually advances dawn by a default of 30 minutes and will thus prevent a job from starting just before that moment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+           <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Astronomical dawn and dusk for the Scheduler job currently selected, or for today if no job is selected.&lt;/p&gt;&lt;p&gt;- The first value is &lt;span style=" font-weight:600;"&gt;dusk&lt;/span&gt;, specifically the next local time the Sun sets below an altitude of -18° after the job starts.&lt;/p&gt;&lt;p&gt;- The second value is &lt;span style=" font-weight:600;"&gt;dawn&lt;/span&gt;, specifically the next local time the Sun rises higher than an altitude of -18° after the job starts.&lt;/p&gt;&lt;p&gt;A warning symbol indicates the Sun will not travel below the astronomical dusk boundary after the job starts, and that dawn and dusk times are calculated from its minimal altitude. In that situation, the Twilight restriction prevents job execution unless the Ekos Dawn Offset and Dusk Offset options are configured appropriately.&lt;/p&gt;&lt;p&gt;Note that the Ekos Pre-Dawn Offset option virtually advances dawn by a default of 30 minutes and will thus prevent a job from starting just before that moment.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
           <property name="text">
-           <string/>
+           <string />
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1862,7 +1716,7 @@ font-weight:bold;
         <item row="2" column="3" colspan="2">
          <widget class="QLabel" name="weatherLabel">
           <property name="text">
-           <string/>
+           <string />
           </property>
           <property name="alignment">
            <set>Qt::AlignCenter</set>
@@ -1879,7 +1733,7 @@ font-weight:bold;
      <item row="0" column="1">
       <widget class="QGroupBox" name="errorHandlingGroup">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Define what should happen when a job steps into an error or aborts:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Don't re-schedule&lt;/span&gt;: Don't restart the job in case of an error or an abort.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Re-schedule after all terminated&lt;/span&gt;: If a job gets aborted, the scheduler will only re-schedule it if when all jobs are finished or aborted. If this is the case, the scheduler re-schedules all aborted jobs and sleeps for the given delay.&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Re-schedule immediately&lt;/span&gt;: As soon as a job gets aborted, the scheduler will re-schedule it and waits the given delay.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;If the option for re-scheduling errors is selected, errors are handled like aborts. Otherwise, jobs that step into an error are never re-scheduled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Define what should happen when a job steps into an error or aborts:&lt;/p&gt;&lt;ul style="margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;"&gt;&lt;li style=" margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-weight:600;"&gt;Don't re-schedule&lt;/span&gt;: Don't restart the job in case of an error or an abort.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-weight:600;"&gt;Re-schedule after all terminated&lt;/span&gt;: If a job gets aborted, the scheduler will only re-schedule it if when all jobs are finished or aborted. If this is the case, the scheduler re-schedules all aborted jobs and sleeps for the given delay.&lt;/li&gt;&lt;li style=" margin-top:0px; margin-bottom:12px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;"&gt;&lt;span style=" font-weight:600;"&gt;Re-schedule immediately&lt;/span&gt;: As soon as a job gets aborted, the scheduler will re-schedule it and waits the given delay.&lt;/li&gt;&lt;/ul&gt;&lt;p&gt;If the option for re-scheduling errors is selected, errors are handled like aborts. Otherwise, jobs that step into an error are never re-scheduled.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="title">
         <string>Aborted Job Management</string>
@@ -2073,10 +1927,10 @@ font-weight:bold;
           <item>
            <widget class="QPushButton" name="preStartupQueueClearB">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditClear"/>
+             <iconset theme="QIcon::ThemeIcon::EditClear" />
             </property>
            </widget>
           </item>
@@ -2092,10 +1946,10 @@ font-weight:bold;
              <string>Browse for pre-startup queue/collection file</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="folder"/>
+             <iconset theme="folder" />
             </property>
            </widget>
           </item>
@@ -2128,10 +1982,10 @@ font-weight:bold;
           <item>
            <widget class="QPushButton" name="postStartupQueueClearB">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditClear"/>
+             <iconset theme="QIcon::ThemeIcon::EditClear" />
             </property>
            </widget>
           </item>
@@ -2147,10 +2001,10 @@ font-weight:bold;
              <string>Browse for post-startup queue/collection file</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="folder"/>
+             <iconset theme="folder" />
             </property>
            </widget>
           </item>
@@ -2226,10 +2080,10 @@ font-weight:bold;
           <item>
            <widget class="QPushButton" name="preShutdownQueueClearB">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditClear"/>
+             <iconset theme="QIcon::ThemeIcon::EditClear" />
             </property>
            </widget>
           </item>
@@ -2245,10 +2099,10 @@ font-weight:bold;
              <string>Browse for pre-shutdown queue/collection file</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="folder"/>
+             <iconset theme="folder" />
             </property>
            </widget>
           </item>
@@ -2281,10 +2135,10 @@ font-weight:bold;
           <item>
            <widget class="QPushButton" name="postShutdownQueueClearB">
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="QIcon::ThemeIcon::EditClear"/>
+             <iconset theme="QIcon::ThemeIcon::EditClear" />
             </property>
            </widget>
           </item>
@@ -2300,10 +2154,10 @@ font-weight:bold;
              <string>Browse for post-shutdown queue/collection file</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
-             <iconset theme="folder"/>
+             <iconset theme="folder" />
             </property>
            </widget>
           </item>
@@ -2354,11 +2208,11 @@ font-weight:bold;
   <tabstop>startB</tabstop>
   <tabstop>pauseB</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
  <buttongroups>
-  <buttongroup name="startupButtonGroup"/>
-  <buttongroup name="completionButtonGroup"/>
+  <buttongroup name="startupButtonGroup" />
+  <buttongroup name="completionButtonGroup" />
   <buttongroup name="stepsButtonGroup">
    <property name="exclusive">
     <bool>false</bool>
@@ -2369,6 +2223,6 @@ font-weight:bold;
     <bool>false</bool>
    </property>
   </buttongroup>
-  <buttongroup name="errorHandlingButtonGroup"/>
+  <buttongroup name="errorHandlingButtonGroup" />
  </buttongroups>
 </ui>

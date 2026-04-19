@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>RotatorDialog</class>
  <widget class="QDialog" name="RotatorDialog">
@@ -94,9 +94,6 @@
           <property name="toolTip">
            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The rotator gauge displays the actual camera position angle (yellow) and the raw rotator angle (gray). Calibrate the rotator by plate solving in the Align module.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
           </property>
-          <property name="styleSheet">
-           <string notr="true">selection-background-color: rgb(150, 120, 0);</string>
-          </property>
           <widget class="QRoundProgressBar" name="rotatorGauge" native="true">
            <property name="enabled">
             <bool>false</bool>
@@ -130,9 +127,6 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The rotator gauge displays the actual camera position angle (yellow) and the raw rotator angle (gray). To calibrate the rotator, capture and solve an image in the Align module.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
-           <property name="styleSheet">
-            <string notr="true">selection-background-color: rgb(46, 52, 54);</string>
-           </property>
            <widget class="QLineEdit" name="CurrentRotatorAngle">
             <property name="geometry">
              <rect>
@@ -154,7 +148,7 @@
              </font>
             </property>
             <property name="toolTip">
-             <string/>
+             <string />
             </property>
             <property name="frame">
              <bool>false</bool>
@@ -187,7 +181,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string/>
+         <string />
         </property>
         <layout class="QGridLayout" name="gridLayout_5">
          <property name="leftMargin">
@@ -314,7 +308,7 @@
             <enum>QFrame::Box</enum>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -330,7 +324,7 @@
             </size>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Flip Policy&lt;/span&gt; determines how the rotator reacts after a flip or if the result of a solved reference image reports a different pierside respective to the actual mount pierside.&lt;/p&gt;&lt;p&gt;Flip Policy can be altered in &lt;span style=&quot; font-weight:600;&quot;&gt;Align Options&lt;/span&gt;&lt;span style=&quot; font-size:12pt;&quot;&gt; under &amp;quot;Rotator Settings&amp;quot;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=" font-weight:600;"&gt;Flip Policy&lt;/span&gt; determines how the rotator reacts after a flip or if the result of a solved reference image reports a different pierside respective to the actual mount pierside.&lt;/p&gt;&lt;p&gt;Flip Policy can be altered in &lt;span style=" font-weight:600;"&gt;Align Options&lt;/span&gt;&lt;span style=" font-size:12pt;"&gt; under &amp;quot;Rotator Settings&amp;quot;.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Flip Policy</string>
@@ -356,9 +350,6 @@
            </property>
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Raw rotator Angle&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-           </property>
-           <property name="styleSheet">
-            <string notr="true"/>
            </property>
            <property name="decimals">
             <number>2</number>
@@ -394,7 +385,7 @@
             </font>
            </property>
            <property name="toolTip">
-            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The angle of the camera upright direction (see FOV) respective to the rotator origin direction. The camera offset is determined automatically by a &lt;span style=&quot; font-weight:700;&quot;&gt;Capture &amp;amp; Solve&lt;/span&gt; or a &lt;span style=&quot; font-weight:700;&quot;&gt;Load &amp;amp; Slew&lt;/span&gt; in the Align module. &lt;/p&gt;&lt;p&gt;The camera offset is measured in position angle scope (-179.99° to 180.00°).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The angle of the camera upright direction (see FOV) respective to the rotator origin direction. The camera offset is determined automatically by a &lt;span style=" font-weight:700;"&gt;Capture &amp;amp; Solve&lt;/span&gt; or a &lt;span style=" font-weight:700;"&gt;Load &amp;amp; Slew&lt;/span&gt; in the Align module. &lt;/p&gt;&lt;p&gt;The camera offset is measured in position angle scope (-179.99° to 180.00°).&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
            <property name="text">
             <string>Camera Offset</string>
@@ -470,9 +461,6 @@
         <property name="toolTip">
          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Current Camera Position Angle&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
-        <property name="styleSheet">
-         <string notr="true">color: rgb(150, 120, 0);</string>
-        </property>
         <property name="keyboardTracking">
          <bool>true</bool>
         </property>
@@ -502,7 +490,7 @@
          </size>
         </property>
         <property name="toolTip">
-         <string/>
+         <string />
         </property>
         <property name="minimum">
          <number>-17999</number>
@@ -593,6 +581,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>
