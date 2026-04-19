@@ -17,8 +17,7 @@ RUN apt update && \
     apt -y install --no-install-recommends \
            software-properties-common \
 	   gpg-agent \
-	   git && \
-    add-apt-repository -y ppa:mutlaqja/ppa
+	   git
 
 
 # #######################
