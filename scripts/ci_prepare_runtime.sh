@@ -20,7 +20,7 @@ for command_name in dbus-run-session xvfb-run xdpyinfo; do
 done
 
 needs_cursor_lib=0
-if ! ldconfig -p 2>/dev/null | grep -q 'libxcb-cursor\.so\.0'; then
+if ! dpkg-query -W -f='${Status}\n' libxcb-cursor0 2>/dev/null | grep -q '^install ok installed$'; then
   needs_cursor_lib=1
 fi
 
@@ -42,7 +42,7 @@ for command_name in dbus-run-session xvfb-run xdpyinfo; do
   fi
 done
 
-if ! ldconfig -p 2>/dev/null | grep -q 'libxcb-cursor\.so\.0'; then
-  echo "Required UI runtime library is missing after installation: libxcb-cursor.so.0" >&2
+if ! dpkg-query -W -f='${Status}\n' libxcb-cursor0 2>/dev/null | grep -q '^install ok installed$'; then
+  echo "Required UI runtime package is missing after installation: libxcb-cursor0" >&2
   exit 1
 fi
