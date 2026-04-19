@@ -95,6 +95,13 @@ else
   status=fail
 fi
 
+if rg -q "openbox" "${REPO_ROOT}/scripts/ci_prepare_runtime.sh" "${REPO_ROOT}/scripts/ci_run_ctest.sh"; then
+  overall_score=$((overall_score + 5))
+  llm_average=$((llm_average + 5))
+else
+  status=fail
+fi
+
 if rg -q "ninja -j\\$\\(nproc\\) all install" "${WORKFLOW}"; then
   status=fail
 else

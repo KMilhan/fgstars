@@ -61,13 +61,29 @@ ctest_cmd=(
 )
 
 if [[ "${USE_DISPLAY}" -eq 1 ]]; then
-  for command_name in dbus-run-session xvfb-run xdpyinfo; do
+  for command_name in dbus-run-session openbox xvfb-run xdpyinfo; do
     if ! command -v "${command_name}" >/dev/null 2>&1; then
       echo "UI runtime dependency not found: ${command_name}" >&2
       exit 1
     fi
   done
-  dbus-run-session -- xvfb-run -a -s "-screen 0 1280x1024x24" "${ctest_cmd[@]}"
+  dbus-run-session -- xvfb-run -a -s "-screen 0 1280x1024x24" \
+    bash -lc '
+      set -euo pipefail
+      export LANG=C.UTF-8
+      export LC_ALL=C.UTF-8
+
+      openbox >/tmp/kstars-ci-openbox.log 2>&1 &
+      wm_pid=$!
+
+      cleanup() {
+        kill "${wm_pid}" >/dev/null 2>&1 || true
+      }
+      trap cleanup EXIT
+
+      sleep 2
+      exec "$@"
+    ' bash "${ctest_cmd[@]}"
 else
   "${ctest_cmd[@]}"
 fi

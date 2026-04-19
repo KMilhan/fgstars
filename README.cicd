@@ -26,7 +26,7 @@ The KStars repository is configured to build its code in the following situation
   - `ci-gate` provides the final blocking status for the workflow.
 - **Validation (`validation.yml`)**: Provides additional validation and linting checks for the repository.
 
-The build environments primarily target modern Linux containers with Qt6, utilizing standard package managers to satisfy build dependencies. UI shards install their own X11 runtime and run under `dbus-run-session` plus `xvfb-run`, while non-UI shards avoid that overhead.
+The build environments primarily target modern Linux containers with Qt6, utilizing standard package managers to satisfy build dependencies. UI shards install their own X11 runtime and run under `dbus-run-session` plus `xvfb-run`, with `openbox` started inside the virtual display so Ekos windows can reliably acquire focus, while non-UI shards avoid that overhead.
 
 ## Continuous Deployment
 

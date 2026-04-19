@@ -13,7 +13,7 @@ if [[ "${EUID}" -ne 0 ]]; then
 fi
 
 missing_commands=()
-for command_name in dbus-run-session xvfb-run xdpyinfo; do
+for command_name in dbus-run-session openbox xvfb-run xdpyinfo; do
   if ! command -v "${command_name}" >/dev/null 2>&1; then
     missing_commands+=("${command_name}")
   fi
@@ -30,12 +30,13 @@ if [[ "${#missing_commands[@]}" -gt 0 || "${needs_cursor_lib}" -eq 1 ]]; then
     dbus \
     dbus-x11 \
     libxcb-cursor0 \
+    openbox \
     x11-utils \
     xauth \
     xvfb
 fi
 
-for command_name in dbus-run-session xvfb-run xdpyinfo; do
+for command_name in dbus-run-session openbox xvfb-run xdpyinfo; do
   if ! command -v "${command_name}" >/dev/null 2>&1; then
     echo "Required UI runtime command is missing after installation: ${command_name}" >&2
     exit 1
