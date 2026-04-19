@@ -25,6 +25,7 @@ jobs:
         uses: hendrikmuhs/ccache-action@v1.2
         with:
           key: ${{ runner.os }}-qt6
+          max-size: 2G
       - name: Build and Test with Xvfb
         working-directory: kstars-build
         run: |
