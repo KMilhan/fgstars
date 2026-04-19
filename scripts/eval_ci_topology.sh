@@ -60,14 +60,14 @@ else
   status=fail
 fi
 
-if yq -e '.jobs["test-shards"].steps[] | select(.uses == "actions/upload-artifact@v4")' "${WORKFLOW}" > /dev/null; then
+if yq -e '.jobs["test-shards"].steps[] | select((.uses // "") | test("^actions/upload-artifact@v[0-9]+$"))' "${WORKFLOW}" > /dev/null; then
   overall_score=$((overall_score + 5))
   llm_average=$((llm_average + 5))
 else
   status=fail
 fi
 
-if yq -e '.jobs["aggregate-reports"].steps[] | select(.uses == "actions/download-artifact@v4")' "${WORKFLOW}" > /dev/null; then
+if yq -e '.jobs["aggregate-reports"].steps[] | select((.uses // "") | test("^actions/download-artifact@v[0-9]+$"))' "${WORKFLOW}" > /dev/null; then
   overall_score=$((overall_score + 5))
   llm_average=$((llm_average + 5))
 else

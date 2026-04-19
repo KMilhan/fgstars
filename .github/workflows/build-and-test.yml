@@ -17,7 +17,7 @@ jobs:
     outputs:
       test_shards_json: ${{ steps.matrix.outputs.test_shards_json }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - id: matrix
         name: Compute test shard matrix
@@ -35,14 +35,26 @@ jobs:
       image: sternejaeger/kstars-ci:qt6
       options: --privileged
     timeout-minutes: 75
+    env:
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_DIR: ${{ github.workspace }}/.ccache-build
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Restore build ccache
+        id: build-ccache
+        uses: actions/cache/restore@v5
         with:
-          key: ${{ runner.os }}-qt6-build
-          max-size: 2G
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-qt6-build-ccache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-qt6-build-ccache-
+
+      - name: Prepare build ccache
+        run: |
+          mkdir -p "${CCACHE_DIR}"
+          ccache --set-config=max_size=2G
+          ccache --zero-stats
 
       - name: Configure app build
         env:
@@ -61,11 +73,22 @@ jobs:
 
       - name: Upload app build logs
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: app-build-logs
           path: ${{ github.workspace }}/.artifacts/ci/build-app
           if-no-files-found: error
+
+      - name: Show build ccache stats
+        if: always()
+        run: ccache --show-stats
+
+      - name: Save build ccache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ steps.build-ccache.outputs.cache-primary-key }}
 
   test-shards:
     needs:
@@ -79,14 +102,26 @@ jobs:
       fail-fast: false
       matrix:
         shard: ${{ fromJson(needs.plan-ci.outputs.test_shards_json) }}
+    env:
+      CCACHE_BASEDIR: ${{ github.workspace }}
+      CCACHE_DIR: ${{ github.workspace }}/.ccache-${{ matrix.shard.name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - name: Setup ccache
-        uses: hendrikmuhs/ccache-action@v1.2
+      - name: Restore shard ccache
+        id: shard-ccache
+        uses: actions/cache/restore@v5
         with:
-          key: ${{ runner.os }}-qt6-tests
-          max-size: 2G
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-qt6-tests-${{ matrix.shard.name }}-ccache-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-qt6-tests-${{ matrix.shard.name }}-ccache-
+
+      - name: Prepare shard ccache
+        run: |
+          mkdir -p "${CCACHE_DIR}"
+          ccache --set-config=max_size=2G
+          ccache --zero-stats
 
       - name: Install UI test runtime
         if: ${{ matrix.shard.needs_display }}
@@ -136,11 +171,22 @@ jobs:
 
       - name: Upload shard reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: test-report-${{ matrix.shard.name }}
           path: ${{ github.workspace }}/.artifacts/ci/${{ matrix.shard.name }}
           if-no-files-found: error
+
+      - name: Show shard ccache stats
+        if: always()
+        run: ccache --show-stats
+
+      - name: Save shard ccache
+        if: always()
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ steps.shard-ccache.outputs.cache-primary-key }}
 
   aggregate-reports:
     needs:
@@ -149,10 +195,10 @@ jobs:
     if: ${{ always() }}
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Download shard reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           pattern: test-report-*
           path: ${{ github.workspace }}/collected-reports
@@ -170,7 +216,7 @@ jobs:
 
       - name: Upload aggregate summary
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: aggregate-report
           path: ${{ github.workspace }}/.artifacts/ci/aggregate
