@@ -18,10 +18,15 @@ The KStars repository is configured to build its code in the following situation
 
 ### Workflows
 
-- **Build and Test (`build-and-test.yml`)**: This workflow builds KStars using CMake and Qt6, and runs the test suite to ensure code quality and prevent regressions.
+- **Build and Test (`build-and-test.yml`)**: This workflow now uses a staged topology suitable for low-core GitHub runners.
+  - `plan-ci` computes the shard matrix from `scripts/ci_matrix.py`.
+  - `build-app` compiles the desktop `kstars` target with warnings treated as errors.
+  - `test-shards` configures isolated build directories, builds only the targets needed by each shard, and runs the matching CTest slice.
+  - `aggregate-reports` downloads the shard JUnit artifacts, verifies that the expected stable cases were covered, and publishes a merged summary.
+  - `ci-gate` provides the final blocking status for the workflow.
 - **Validation (`validation.yml`)**: Provides additional validation and linting checks for the repository.
 
-The build environments primarily target modern Linux containers with Qt6, utilizing standard package managers to satisfy build dependencies.
+The build environments primarily target modern Linux containers with Qt6, utilizing standard package managers to satisfy build dependencies. UI shards install their own X11 runtime and run under `dbus-run-session` plus `xvfb-run`, while non-UI shards avoid that overhead.
 
 ## Continuous Deployment
 

@@ -8,47 +8,190 @@ on:
   pull_request:
 
 jobs:
-  ubuntu-qt6:
+  plan-ci:
     runs-on: ubuntu-24.04
-    container:
-      image: sternejaeger/kstars-ci:qt6
-      options: --privileged # Some Qt/DBus tests might require privileges depending on the environment, safe default for Docker CI
-    
+    outputs:
+      test_shards_json: ${{ steps.matrix.outputs.test_shards_json }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup Build Environment
+      - id: matrix
+        name: Compute test shard matrix
         run: |
-          mkdir -p kstars-build
+          test_shards_json="$(python3 scripts/ci_matrix.py --format github-matrix)"
+          {
+            echo 'test_shards_json<<EOF'
+            echo "${test_shards_json}"
+            echo 'EOF'
+          } >> "${GITHUB_OUTPUT}"
+
+  build-app:
+    runs-on: ubuntu-24.04
+    container:
+      image: sternejaeger/kstars-ci:qt6
+      options: --privileged
+    timeout-minutes: 75
+    steps:
+      - uses: actions/checkout@v4
 
       - name: Setup ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: ${{ runner.os }}-qt6
+          key: ${{ runner.os }}-qt6-build
           max-size: 2G
-      - name: Build and Test with Xvfb
-        working-directory: kstars-build
+
+      - name: Configure app build
+        env:
+          BUILD_DIR: ${{ github.workspace }}/kstars-build-app
+          VENDORED_INDI_RUNTIME: OFF
         run: |
-          # Install necessary display tools
-          apt update && apt install -y --no-install-recommends dbus-x11 xvfb libxcb-cursor0
-          
-          # Setup virtual display and dbus
-          export LC_ALL=C.UTF-8
-          export DISPLAY=:99.0
-          Xvfb :99 -screen 0 1024x768x16 &
-          sleep 2
-          export $(dbus-launch)
-          
-          # Configure CMake with the display environment captured
-          cmake -GNinja \
-            -DCMAKE_BUILD_TYPE=Release \
-            -DCCACHE_SUPPORT=ON \
-            -DBUILD_TESTING=ON \
-            -DBUILD_DOC=OFF \
-            -DBUILD_WITH_QT6=ON ..
-            
-          # Build
-          ninja -j$(nproc) all install
-          
-          # Run Tests in parallel
-          ctest -T test -L stable -LE unstable --output-on-failure -j$(nproc)
+          mkdir -p "${GITHUB_WORKSPACE}/.artifacts/ci/build-app"
+          bash scripts/ci_configure.sh 2>&1 | tee "${GITHUB_WORKSPACE}/.artifacts/ci/build-app/configure.log"
+
+      - name: Build desktop app target
+        env:
+          BUILD_DIR: ${{ github.workspace }}/kstars-build-app
+        run: |
+          cmake --build "${BUILD_DIR}" --target kstars -- -j"$(nproc)" \
+            2>&1 | tee "${GITHUB_WORKSPACE}/.artifacts/ci/build-app/build.log"
+
+      - name: Upload app build logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-build-logs
+          path: ${{ github.workspace }}/.artifacts/ci/build-app
+          if-no-files-found: error
+
+  test-shards:
+    needs:
+      - plan-ci
+    runs-on: ubuntu-24.04
+    container:
+      image: sternejaeger/kstars-ci:qt6
+      options: --privileged
+    timeout-minutes: ${{ matrix.shard.timeout_minutes }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: ${{ fromJson(needs.plan-ci.outputs.test_shards_json) }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ runner.os }}-qt6-tests
+          max-size: 2G
+
+      - name: Install UI test runtime
+        if: ${{ matrix.shard.needs_display }}
+        run: |
+          bash scripts/ci_prepare_runtime.sh
+
+      - name: Configure shard
+        env:
+          BUILD_DIR: ${{ github.workspace }}/kstars-build-${{ matrix.shard.name }}
+          VENDORED_INDI_RUNTIME: ${{ matrix.shard.needs_indi_runtime && 'ON' || 'OFF' }}
+        run: |
+          report_dir="${GITHUB_WORKSPACE}/.artifacts/ci/${{ matrix.shard.name }}"
+          mkdir -p "${report_dir}"
+          bash scripts/ci_configure.sh 2>&1 | tee "${report_dir}/configure.log"
+
+      - name: Build shard targets
+        env:
+          BUILD_DIR: ${{ github.workspace }}/kstars-build-${{ matrix.shard.name }}
+        run: |
+          report_dir="${GITHUB_WORKSPACE}/.artifacts/ci/${{ matrix.shard.name }}"
+          read -r -a build_targets <<< '${{ matrix.shard.build_targets }}'
+          cmake --build "${BUILD_DIR}" --target "${build_targets[@]}" -- -j"$(nproc)" \
+            2>&1 | tee "${report_dir}/build.log"
+
+      - name: Run shard tests
+        env:
+          BUILD_DIR: ${{ github.workspace }}/kstars-build-${{ matrix.shard.name }}
+        run: |
+          report_dir="${GITHUB_WORKSPACE}/.artifacts/ci/${{ matrix.shard.name }}"
+          ctest_jobs='${{ matrix.shard.ctest_jobs }}'
+          if [[ "${ctest_jobs}" == "0" ]]; then
+            ctest_jobs="$(nproc)"
+          fi
+
+          ui_flag=()
+          if [[ '${{ matrix.shard.needs_display }}' == 'true' ]]; then
+            ui_flag+=(--ui)
+          fi
+
+          bash scripts/ci_run_ctest.sh \
+            --build-dir "${BUILD_DIR}" \
+            --regex '${{ matrix.shard.ctest_regex }}' \
+            --junit "${report_dir}/${{ matrix.shard.name }}.xml" \
+            --log-file "${report_dir}/${{ matrix.shard.name }}.log" \
+            --jobs "${ctest_jobs}" \
+            "${ui_flag[@]}"
+
+      - name: Upload shard reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report-${{ matrix.shard.name }}
+          path: ${{ github.workspace }}/.artifacts/ci/${{ matrix.shard.name }}
+          if-no-files-found: error
+
+  aggregate-reports:
+    needs:
+      - build-app
+      - test-shards
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download shard reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: test-report-*
+          path: ${{ github.workspace }}/collected-reports
+          merge-multiple: true
+
+      - name: Summarize JUnit results
+        run: |
+          summary_dir="${GITHUB_WORKSPACE}/.artifacts/ci/aggregate"
+          mkdir -p "${summary_dir}"
+          python3 scripts/ci_merge_junit.py \
+            --input-dir "${GITHUB_WORKSPACE}/collected-reports" \
+            --output-json "${summary_dir}/summary.json" \
+            --output-md "${summary_dir}/summary.md"
+          cat "${summary_dir}/summary.md" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Upload aggregate summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: aggregate-report
+          path: ${{ github.workspace }}/.artifacts/ci/aggregate
+          if-no-files-found: error
+
+  ci-gate:
+    needs:
+      - build-app
+      - test-shards
+      - aggregate-reports
+    if: ${{ always() }}
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Enforce aggregate CI result
+        run: |
+          echo "build-app=${{ needs.build-app.result }}"
+          echo "test-shards=${{ needs.test-shards.result }}"
+          echo "aggregate-reports=${{ needs.aggregate-reports.result }}"
+
+          if [[ '${{ needs.build-app.result }}' != 'success' ]]; then
+            exit 1
+          fi
+          if [[ '${{ needs.test-shards.result }}' != 'success' ]]; then
+            exit 1
+          fi
+          if [[ '${{ needs.aggregate-reports.result }}' != 'success' ]]; then
+            exit 1
+          fi

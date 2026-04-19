@@ -53,14 +53,19 @@ jobs:
 
       - name: Run UI Accessibility Check
         run: |
+          changed_files=()
           if [ "${{ github.event_name }}" == "pull_request" ]; then
-            CHANGED_FILES=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" | grep '\.ui$' || true)
+            while IFS= read -r file; do
+              changed_files+=("${file}")
+            done < <(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" | grep '\.ui$' || true)
           else
-            CHANGED_FILES=$(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep '\.ui$' || true)
+            while IFS= read -r file; do
+              changed_files+=("${file}")
+            done < <(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep '\.ui$' || true)
           fi
-          
-          if [ -n "$CHANGED_FILES" ]; then
-            python scripts/check_ui_accessibility.py $CHANGED_FILES
+
+          if [ "${#changed_files[@]}" -gt 0 ]; then
+            python scripts/check_ui_accessibility.py "${changed_files[@]}"
           else
             echo "No .ui files changed."
           fi

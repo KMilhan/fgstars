@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
+REPO_ROOT=$(cd -- "${SCRIPT_DIR}/.." && pwd)
+BUILD_DIR=${BUILD_DIR:-"${REPO_ROOT}/kstars-build"}
+VENDORED_INDI_RUNTIME=${VENDORED_INDI_RUNTIME:-OFF}
+
+cmake -S "${REPO_ROOT}" -B "${BUILD_DIR}" -GNinja \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DCCACHE_SUPPORT=ON \
+  -DFIX_WARNINGS=ON \
+  -DBUILD_TESTING=ON \
+  -DBUILD_DOC=OFF \
+  -DBUILD_WITH_QT6=ON \
+  -DKSTARS_BUILD_VENDORED_INDI_TEST_RUNTIME="${VENDORED_INDI_RUNTIME}"
