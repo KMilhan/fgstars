@@ -41,6 +41,7 @@ jobs:
         run: |
           mkdir -p /var/run/dbus
           dbus-daemon --config-file=/usr/share/dbus-1/system.conf --print-address &
-          apt update && apt install -y --no-install-recommends dbus-x11 xvfb
+          apt update && apt install -y --no-install-recommends dbus-x11 xvfb libxcb-cursor0
+          export LC_ALL=C.UTF-8
           export $(dbus-launch)
           xvfb-run -a ctest -T test -L stable -LE unstable --output-on-failure
