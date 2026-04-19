@@ -1,74 +1,27 @@
-> README.cicd: KDE Invent GitLab CI/CD pipelines
+> README.cicd: KStars CI/CD pipelines
 > SPDX-FileCopyrightText: 2024 Eric Dejouhanet <eric.dejouhanet@gmail.com>
 > SPDX-License-Identifier: GPL-2.0-or-later
 
-# KDE Invent Gitlab CI/CD pipelines
+# KStars CI/CD Pipelines
 
-This documentation describes how the KDE Invent infrastructure is producing KStars/Ekos binaries.
+This documentation describes the Continuous Integration and Continuous Deployment processes for KStars.
 
-## Continuous Integration
+## Continuous Integration (GitHub Actions)
 
-The KStars build recipe is based on `cmake`, see file `INSTALL` for manual build instructions. The `cmake` recipe is described
-in multiple files (`CMakeLists.txt`) in the tree, and requires build dependencies, some of which are mandatory and some others optional.
-Those dependencies are included in the (CI images provided by the KDE infrastructure)[https://invent.kde.org/sysadmin/ci-images].
-
-Additional dependencies are configured in file `.kde-ci.yml`.
-The (Wiki page of the CI Infrastructure)[https://community.kde.org/Infrastructure/Continuous_Integration_System] presents an
-overview of the KDE integration factory.
-
-The file `.kde-ci.yml` is parsed to feed (the metadata repository)[https://invent.kde.org/sysadmin/repo-metadata], which in turn
-is used by build scripts in the CI infrastructure.
+The KStars project uses GitHub Actions for Continuous Integration. The workflows are defined in the `.github/workflows/` directory.
 
 ### Triggers
 
 The KStars repository is configured to build its code in the following situations:
-- When a Merge Request is pushed by a contributor
-- When code is merged to the default branch (`master`)
-- When a scheduled pipeline is run
+- When a Pull Request is opened or updated by a contributor.
+- When code is merged to the default branch (`master`).
 
-The details of the configuration are implemented in `.gitlab-ci.yml`.
-Check the (KStars | Build | Pipeline editor | Visualize)[https://invent.kde.org/education/kstars/-/ci/editor?branch_name=master&tab=1]
-for a high-level visualisation of jobs.
+### Workflows
 
-Merge requests are built and tested for several platforms. The same build sequence is applied to the default branch when merging.
+- **Build and Test (`build-and-test.yml`)**: This workflow builds KStars using CMake and Qt6, and runs the test suite to ensure code quality and prevent regressions.
+- **Validation (`validation.yml`)**: Provides additional validation and linting checks for the repository.
 
-### Linux build
-
-The Linux regular KDE Invent pipeline runs on an image of OpenSUSE Tumbleweed with Qt6.
-
-This is the `suse_tumbleweed_qt610` job.
-The legacy `suse_tumbleweed_qt515` job is present but currently disabled (`when: never`).
-
-### Windows build
-
-The Windows regular KDE Invent pipeline runs with the Qt6 Windows templates.
-
-The job is named `windows_qt610` in `.gitlab-ci.yml`.
-
-### Android build
-
-The Android regular KDE Invent pipeline cannot be operated anymore with Qt5.
-Android CI is currently not active in `.gitlab-ci.yml`.
-
-### Custom build on Ubuntu24
-
-Historically, there has been a need for end-to-end tests of Ekos to stabilise and secure behaviour against INDI drivers.
-A custom build image is built from `docker/Dockerfile`, currently based on Ubuntu 24.04, supporting installation of external
-dependencies *at the time of the build*. While inherently unstable due to the lack of versioning of those dependencies,
-this allowed testing against nightly builds, mainly INDI nightly builds.
-
-The active jobs are named `ubuntu_qt5` and `build-and-test-stable` in `.gitlab-ci.yml`. They are separate builds but use caching
-to speed up the second build. Although this separation is unnecessary, this allows contributors to retrieve build artifacts
-while the tests, quite lengthy, run in the background.
-
-A `ubuntu_qt6` custom recipe is also present but currently disabled (`when: never`).
-
-### CppCheck
-
-Tool `cppcheck` runs and provides insight on code quality as a test report.
-Its [documentation](https://cppcheck.sourceforge.io) lists the multiple situations that are detected.
-
-There is currently no `cppcheck` job in `.gitlab-ci.yml`.
+The build environments primarily target modern Linux containers with Qt6, utilizing standard package managers to satisfy build dependencies.
 
 ## Continuous Deployment
 
