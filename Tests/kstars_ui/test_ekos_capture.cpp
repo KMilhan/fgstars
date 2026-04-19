@@ -423,8 +423,10 @@ void TestEkosCapture::testCaptureMultiple()
     KTRY_CAPTURE_GADGET(QPushButton, startB);
     KTRY_CAPTURE_CLICK(startB);
 
-    // Verify the proper number of FITS file were created
-    QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == count, 1000);
+    // Verify the proper number of FITS files were created. The sequence spans
+    // multiple filters, so the filesystem check needs the full capture budget.
+    QTRY_COMPARE_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count(),
+                              static_cast<int>(count), static_cast<int>(duration * 2));
     QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), static_cast<int>(duration * 2));
 
     // Reset sequence state - this makes a confirmation dialog appear
@@ -444,8 +446,9 @@ void TestEkosCapture::testCaptureMultiple()
     // Capture again
     KTRY_CAPTURE_CLICK(startB);
 
-    // Verify the proper number of additional FITS file were created again
-    QTRY_VERIFY_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count() == 2 * count, 1000);
+    // Verify the proper number of additional FITS files were created again.
+    QTRY_COMPARE_WITH_TIMEOUT(m_CaptureHelper->searchFITS(QDir(destination.path())).count(),
+                              static_cast<int>(2 * count), static_cast<int>(duration * 2));
     QTRY_VERIFY_WITH_TIMEOUT(captureIsStopped(), static_cast<int>(duration * 2));
 
     // TODO: test storage options
