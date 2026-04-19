@@ -78,6 +78,20 @@ def parse_report(path: Path) -> tuple[dict[str, float], dict[str, str]]:
     return totals, cases
 
 
+def choose_worse_status(existing: str | None, candidate: str) -> str:
+    severity = {
+        "error": 4,
+        "failure": 3,
+        "skipped": 2,
+        "passed": 1,
+    }
+    if existing is None:
+        return candidate
+    if severity[candidate] > severity[existing]:
+        return candidate
+    return existing
+
+
 def collect_reports(input_dir: Path) -> tuple[dict[str, float], dict[str, str], list[str]]:
     totals = {"tests": 0.0, "failures": 0.0, "errors": 0.0, "skipped": 0.0, "time": 0.0}
     cases: dict[str, str] = {}
@@ -89,7 +103,8 @@ def collect_reports(input_dir: Path) -> tuple[dict[str, float], dict[str, str], 
         report_totals, report_cases = parse_report(report)
         for key, value in report_totals.items():
             totals[key] += value
-        cases.update(report_cases)
+        for name, status in report_cases.items():
+            cases[name] = choose_worse_status(cases.get(name), status)
 
     return totals, cases, [str(report) for report in reports]
 

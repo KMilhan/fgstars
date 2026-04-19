@@ -61,6 +61,12 @@ ctest_cmd=(
 )
 
 if [[ "${USE_DISPLAY}" -eq 1 ]]; then
+  for command_name in dbus-run-session xvfb-run xdpyinfo; do
+    if ! command -v "${command_name}" >/dev/null 2>&1; then
+      echo "UI runtime dependency not found: ${command_name}" >&2
+      exit 1
+    fi
+  done
   dbus-run-session -- xvfb-run -a -s "-screen 0 1280x1024x24" "${ctest_cmd[@]}"
 else
   "${ctest_cmd[@]}"

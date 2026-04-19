@@ -74,6 +74,13 @@ else
   status=fail
 fi
 
+if yq -e '.defaults.run.shell == "bash"' "${WORKFLOW}" > /dev/null; then
+  overall_score=$((overall_score + 5))
+  llm_average=$((llm_average + 5))
+else
+  status=fail
+fi
+
 if rg -q "FIX_WARNINGS=ON" "${WORKFLOW}" "${REPO_ROOT}/scripts/ci_configure.sh"; then
   overall_score=$((overall_score + 5))
   llm_average=$((llm_average + 5))
