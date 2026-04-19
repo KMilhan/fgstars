@@ -142,9 +142,11 @@ def main() -> None:
     args = parse_args()
     if args.self_check:
         ci_matrix.shard_by_name("unit-core")
-        ci_matrix.shard_by_name("unit-astro")
+        ci_matrix.shard_by_name("unit-astro-fits")
+        ci_matrix.shard_by_name("unit-astro-ekos")
         ci_matrix.shard_by_name("ui-capture")
-        ci_matrix.shard_by_name("ui-ops")
+        ci_matrix.shard_by_name("ui-ops-scheduler")
+        ci_matrix.shard_by_name("ui-ops-runtime")
         print("self_check=ok")
         return
 
