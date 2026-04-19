@@ -20,8 +20,8 @@ The KStars repository is configured to build its code in the following situation
 
 - **Build and Test (`build-and-test.yml`)**: This workflow now uses a staged topology suitable for low-core GitHub runners.
   - `plan-ci` computes the shard matrix from `scripts/ci_matrix.py`.
-  - `build-app` compiles the desktop `kstars` target with warnings treated as errors.
-  - `test-shards` configures isolated build directories, builds only the targets needed by each shard, and runs the matching CTest slice.
+  - `build-app` compiles the desktop `kstars` target with warnings treated as errors and populates the shared ccache used by downstream shard jobs.
+  - `test-shards` starts after `build-app`, configures isolated build directories, builds only the targets needed by each shard, and runs the matching CTest slice.
   - Stable tests are grouped into smaller domain shards so the long-tail compile time from large UI and Ekos test bundles does not dominate the workflow on 2-vCPU runners.
   - `aggregate-reports` downloads the shard JUnit artifacts, verifies that the expected stable cases were covered, and publishes a merged summary.
   - `ci-gate` provides the final blocking status for the workflow.
