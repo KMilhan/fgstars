@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>OpsSolarSystem</class>
  <widget class="QWidget" name="OpsSolarSystem">
@@ -402,9 +402,6 @@
         </item>
         <item row="2" column="0" colspan="3">
          <widget class="QLabel" name="MagLimitAsteroidDownloadWarning">
-          <property name="styleSheet">
-           <string notr="true">color:red; font-weight:bold;</string>
-          </property>
           <property name="text">
            <string>This value might result in a big data file and reduced performance.</string>
           </property>
@@ -469,7 +466,7 @@
         <item row="1" column="2">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
-           <widget class="QDoubleSpinBox" name="kcfg_MagLimitAsteroidDownload"/>
+           <widget class="QDoubleSpinBox" name="kcfg_MagLimitAsteroidDownload" />
           </item>
           <item>
            <widget class="QLabel" name="label_2">
@@ -744,8 +741,8 @@
   <tabstop>ClearAllTrails</tabstop>
   <tabstop>checkBox</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
  <buttongroups>
   <buttongroup name="solarButtonGroup">
    <property name="exclusive">

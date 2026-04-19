@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>OpsImageOverlay</class>
  <widget class="QWidget" name="OpsImageOverlay">
@@ -149,9 +149,6 @@
             <property name="toolTip">
              <string>Open overlay directory. Copy or move images to this directory to process them.</string>
             </property>
-            <property name="styleSheet">
-             <string notr="true">font-weight:bold;</string>
-            </property>
             <property name="text">
              <string>Overlay Directory...</string>
             </property>
@@ -175,7 +172,7 @@
              <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Refresh from the overlay directory. Add overlays that have been added there, and remove overlays that are no longer there.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="text">
-             <string/>
+             <string />
             </property>
             <property name="icon">
              <iconset theme="system-reboot">
@@ -288,7 +285,7 @@
            <string>Opens the currently selected Align Profile in the Options Profile Editor</string>
           </property>
           <property name="text">
-           <string/>
+           <string />
           </property>
          </widget>
         </item>
@@ -429,6 +426,6 @@
   <tabstop>kcfg_ImageOverlayTimeout</tabstop>
   <tabstop>kcfg_ImageOverlayDefaultScale</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

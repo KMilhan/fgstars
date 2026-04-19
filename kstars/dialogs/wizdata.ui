@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>WizData</class>
  <widget class="QWidget" name="WizData">
@@ -38,7 +38,7 @@
       </size>
      </property>
      <property name="text">
-      <string/>
+      <string />
      </property>
     </widget>
    </item>
@@ -90,7 +90,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
         </widget>
        </item>
@@ -134,7 +134,7 @@
           </sizepolicy>
          </property>
          <property name="text">
-          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GSC: &lt;a href=&quot;https://drive.google.com/file/d/0B_ivMJINsdQ8cDhNcU5ESkZMZ0E/view?usp=sharing&quot;&gt;&lt;span style=&quot; text-decoration: underline; color:#0000ff;&quot;&gt;Guide Star Catalog&lt;/span&gt;&lt;/a&gt; (305 MB)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+          <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;GSC: &lt;a href="https://drive.google.com/file/d/0B_ivMJINsdQ8cDhNcU5ESkZMZ0E/view?usp=sharing"&gt;&lt;span style=" text-decoration: underline; color:#0000ff;"&gt;Guide Star Catalog&lt;/span&gt;&lt;/a&gt; (305 MB)&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
          </property>
          <property name="wordWrap">
           <bool>true</bool>
@@ -157,7 +157,7 @@
           <bool>false</bool>
          </property>
          <property name="text">
-          <string/>
+          <string />
          </property>
         </widget>
        </item>
@@ -206,43 +206,6 @@
            <height>15</height>
           </size>
          </property>
-         <property name="palette">
-          <palette>
-           <active>
-            <colorrole role="ButtonText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>233</red>
-               <green>0</green>
-               <blue>0</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </active>
-           <inactive>
-            <colorrole role="ButtonText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>233</red>
-               <green>0</green>
-               <blue>0</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </inactive>
-           <disabled>
-            <colorrole role="ButtonText">
-             <brush brushstyle="SolidPattern">
-              <color alpha="255">
-               <red>148</red>
-               <green>148</green>
-               <blue>148</blue>
-              </color>
-             </brush>
-            </colorrole>
-           </disabled>
-          </palette>
-         </property>
          <property name="text">
           <string>X</string>
          </property>
@@ -277,6 +240,6 @@
    </item>
   </layout>
  </widget>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

@@ -144,6 +144,27 @@ astyle-check:
         bash tools/run_astyle.sh --check
       fi
 
+accessibility-check:
+  stage: validate
+  image: ubuntu:24.04
+  rules:
+    - !reference [.standard-build-recipes, rules]
+  script:
+    - apt-get update && apt-get install -y --no-install-recommends git python3
+    - |
+      if [ -n "${CI_MERGE_REQUEST_DIFF_BASE_SHA:-}" ]; then
+        CHANGED_FILES=$(git diff --name-only "${CI_MERGE_REQUEST_DIFF_BASE_SHA}" | grep '\.ui$' || true)
+      elif [ -n "${CI_COMMIT_BEFORE_SHA:-}" ] && [ "${CI_COMMIT_BEFORE_SHA}" != "0000000000000000000000000000000000000000" ]; then
+        CHANGED_FILES=$(git diff --name-only "${CI_COMMIT_BEFORE_SHA}" | grep '\.ui$' || true)
+      else
+        CHANGED_FILES=$(git diff --name-only HEAD~1 | grep '\.ui$' || true)
+      fi
+      if [ -n "$CHANGED_FILES" ]; then
+        python3 scripts/check_ui_accessibility.py $CHANGED_FILES
+      else
+        echo "No .ui files changed."
+      fi
+
 # Craft recipes
 
 .craft-recipes:

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>LiveStackingUI</class>
  <widget class="QDialog" name="LiveStackingUI">
@@ -219,10 +219,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File chooser dialog for Alignment Master&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -365,10 +365,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Launch Live Stacker Monitor&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="utilities-system-monitor"/>
+              <iconset theme="utilities-system-monitor" />
              </property>
             </widget>
            </item>
@@ -378,10 +378,10 @@
               <string>Green directory chooser dialog</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="folder-open"/>
+              <iconset theme="folder-open" />
              </property>
             </widget>
            </item>
@@ -397,10 +397,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggle between mono and multi-channel mode&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="go-down"/>
+              <iconset theme="go-down" />
              </property>
             </widget>
            </item>
@@ -416,10 +416,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Stack directory chooser dialog&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="folder-open"/>
+              <iconset theme="folder-open" />
              </property>
             </widget>
            </item>
@@ -464,9 +464,6 @@
              </property>
              <property name="autoFillBackground">
               <bool>false</bool>
-             </property>
-             <property name="styleSheet">
-              <string notr="true"/>
              </property>
              <property name="title">
               <string>Calc SNR:</string>
@@ -646,10 +643,10 @@
               <string>Open web documentation.</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="help-about"/>
+              <iconset theme="help-about" />
              </property>
             </widget>
            </item>
@@ -730,10 +727,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Red directory chooser dialog&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="folder-open"/>
+              <iconset theme="folder-open" />
              </property>
             </widget>
            </item>
@@ -759,10 +756,10 @@
               <string>Lum (optional) directory chooser dialog</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="folder-open"/>
+              <iconset theme="folder-open" />
              </property>
             </widget>
            </item>
@@ -835,10 +832,10 @@
               <string>Toggle between mono and multi-channel mode</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="go-up"/>
+              <iconset theme="go-up" />
              </property>
             </widget>
            </item>
@@ -889,10 +886,10 @@
               <string>Blue directory chooser dialog</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="folder-open"/>
+              <iconset theme="folder-open" />
              </property>
             </widget>
            </item>
@@ -927,7 +924,7 @@
               <string>...</string>
              </property>
              <property name="icon">
-              <iconset theme="network-wireless"/>
+              <iconset theme="network-wireless" />
              </property>
             </widget>
            </item>
@@ -2331,10 +2328,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File chooser dialog for Master Flat&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2344,10 +2341,10 @@
               <string>File chooser dialog for Master Flat Lum</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2398,10 +2395,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File chooser dialog for Master Dark Red&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2411,10 +2408,10 @@
               <string>File chooser dialog for Master Dark Lum</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2424,10 +2421,10 @@
               <string>File chooser dialog for Master Dark Green</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2437,10 +2434,10 @@
               <string>File chooser dialog for Master Flat Red</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2475,10 +2472,10 @@
               <string>File chooser dialog for Master Flat Blue</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2516,10 +2513,10 @@
               <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;File chooser dialog for Master Dark&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2674,10 +2671,10 @@
               <string>File chooser dialog for Master Dark Blue</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2750,10 +2747,10 @@
               <string>File chooser dialog for Master Flat Green</string>
              </property>
              <property name="text">
-              <string/>
+              <string />
              </property>
              <property name="icon">
-              <iconset theme="document-open"/>
+              <iconset theme="document-open" />
              </property>
             </widget>
            </item>
@@ -2883,6 +2880,6 @@
   <tabstop>SharpenSigma</tabstop>
   <tabstop>ReprocessB</tabstop>
  </tabstops>
- <resources/>
- <connections/>
+ <resources />
+ <connections />
 </ui>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>CatalogColorEditor</class>
  <widget class="QDialog" name="CatalogColorEditor">
@@ -16,9 +16,6 @@
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <item>
     <widget class="QLabel" name="catalogName">
-     <property name="styleSheet">
-      <string notr="true">font-weight:600;</string>
-     </property>
      <property name="text">
       <string>_</string>
      </property>
@@ -38,7 +35,7 @@
     </widget>
    </item>
    <item>
-    <layout class="QVBoxLayout" name="colorButtons"/>
+    <layout class="QVBoxLayout" name="colorButtons" />
    </item>
    <item>
     <spacer name="verticalSpacer">
@@ -65,7 +62,7 @@
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources />
  <connections>
   <connection>
    <sender>buttonBox</sender>

@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='utf-8'?>
 <ui version="4.0">
  <class>OpsHIPS</class>
  <widget class="QWidget" name="OpsHIPS">
@@ -12,9 +12,6 @@
   </property>
   <property name="autoFillBackground">
    <bool>false</bool>
-  </property>
-  <property name="styleSheet">
-   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
    <property name="spacing">
@@ -53,7 +50,7 @@
         </widget>
        </item>
        <item>
-        <widget class="QListWidget" name="sourcesList"/>
+        <widget class="QListWidget" name="sourcesList" />
        </item>
       </layout>
      </item>
@@ -78,15 +75,11 @@
            <property name="autoFillBackground">
             <bool>false</bool>
            </property>
-           <property name="styleSheet">
-            <string notr="true">background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 rgba(128, 128, 128, 128), stop: 1 rgba(0, 0,0, 128));</string>
-           </property>
            <property name="frameShape">
             <enum>QFrame::Box</enum>
            </property>
            <property name="text">
-            <string/>
+            <string />
            </property>
            <property name="pixmap">
             <pixmap resource="../data/kstars.qrc">:/images/noimage.png</pixmap>
@@ -139,7 +132,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../data/kstars.qrc"/>
+  <include location="../data/kstars.qrc" />
  </resources>
- <connections/>
+ <connections />
 </ui>
