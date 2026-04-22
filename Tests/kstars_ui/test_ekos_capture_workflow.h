@@ -16,6 +16,8 @@
 
 #include <QObject>
 
+class SkyObject;
+
 // Select the flat source from the flats calibration options.
 // Start with a delay of 1 sec a new thread that edits the calibration options:
 //    select the source widget
@@ -105,6 +107,41 @@ class TestEkosCaptureWorkflow : public QObject
         bool prepareCapture(int refocusLimitTime = 0.0, double refocusHFR = 0.0, double refocusTemp = 0.0, int delay = 0);
 
         /**
+         * @brief Select a target in KStars and center the SkyMap on it.
+         */
+        bool selectTarget(const QString &targetName, SkyObject **selectedObject = nullptr);
+
+        /**
+         * @brief Select a target through the Find Object dialog.
+         */
+        bool selectTargetViaFindDialog(const QString &targetName);
+
+        /**
+         * @brief Slew the telescope using the currently focused SkyMap object.
+         */
+        bool slewFocusedTarget(const QString &expectedTargetName);
+
+        /**
+         * @brief Queue a simple repeated light-frame capture for a target.
+         */
+        bool queueRepeatedCapture(const QString &targetName, int frameCount, double exposureSeconds);
+
+        /**
+         * @brief Queue repeated capture by filling Capture widgets directly.
+         */
+        bool queueRepeatedCaptureViaUi(const QString &expectedTargetName, int frameCount, double exposureSeconds);
+
+        /**
+         * @brief Start the current queue and wait until capture finishes.
+         */
+        bool runCaptureToCompletion(const QString &expectedLastFrameSuffix);
+
+        /**
+         * @brief Count FITS files produced in the test image directory.
+         */
+        int capturedFitsCount() const;
+
+        /**
          * @brief initCaptureSetting Initialize Capture settings with a single bool/double pair
          * @param setting a single setting with an enabling checkbox and the value
          * @param checkboxName name of the QCheckBox widget
@@ -183,6 +220,26 @@ class TestEkosCaptureWorkflow : public QObject
 
         /** @brief Test data for @see testCaptureScriptsExecution() */
         void testCaptureScriptsExecution_data();
+
+        /**
+         * @brief User journey: choose a KStars target, run repeated capture, and finish cleanly.
+         */
+        void testTargetedRepeatCaptureJourney();
+
+        /**
+         * @brief User journey: switch targets mid-session and run repeated capture for both.
+         */
+        void testRetargetedRepeatCaptureJourney();
+
+        /**
+         * @brief Blackbox journey: Find dialog target selection, focused slew, repeated capture, and cleanup.
+         */
+        void testBlackboxTargetedRepeatCaptureJourney();
+
+        /**
+         * @brief Blackbox journey: retarget through Find dialog and capture both sessions.
+         */
+        void testBlackboxRetargetedRepeatCaptureJourney();
 
         /**
          * @brief Test if capture continues where it had been suspended by a

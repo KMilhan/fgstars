@@ -18,6 +18,15 @@
 #include "ekos/capture/capture.h"
 #include "ekos/focus/focusmodule.h"
 #include "ekos/auxiliary/filtermanager.h"
+#include "kstars.h"
+#include "skymap.h"
+
+#include <QApplication>
+#include <QDirIterator>
+#include <QDialogButtonBox>
+#include <QLineEdit>
+#include <QListView>
+#include <QPushButton>
 
 #define SHUTTER_UNKNOWN -1
 #define SHUTTER_NO       0
@@ -29,6 +38,16 @@ bool captureIsStopped()
 {
     const auto status = Ekos::Manager::Instance()->captureModule()->status();
     return status == Ekos::CAPTURE_IDLE || status == Ekos::CAPTURE_ABORTED || status == Ekos::CAPTURE_COMPLETE;
+}
+
+void replaceLineEditText(QLineEdit *lineEdit, const QString &text)
+{
+    QVERIFY(lineEdit != nullptr);
+    lineEdit->setFocus();
+    lineEdit->selectAll();
+    QTest::keyClick(lineEdit, Qt::Key_Delete);
+    QTest::keyClicks(lineEdit, text);
+    QCOMPARE(lineEdit->text(), text);
 }
 }
 
@@ -299,6 +318,109 @@ void TestEkosCaptureWorkflow::testCaptureScriptsExecution()
         QTest::qWait(5000);
         qCInfo(KSTARS_EKOS_TEST) << "Scripts cleared.";
     }
+}
+
+void TestEkosCaptureWorkflow::testTargetedRepeatCaptureJourney()
+{
+    QVERIFY(prepareTestCase());
+
+    SkyObject *targetObject = nullptr;
+    QVERIFY(selectTarget("Altair", &targetObject));
+    QVERIFY(targetObject != nullptr);
+    QVERIFY(m_CaptureHelper->slewTo(targetObject->ra().Hours(), targetObject->dec().Degrees(), true));
+
+    QVERIFY(queueRepeatedCapture("Altair", 3, 0.2));
+    QCOMPARE(capturedFitsCount(), 0);
+    QVERIFY(runCaptureToCompletion("003.fits"));
+    QCOMPARE(capturedFitsCount(), 3);
+
+    Ekos::Capture *capture = Ekos::Manager::Instance()->captureModule();
+    QVERIFY(capture != nullptr);
+    KTRY_GADGET(capture, QLineEdit, targetNameT);
+    QCOMPARE(targetNameT->text(), QString("Altair"));
+
+    capture->clearSequenceQueue();
+    KTRY_GADGET(capture, QTableWidget, queueTable);
+    QTRY_COMPARE_WITH_TIMEOUT(queueTable->rowCount(), 0, 2000);
+}
+
+void TestEkosCaptureWorkflow::testRetargetedRepeatCaptureJourney()
+{
+    QVERIFY(prepareTestCase());
+
+    SkyObject *firstTarget = nullptr;
+    QVERIFY(selectTarget("Altair", &firstTarget));
+    QVERIFY(firstTarget != nullptr);
+    QVERIFY(m_CaptureHelper->slewTo(firstTarget->ra().Hours(), firstTarget->dec().Degrees(), true));
+
+    QVERIFY(queueRepeatedCapture("Altair", 2, 0.2));
+    QVERIFY(runCaptureToCompletion("002.fits"));
+    QCOMPARE(capturedFitsCount(), 2);
+
+    Ekos::Capture *capture = Ekos::Manager::Instance()->captureModule();
+    QVERIFY(capture != nullptr);
+    capture->clearSequenceQueue();
+    KTRY_GADGET(capture, QTableWidget, queueTable);
+    QTRY_COMPARE_WITH_TIMEOUT(queueTable->rowCount(), 0, 2000);
+
+    SkyObject *secondTarget = nullptr;
+    QVERIFY(selectTarget("Deneb", &secondTarget));
+    QVERIFY(secondTarget != nullptr);
+    QVERIFY(m_CaptureHelper->slewTo(secondTarget->ra().Hours(), secondTarget->dec().Degrees(), true));
+
+    QVERIFY(queueRepeatedCapture("Deneb", 2, 0.2));
+    QVERIFY(runCaptureToCompletion("002.fits"));
+    QCOMPARE(capturedFitsCount(), 4);
+
+    KTRY_GADGET(capture, QLineEdit, targetNameT);
+    QCOMPARE(targetNameT->text(), QString("Deneb"));
+}
+
+void TestEkosCaptureWorkflow::testBlackboxTargetedRepeatCaptureJourney()
+{
+    QVERIFY(prepareTestCase());
+
+    QVERIFY(selectTargetViaFindDialog("Altair"));
+    QVERIFY(slewFocusedTarget("Altair"));
+    QVERIFY(queueRepeatedCaptureViaUi("Altair", 3, 0.2));
+    QCOMPARE(capturedFitsCount(), 0);
+    QVERIFY(runCaptureToCompletion("003.fits"));
+    QCOMPARE(capturedFitsCount(), 3);
+
+    Ekos::Capture *capture = Ekos::Manager::Instance()->captureModule();
+    QVERIFY(capture != nullptr);
+    KTRY_GADGET(capture, QPushButton, startB);
+    QVERIFY(startB->toolTip().contains("Start"));
+
+    capture->clearSequenceQueue();
+    KTRY_GADGET(capture, QTableWidget, queueTable);
+    QTRY_COMPARE_WITH_TIMEOUT(queueTable->rowCount(), 0, 2000);
+}
+
+void TestEkosCaptureWorkflow::testBlackboxRetargetedRepeatCaptureJourney()
+{
+    QVERIFY(prepareTestCase());
+
+    QVERIFY(selectTargetViaFindDialog("Altair"));
+    QVERIFY(slewFocusedTarget("Altair"));
+    QVERIFY(queueRepeatedCaptureViaUi("Altair", 2, 0.2));
+    QVERIFY(runCaptureToCompletion("002.fits"));
+    QCOMPARE(capturedFitsCount(), 2);
+
+    Ekos::Capture *capture = Ekos::Manager::Instance()->captureModule();
+    QVERIFY(capture != nullptr);
+    capture->clearSequenceQueue();
+    KTRY_GADGET(capture, QTableWidget, queueTable);
+    QTRY_COMPARE_WITH_TIMEOUT(queueTable->rowCount(), 0, 2000);
+
+    QVERIFY(selectTargetViaFindDialog("Deneb"));
+    QVERIFY(slewFocusedTarget("Deneb"));
+    QVERIFY(queueRepeatedCaptureViaUi("Deneb", 2, 0.2));
+    QVERIFY(runCaptureToCompletion("002.fits"));
+    QCOMPARE(capturedFitsCount(), 4);
+
+    KTRY_GADGET(capture, QLineEdit, targetNameT);
+    QCOMPARE(targetNameT->text(), QString("Deneb"));
 }
 
 void TestEkosCaptureWorkflow::testGuidingDeviationSuspendingCapture()
@@ -1693,6 +1815,194 @@ bool TestEkosCaptureWorkflow::prepareTestCase()
 
     // preparation successful
     return true;
+}
+
+bool TestEkosCaptureWorkflow::selectTarget(const QString &targetName, SkyObject **selectedObject)
+{
+    KStars * const kstars = KStars::Instance();
+    KVERIFY_SUB(kstars != nullptr);
+    SkyMap * const skyMap = kstars->map();
+    KVERIFY_SUB(skyMap != nullptr);
+
+    SkyObject * const targetObject = kstars->data()->skyComposite()->findByName(targetName);
+    KVERIFY2_SUB(targetObject != nullptr, QString("Target '%1' not found in KStars sky data.").arg(targetName).toLocal8Bit());
+
+    skyMap->setClickedObject(targetObject);
+    skyMap->setClickedPoint(targetObject);
+    skyMap->setFocusObject(targetObject);
+    skyMap->slotCenter();
+
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(skyMap->focusObject() == targetObject, 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(skyMap->clickedObject() == targetObject, 5000);
+
+    if (selectedObject != nullptr)
+        *selectedObject = targetObject;
+
+    return true;
+}
+
+bool TestEkosCaptureWorkflow::selectTargetViaFindDialog(const QString &targetName)
+{
+    KStars * const kstars = KStars::Instance();
+    KVERIFY_SUB(kstars != nullptr);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(kstars->isGUIReady(), 30000);
+    kstars->raise();
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(kstars->isActiveWindow(), 1000);
+
+    QAction * const findAction = kstars->actionCollection()->action("find_object");
+    KVERIFY2_SUB(findAction != nullptr, "Find Object action is not registered.");
+    findAction->trigger();
+
+    QDialog *dialog = nullptr;
+    KTRY_VERIFY_WITH_TIMEOUT_SUB((dialog = qobject_cast<QDialog *>(QApplication::activeModalWidget())) != nullptr, 5000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(dialog->isVisible(), 5000);
+
+    QLineEdit * const searchBox = dialog->findChild<QLineEdit *>("SearchBox");
+    QListView * const searchList = dialog->findChild<QListView *>("SearchList");
+    QDialogButtonBox * const buttonBox = dialog->findChild<QDialogButtonBox *>();
+    KVERIFY_SUB(searchBox != nullptr);
+    KVERIFY_SUB(searchList != nullptr);
+    KVERIFY_SUB(buttonBox != nullptr);
+
+    replaceLineEditText(searchBox, targetName);
+
+    auto exactMatchIndex = [&]() -> QModelIndex
+    {
+        auto * const model = searchList->model();
+        if (model == nullptr)
+            return {};
+
+        for (int row = 0; row < model->rowCount(); ++row)
+        {
+            const QModelIndex index = model->index(row, 0);
+            if (model->data(index, Qt::DisplayRole).toString().compare(targetName, Qt::CaseInsensitive) == 0)
+                return index;
+        }
+
+        return {};
+    };
+
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(exactMatchIndex().isValid(), 5000);
+    const QModelIndex targetIndex = exactMatchIndex();
+    searchList->scrollTo(targetIndex);
+    searchList->setCurrentIndex(targetIndex);
+    searchList->selectionModel()->select(targetIndex, QItemSelectionModel::ClearAndSelect | QItemSelectionModel::Rows);
+    QTest::mouseClick(searchList->viewport(), Qt::LeftButton, Qt::NoModifier, searchList->visualRect(targetIndex).center());
+
+    QPushButton * const okButton = buttonBox->button(QDialogButtonBox::Ok);
+    KVERIFY_SUB(okButton != nullptr);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(okButton->isEnabled(), 5000);
+    QTest::mouseClick(okButton, Qt::LeftButton);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(!dialog->isVisible(), 5000);
+
+    return true;
+}
+
+bool TestEkosCaptureWorkflow::slewFocusedTarget(const QString &expectedTargetName)
+{
+    KStars * const kstars = KStars::Instance();
+    KVERIFY_SUB(kstars != nullptr);
+    QAction * const slewAction = kstars->actionCollection()->action("telescope_slew");
+    KVERIFY2_SUB(slewAction != nullptr, "Telescope slew action is not registered.");
+    slewAction->trigger();
+
+    Ekos::Capture * const capture = Ekos::Manager::Instance()->captureModule();
+    KVERIFY_SUB(capture != nullptr);
+    KWRAP_SUB(KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(capture, 1000));
+    KTRY_GADGET_SUB(capture, QLineEdit, targetNameT);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(targetNameT->text() == expectedTargetName, 30000);
+
+    return true;
+}
+
+bool TestEkosCaptureWorkflow::queueRepeatedCapture(const QString &targetName, int frameCount, double exposureSeconds)
+{
+    KVERIFY2_SUB(frameCount > 0, "Repeated capture journey expects at least one frame.");
+
+    Ekos::Capture * const capture = Ekos::Manager::Instance()->captureModule();
+    KVERIFY_SUB(capture != nullptr);
+    KWRAP_SUB(KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(capture, 1000));
+
+    capture->clearSequenceQueue();
+    KTRY_GADGET_SUB(capture, QTableWidget, queueTable);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(queueTable->rowCount() == 0, 2000);
+
+    const QString imagePath = getImageLocation()->path() + "/journey";
+    KVERIFY_SUB(m_CaptureHelper->fillCaptureSequences(targetName, QString("Red:%1").arg(frameCount), exposureSeconds, imagePath));
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(queueTable->rowCount() == 1, 2000);
+
+    return true;
+}
+
+bool TestEkosCaptureWorkflow::queueRepeatedCaptureViaUi(const QString &expectedTargetName, int frameCount, double exposureSeconds)
+{
+    KVERIFY2_SUB(frameCount > 0, "Blackbox capture journey expects at least one frame.");
+
+    Ekos::Capture * const capture = Ekos::Manager::Instance()->captureModule();
+    KVERIFY_SUB(capture != nullptr);
+    KWRAP_SUB(KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(capture, 1000));
+
+    capture->clearSequenceQueue();
+
+    KTRY_GADGET_SUB(capture, QTableWidget, queueTable);
+    KTRY_GADGET_SUB(capture, QDoubleSpinBox, captureExposureN);
+    KTRY_GADGET_SUB(capture, QSpinBox, captureCountN);
+    KTRY_GADGET_SUB(capture, QSpinBox, captureDelayN);
+    KTRY_GADGET_SUB(capture, QComboBox, captureTypeS);
+    KTRY_GADGET_SUB(capture, QComboBox, FilterPosCombo);
+    KTRY_GADGET_SUB(capture, QLineEdit, targetNameT);
+    KTRY_GADGET_SUB(capture, QLineEdit, fileDirectoryT);
+    KTRY_GADGET_SUB(capture, QPushButton, addToQueueB);
+
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(queueTable->rowCount() == 0, 2000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(targetNameT->text() == expectedTargetName, 30000);
+
+    captureExposureN->setValue(exposureSeconds);
+    captureCountN->setValue(frameCount);
+    captureDelayN->setValue(0);
+    captureTypeS->setCurrentText("Light");
+    FilterPosCombo->setCurrentText("Red");
+
+    replaceLineEditText(fileDirectoryT, getImageLocation()->path() + "/blackbox");
+
+    QTest::mouseClick(addToQueueB, Qt::LeftButton);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(queueTable->rowCount() == 1, 2000);
+
+    return true;
+}
+
+bool TestEkosCaptureWorkflow::runCaptureToCompletion(const QString &expectedLastFrameSuffix)
+{
+    Ekos::Capture * const capture = Ekos::Manager::Instance()->captureModule();
+    KVERIFY_SUB(capture != nullptr);
+    KWRAP_SUB(KTRY_SWITCH_TO_MODULE_WITH_TIMEOUT(capture, 1000));
+
+    KTRY_GADGET_SUB(Ekos::Manager::Instance(), CapturePreviewWidget, capturePreview);
+    SummaryFITSView * const workspaceView = capturePreview->summaryFITSView();
+    KVERIFY_SUB(workspaceView != nullptr);
+
+    KTRY_CLICK_SUB(capture, startB);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(captureIsStopped(), 60000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(workspaceView->imageData() != nullptr, 10000);
+    KTRY_VERIFY_WITH_TIMEOUT_SUB(workspaceView->imageData()->filename().endsWith(expectedLastFrameSuffix), 10000);
+
+    return true;
+}
+
+int TestEkosCaptureWorkflow::capturedFitsCount() const
+{
+    if (imageLocation == nullptr || imageLocation->exists() == false)
+        return 0;
+
+    int fitsCount = 0;
+    QDirIterator it(imageLocation->path(), QStringList() << "*.fits", QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext())
+    {
+        it.next();
+        ++fitsCount;
+    }
+
+    return fitsCount;
 }
 
 void TestEkosCaptureWorkflow::init()
