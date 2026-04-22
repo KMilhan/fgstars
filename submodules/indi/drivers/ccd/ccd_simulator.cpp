@@ -18,9 +18,8 @@
 
 #include "ccd_simulator.h"
 #include "indicom.h"
+#include "simulated_star_catalog.h"
 #include "stream/streammanager.h"
-
-#include "locale_compat.h"
 
 #include <libnova/julian_day.h>
 #include <libastro.h>
@@ -734,91 +733,54 @@ int CCDSim::DrawCcdFrame(INDI::CCDChip * targetChip)
 
         if (ftype == INDI::CCDChip::LIGHT_FRAME)
         {
-            AutoCNumeric locale;
-            char gsccmd[250];
-            FILE * pp;
             int drawn = 0;
+            const auto stars = INDI::SimulatorStarCatalog::query({
+                .centerRaDegrees = range360(rad),
+                .centerDecDegrees = rangeDec(cameradec),
+                .radiusArcMinutes = radius,
+                .limitingMagnitude = lookuplimit,
+            });
 
-            sprintf(gsccmd, "gsc -c %8.6f %+8.6f -r %4.1f -m 0 %4.2f -n 3000",
-                    range360(rad),
-                    rangeDec(cameradec),
-                    radius,
-                    lookuplimit);
-
-            pp = popen(gsccmd, "r");
-            if (pp != nullptr)
+            for (const auto &star : stars)
             {
-                char line[256];
+                //  Convert the ra/dec to standard co-ordinates
+                double sx;    //  standard co-ords
+                double sy;    //
+                double srar;  //  star ra in radians
+                double sdecr; //  star dec in radians;
+                double ccdx;
+                double ccdy;
 
-                while (fgets(line, 256, pp) != nullptr)
-                {
-                    //  ok, lets parse this line for specifics we want
-                    char id[20];
-                    char plate[6];
-                    char ob[6];
-                    float mag;
-                    float mage;
-                    float ra;
-                    float dec;
-                    float pose;
-                    int band;
-                    float dist;
-                    int dir;
-                    int c;
+                srar  = star.raDegrees * 0.0174532925;
+                sdecr = star.decDegrees * 0.0174532925;
 
-                    int rc = sscanf(line, "%10s %f %f %f %f %f %d %d %4s %2s %f %d", id, &ra, &dec, &pose, &mag, &mage,
-                                    &band, &c, plate, ob, &dist, &dir);
-                    if (rc == 12)
-                    {
-                        //  Convert the ra/dec to standard co-ordinates
-                        double sx;    //  standard co-ords
-                        double sy;    //
-                        double srar;  //  star ra in radians
-                        double sdecr; //  star dec in radians;
-                        double ccdx;
-                        double ccdy;
+                //  Handbook of astronomical image processing
+                //  page 253
+                //  equations 9.1 and 9.2
+                //  convert ra/dec to standard co-ordinates
 
-                        srar  = ra * 0.0174532925;
-                        sdecr = dec * 0.0174532925;
+                sx = cos(sdecr) * sin(srar - rar) /
+                     (cos(decr) * cos(sdecr) * cos(srar - rar) + sin(decr) * sin(sdecr));
+                sy = (sin(decr) * cos(sdecr) * cos(srar - rar) - cos(decr) * sin(sdecr)) /
+                     (cos(decr) * cos(sdecr) * cos(srar - rar) + sin(decr) * sin(sdecr));
 
-                        //  Handbook of astronomical image processing
-                        //  page 253
-                        //  equations 9.1 and 9.2
-                        //  convert ra/dec to standard co-ordinates
+                //  now convert to pixels
+                ccdx = pa * sx + pb * sy + pc;
+                ccdy = pd * sx + pe * sy + pf;
 
-                        sx = cos(sdecr) * sin(srar - rar) /
-                             (cos(decr) * cos(sdecr) * cos(srar - rar) + sin(decr) * sin(sdecr));
-                        sy = (sin(decr) * cos(sdecr) * cos(srar - rar) - cos(decr) * sin(sdecr)) /
-                             (cos(decr) * cos(sdecr) * cos(srar - rar) + sin(decr) * sin(sdecr));
+                // Invert horizontally and transform CW to CCW (see above)
+                ccdx = ccdW - ccdx;
 
-                        //  now convert to pixels
-                        ccdx = pa * sx + pb * sy + pc;
-                        ccdy = pd * sx + pe * sy + pf;
-
-                        // Invert horizontally and transform CW to CCW (see above)
-                        ccdx = ccdW - ccdx;
-
-                        rc = DrawImageStar(targetChip, mag, ccdx, ccdy, exposure_time);
-                        drawn += rc;
+                int rc = DrawImageStar(targetChip, star.magnitude, ccdx, ccdy, exposure_time);
+                drawn += rc;
 #ifdef __DEV__
-                        if (rc == 1)
-                        {
-                            LOGF_DEBUG("star %s scope %6.4f %6.4f star %6.4f %6.4f ccd %6.2f %6.2f", id, rad, decPE, ra, dec, ccdx, ccdy);
-                            LOGF_DEBUG("star %s ccd %6.2f %6.2f", id, ccdx, ccdy);
-                        }
+                if (rc == 1)
+                    LOGF_DEBUG("star scope %6.4f %6.4f star %6.4f %6.4f ccd %6.2f %6.2f", rad, decPE, star.raDegrees, star.decDegrees,
+                               ccdx, ccdy);
 #endif
-                    }
-                }
-                pclose(pp);
-            }
-            else
-            {
-                LOG_ERROR("Error looking up stars, is gsc installed with appropriate environment variables set ??");
             }
             if (drawn == 0)
-            {
-                LOG_ERROR("Got no stars, is gsc installed with appropriate environment variables set ??");
-            }
+                LOG_DEBUG("Synthetic star catalog returned no stars for the current CCD field.");
         }
 
         //  now we need to add background sky glow, with vignetting

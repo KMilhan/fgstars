@@ -4,6 +4,9 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 
+#include <algorithm>
+#include <cstdlib>
+
 using ::testing::_;
 using ::testing::StrEq;
 
@@ -194,6 +197,65 @@ class MockCCDSimDriver: public CCDSim
             std::cout << "[          ] DrawStarImage - randomized no-noise no-skyglow benchmark: " << duration << "ns per call" <<
                       std::endl;
         }
+
+        void testDrawFrameWithoutExternalCatalogRuntime()
+        {
+            auto p = getNumber("SIMULATOR_SETTINGS");
+            ASSERT_NE(p, nullptr);
+
+            p.findWidgetByName("SIM_XRES")->setValue(256.0);
+            p.findWidgetByName("SIM_YRES")->setValue(256.0);
+            p.findWidgetByName("SIM_XSIZE")->setValue(5.2);
+            p.findWidgetByName("SIM_YSIZE")->setValue(5.2);
+            p.findWidgetByName("SIM_MAXVAL")->setValue(65535.0);
+            p.findWidgetByName("SIM_SATURATION")->setValue(1.5);
+            p.findWidgetByName("SIM_LIMITINGMAG")->setValue(12.0);
+            p.findWidgetByName("SIM_SKYGLOW")->setValue(100.0);
+            p.findWidgetByName("SIM_NOISE")->setValue(0.0);
+
+            seeing = 2.5f;
+            ExposureRequest = 2.0f;
+            ScopeInfoNP[FOCAL_LENGTH].setValue(800.0);
+            ScopeInfoNP[APERTURE].setValue(120.0);
+            currentRA = 5.0;
+            currentDE = 22.0;
+
+            ASSERT_TRUE(setupParameters());
+            PrimaryCCD.setFrameType(INDI::CCDChip::LIGHT_FRAME);
+            memset(PrimaryCCD.getFrameBuffer(), 0, PrimaryCCD.getFrameBufferSize());
+
+            const char *oldPath = getenv("PATH");
+            const char *oldCatalogEnv = getenv("GSCDAT");
+
+            setenv("PATH", "/nonexistent", 1);
+            unsetenv("GSCDAT");
+
+            testing::internal::CaptureStdout();
+            DrawCcdFrame(&PrimaryCCD);
+            const std::string loggedOutput = testing::internal::GetCapturedStdout();
+
+            if (oldPath != nullptr)
+                setenv("PATH", oldPath, 1);
+            else
+                unsetenv("PATH");
+
+            if (oldCatalogEnv != nullptr)
+                setenv("GSCDAT", oldCatalogEnv, 1);
+            else
+                unsetenv("GSCDAT");
+
+            auto const *fb = reinterpret_cast<uint16_t *>(PrimaryCCD.getFrameBuffer());
+            const auto nonZeroPixels = std::count_if(fb, fb + PrimaryCCD.getXRes() * PrimaryCCD.getYRes(),
+                                     [](uint16_t pixel)
+            {
+                return pixel > 0;
+            });
+
+            EXPECT_EQ(loggedOutput.find("Got no stars"), std::string::npos)
+                    << "Simulator should not depend on an external catalog runtime to render a frame.";
+            EXPECT_GT(nonZeroPixels, 0)
+                    << "Simulator should generate a star field without relying on an external catalog runtime.";
+        }
 };
 
 TEST(CCDSimulatorDriverTest, test_properties)
@@ -209,6 +271,11 @@ TEST(CCDSimulatorDriverTest, test_guide_api)
 TEST(CCDSimulatorDriverTest, test_draw_star)
 {
     MockCCDSimDriver().testDrawStar();
+}
+
+TEST(CCDSimulatorDriverTest, test_draw_frame_without_external_catalog_runtime)
+{
+    MockCCDSimDriver().testDrawFrameWithoutExternalCatalogRuntime();
 }
 
 int main(int argc, char **argv)

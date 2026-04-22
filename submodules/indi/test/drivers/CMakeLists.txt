@@ -3,6 +3,7 @@ INCLUDE_DIRECTORIES( "../../drivers/ccd" )
 
 ADD_EXECUTABLE(test_ccd_simulator
     "${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/ccd/ccd_simulator.cpp"
+    "${CMAKE_CURRENT_SOURCE_DIR}/../../drivers/ccd/simulated_star_catalog.cpp"
     test_ccd_simulator.cpp
 )
 
