@@ -99,6 +99,7 @@ unitybuild_*.cpp
 
 # Local eval/test artifacts
 /.artifacts/headless-ui/
+/.artifacts/vendor/
 /.artifacts/eval-tests/build-*.log
 /.artifacts/eval-tests/build-full-*.log
 /.artifacts/eval-tests/configure-*.log

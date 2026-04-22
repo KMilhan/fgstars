@@ -238,6 +238,14 @@ MACRO_BOOL_TO_01(INDI_FOUND HAVE_INDI)
 set_package_properties(INDI PROPERTIES DESCRIPTION "Astronomical instrumentation control" URL "https://www.indilib.org" TYPE OPTIONAL PURPOSE "Support for controlling astronomical devices on Linux with KStars.")
 
 option(KSTARS_BUILD_VENDORED_INDI_TEST_RUNTIME "Build a vendored INDI server and simulator runtime for UI tests" ON)
+option(KSTARS_BUILD_VENDORED_INDI_3RDPARTY_RUNTIME
+       "Build an optional indi-3rdparty source tree against the vendored INDI runtime" OFF)
+set(KSTARS_INDI_3RDPARTY_SOURCE_DIR "" CACHE PATH
+    "Path to an indi-3rdparty checkout used only during builds")
+set(KSTARS_INDI_3RDPARTY_SUBDIR "" CACHE STRING
+    "Optional subdirectory inside KSTARS_INDI_3RDPARTY_SOURCE_DIR to build")
+option(KSTARS_INDI_3RDPARTY_BUILD_LIBS
+       "Build indi-3rdparty vendor libraries instead of drivers when using the optional runtime" OFF)
 if(BUILD_TESTING AND UNIX AND NOT APPLE AND KSTARS_BUILD_VENDORED_INDI_TEST_RUNTIME
    AND EXISTS "${CMAKE_SOURCE_DIR}/submodules/indi/CMakeLists.txt")
     set(KSTARS_VENDORED_INDI_BINARY_DIR "${CMAKE_BINARY_DIR}/submodules/indi-runtime")
@@ -262,6 +270,7 @@ if(BUILD_TESTING AND UNIX AND NOT APPLE AND KSTARS_BUILD_VENDORED_INDI_TEST_RUNT
             -DINDI_INSTALL_UDEV_RULES=OFF
         BUILD_COMMAND ${CMAKE_COMMAND} --build . --target
             indiserver
+            indilx200
             indi_simulator_telescope
             indi_simulator_ccd
             indi_simulator_focus
@@ -282,39 +291,59 @@ if(BUILD_TESTING AND UNIX AND NOT APPLE AND KSTARS_BUILD_VENDORED_INDI_TEST_RUNT
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_rotator"
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_dome"
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_lightpanel"
+            "${KSTARS_VENDORED_INDI_PREFIX}/lib/libindidriver.so"
+            "${KSTARS_VENDORED_INDI_PREFIX}/lib/libindiAlignmentDriver.so"
+            "${KSTARS_VENDORED_INDI_PREFIX}/lib/libindilx200.so"
         INSTALL_COMMAND
-            ${CMAKE_COMMAND} -E make_directory ${KSTARS_VENDORED_INDI_PREFIX}/bin
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/indiserver/indiserver
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indiserver
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/telescope/indi_simulator_telescope
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_telescope
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/ccd/indi_simulator_ccd
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_ccd
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/focuser/indi_simulator_focus
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_focus
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/filter_wheel/indi_simulator_wheel
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_wheel
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/ccd/indi_simulator_guide
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_guide
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/weather/indi_simulator_weather
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_weather
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/rotator/indi_simulator_rotator
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_rotator
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/dome/indi_simulator_dome
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_dome
-            COMMAND ${CMAKE_COMMAND} -E copy
-                ${KSTARS_VENDORED_INDI_BINARY_DIR}/drivers/auxiliary/indi_simulator_lightpanel
-                ${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_lightpanel
+            ${CMAKE_SOURCE_DIR}/scripts/install_vendored_indi_runtime.sh
+                ${CMAKE_SOURCE_DIR}/submodules/indi
+                ${KSTARS_VENDORED_INDI_BINARY_DIR}
+                ${KSTARS_VENDORED_INDI_PREFIX}
     )
+
+    if(KSTARS_BUILD_VENDORED_INDI_3RDPARTY_RUNTIME)
+        if(NOT KSTARS_INDI_3RDPARTY_SOURCE_DIR)
+            message(FATAL_ERROR
+                    "KSTARS_BUILD_VENDORED_INDI_3RDPARTY_RUNTIME requires KSTARS_INDI_3RDPARTY_SOURCE_DIR. "
+                    "Bootstrap a checkout with scripts/bootstrap_indi_3rdparty.sh and point CMake at it.")
+        endif()
+
+        get_filename_component(KSTARS_INDI_3RDPARTY_EFFECTIVE_SOURCE_DIR
+                               "${KSTARS_INDI_3RDPARTY_SOURCE_DIR}" ABSOLUTE BASE_DIR "${CMAKE_SOURCE_DIR}")
+        if(KSTARS_INDI_3RDPARTY_SUBDIR)
+            set(KSTARS_INDI_3RDPARTY_EFFECTIVE_SOURCE_DIR
+                "${KSTARS_INDI_3RDPARTY_EFFECTIVE_SOURCE_DIR}/${KSTARS_INDI_3RDPARTY_SUBDIR}")
+        endif()
+
+        if(NOT EXISTS "${KSTARS_INDI_3RDPARTY_EFFECTIVE_SOURCE_DIR}/CMakeLists.txt")
+            message(FATAL_ERROR
+                    "KSTARS_INDI_3RDPARTY_SOURCE_DIR does not contain a buildable CMake project: "
+                    "${KSTARS_INDI_3RDPARTY_EFFECTIVE_SOURCE_DIR}")
+        endif()
+
+        if(KSTARS_INDI_3RDPARTY_BUILD_LIBS)
+            set(KSTARS_INDI_3RDPARTY_BUILD_LIBS_FLAG 1)
+        else()
+            set(KSTARS_INDI_3RDPARTY_BUILD_LIBS_FLAG 0)
+        endif()
+
+        set(KSTARS_VENDORED_INDI_3RDPARTY_BINARY_DIR "${CMAKE_BINARY_DIR}/submodules/indi-3rdparty-runtime")
+        externalproject_add(kstars_indi_3rdparty_runtime
+            DEPENDS kstars_indi_test_runtime
+            SOURCE_DIR "${KSTARS_INDI_3RDPARTY_EFFECTIVE_SOURCE_DIR}"
+            BINARY_DIR "${KSTARS_VENDORED_INDI_3RDPARTY_BINARY_DIR}"
+            CMAKE_ARGS
+                -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+                -DCMAKE_INSTALL_PREFIX=${KSTARS_VENDORED_INDI_PREFIX}
+                -DINDI_ROOT=${KSTARS_VENDORED_INDI_PREFIX}
+                -DINDI_DIR=${KSTARS_VENDORED_INDI_PREFIX}
+                -DCMAKE_PREFIX_PATH=${KSTARS_VENDORED_INDI_PREFIX}
+                -DBUILD_LIBS=${KSTARS_INDI_3RDPARTY_BUILD_LIBS_FLAG}
+                -DINDI_INSTALL_UDEV_RULES=OFF
+            BUILD_COMMAND ${CMAKE_COMMAND} --build .
+            INSTALL_COMMAND ${CMAKE_COMMAND} --build . --target install
+        )
+    endif()
 endif()
 
 if (NOT ANDROID)
