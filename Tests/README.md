@@ -107,6 +107,9 @@ ctest --test-dir build/Tests -LE ui --output-on-failure
 
 # Run a single function in the scheduler ops (UI) suite:
 ./build/Tests/kstars_ui/test_ekos_scheduler_ops testSimpleJob -v2
+
+# Run a capture user-journey test end-to-end:
+./build/Tests/kstars_ui/test_ekos_capture_workflow testBlackboxTargetedRepeatCaptureJourney -v2
 ```
 
 Per-test VS Code launch configurations are available in `.vscode/launch.json`.
@@ -275,7 +278,7 @@ These are set automatically by `Tests/testhelpers.h` via the `KTest::setupTestEn
 | [`ekos/mount/`](ekos/mount/README.md) | `kstars/ekos/mount/` meridian flip state | ✅ | ✅ |
 | [`ekos/observatory/`](ekos/observatory/README.md) | `kstars/ekos/observatory/` | 🔲 | ✅ |
 | [`ekos/scheduler/`](ekos/scheduler/README.md) | `kstars/ekos/scheduler/` (unit) | ✅ | ✅ |
-| [`kstars_ui/`](kstars_ui/README.md) | Full Ekos UI integration (scheduler, capture, focus, guide, align, mount, meridian flip) | ✅ | ✅ |
+| [`kstars_ui/`](kstars_ui/README.md) | Full Ekos UI integration (scheduler, capture, focus, guide, align, mount, meridian flip, target capture journeys) | ✅ | ✅ |
 | [`kstars_lite_ui/`](kstars_lite_ui/README.md) | KStars Lite UI smoke tests | ⚠️ | ✅ |
 
 ---
