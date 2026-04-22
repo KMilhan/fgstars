@@ -60,6 +60,7 @@ bool ServerManager::start()
         }
 
         serverProcess.reset(new QProcess(this));
+        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
 #ifdef Q_OS_MACOS
         QString driversDir = Options::indiDriversDir();
         if (Options::indiDriversAreInternal())
@@ -69,17 +70,13 @@ bool ServerManager::start()
             indiServerDir = QCoreApplication::applicationDirPath();
         else
             indiServerDir = QFileInfo(Options::indiServer()).dir().path();
-        QProcessEnvironment env = QProcessEnvironment::systemEnvironment();
         env.insert("PATH", driversDir + ':' + indiServerDir + ":/usr/local/bin:/usr/bin:/bin");
-        QString gscDirPath = QDir(KSPaths::writableLocation(QStandardPaths::AppLocalDataLocation)).filePath("gsc");
-        env.insert("GSCDAT", gscDirPath);
 
         insertEnvironmentPath(&env, "INDIPREFIX", "/../../");
         insertEnvironmentPath(&env, "IOLIBS", "/../Resources/DriverSupport/gphoto/IOLIBS");
         insertEnvironmentPath(&env, "CAMLIBS", "/../Resources/DriverSupport/gphoto/CAMLIBS");
-
-        serverProcess->setProcessEnvironment(env);
 #endif
+        serverProcess->setProcessEnvironment(env);
     }
 
     QStringList args;

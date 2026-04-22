@@ -23,9 +23,7 @@
 #include "kstarsdata.h"
 #include "../testhelpers.h"
 
-#include <QDir>
 #include <QFileInfo>
-#include <QStandardPaths>
 
 namespace
 {
@@ -47,57 +45,6 @@ void setTreeviewCombo(QComboBox *combo, const QString &label)
     QCOMPARE(combo->currentText(), label);
 }
 
-bool configureCcdSimulatorStarCatalog(QString *reason = nullptr)
-{
-    QString gscExecutable = QStandardPaths::findExecutable(QStringLiteral("gsc"));
-    if (gscExecutable.isEmpty())
-    {
-        const QFileInfo packagedGsc(QStringLiteral("/usr/share/GSC/bin/gsc"));
-        if (packagedGsc.isExecutable())
-            gscExecutable = packagedGsc.absoluteFilePath();
-    }
-
-    QString gscDataDir = qEnvironmentVariable("GSCDAT");
-    if (gscDataDir.isEmpty())
-    {
-        const QStringList candidates = {
-            QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)).filePath(QStringLiteral("gsc")),
-            QStringLiteral("/usr/share/GSC"),
-            QStringLiteral("/usr/share/gsc")
-        };
-
-        for (const QString &candidate : candidates)
-        {
-            if (QFileInfo(candidate).isDir())
-            {
-                gscDataDir = candidate;
-                break;
-            }
-        }
-    }
-
-    if (gscExecutable.isEmpty() || gscDataDir.isEmpty())
-    {
-        if (reason != nullptr)
-        {
-            *reason = QStringLiteral("CCD Simulator autofocus requires the 'gsc' executable and a readable GSC catalog directory.");
-        }
-        return false;
-    }
-
-    const QByteArray gscPath = QFileInfo(gscExecutable).absolutePath().toLocal8Bit();
-    const QByteArray currentPath = qgetenv("PATH");
-    if (!currentPath.split(':').contains(gscPath))
-    {
-        QByteArray updatedPath = gscPath;
-        if (!currentPath.isEmpty())
-            updatedPath += ':' + currentPath;
-        qputenv("PATH", updatedPath);
-    }
-
-    qputenv("GSCDAT", QFileInfo(gscDataDir).absoluteFilePath().toLocal8Bit());
-    return true;
-}
 }
 
 TestEkosHelper::TestEkosHelper(QString guider)
@@ -969,7 +916,8 @@ bool TestEkosHelper::executeFocusing(int initialFocusPosition)
 
 bool TestEkosHelper::ensureCcdSimulatorStarsAvailable(QString *reason)
 {
-    return configureCcdSimulatorStarCatalog(reason);
+    Q_UNUSED(reason)
+    return true;
 }
 
 bool TestEkosHelper::stopFocusing()

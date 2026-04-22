@@ -16,7 +16,6 @@
 #if defined(HAVE_INDI)
 
 #include "test_ekos.h"
-#include "ksmessagebox.h"
 #include "Options.h"
 
 #include <QLabel>
@@ -56,7 +55,6 @@ void TestEkosSimulator::cleanup()
 
     KTRY_EKOS_STOP_SIMULATORS();
 }
-
 
 void TestEkosSimulator::testMountSlew_data()
 {

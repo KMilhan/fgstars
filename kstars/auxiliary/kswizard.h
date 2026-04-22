@@ -8,13 +8,8 @@
 
 #include <QDialog>
 #include <QDialogButtonBox>
-#include <QProcess>
 #include <QPlainTextEdit>
 #include <qsystemdetection.h>
-
-#include <QNetworkAccessManager>
-#include <QNetworkRequest>
-#include <QNetworkReply>
 
 #include "ui_wizwelcome.h"
 #include "ui_wizlocation.h"
@@ -23,9 +18,6 @@
 #ifdef Q_OS_MACOS
 #include "ui_wizdata.h"
 #endif
-
-#include "QProgressIndicator.h"
-
 class GeoLocation;
 class QStackedWidget;
 
@@ -111,12 +103,6 @@ class KSWizard : public QDialog
 
         void slotDownload();
 
-        void slotInstallGSC();
-
-        void slotExtractGSC();
-
-        void slotGSCInstallerFinished();
-
         void slotUpdateDataButtons();
 
         void slotOpenOrCopyKStarsDataDirectory();
@@ -132,14 +118,8 @@ class KSWizard : public QDialog
         void setButtonsEnabled();
 
 #ifdef Q_OS_MACOS
-
-        bool GSCExists();
         bool dataDirExists();
 
-
-        QProgressIndicator *gscMonitor { nullptr };
-        QTimer *downloadMonitor { nullptr };
-        QString gscZipPath;
         WizDataUI *data { nullptr };
 #endif
 

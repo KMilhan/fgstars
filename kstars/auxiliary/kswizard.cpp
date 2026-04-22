@@ -131,18 +131,6 @@ KSWizard::KSWizard(QWidget *parent) : QDialog(parent)
     slotUpdateDataButtons();
 
     connect(data->copyKStarsData, SIGNAL(clicked()), this, SLOT(slotOpenOrCopyKStarsDataDirectory()));
-    connect(data->installGSC, SIGNAL(clicked()), this, SLOT(slotInstallGSC()));
-
-    gscMonitor = new QProgressIndicator(data);
-    data->GSCLayout->addWidget(gscMonitor);
-    data->downloadProgress->setValue(0);
-
-    data->downloadProgress->setEnabled(false);
-    data->downloadProgress->setVisible(false);
-
-    data->gscInstallCancel->setVisible(false);
-    data->gscInstallCancel->setEnabled(false);
-
 #endif
 
     //connect signals/slots
@@ -294,161 +282,12 @@ void KSWizard::slotOpenOrCopyKStarsDataDirectory()
 #endif
 }
 
-void KSWizard::slotInstallGSC()
-{
-#ifdef Q_OS_MACOS
-
-    QNetworkAccessManager *manager = new QNetworkAccessManager();
-
-    QString location =
-        QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kstars", QStandardPaths::LocateDirectory);
-    gscZipPath            = location + "/gsc.zip";
-
-    data->downloadProgress->setVisible(true);
-    data->downloadProgress->setEnabled(true);
-
-    data->gscInstallCancel->setVisible(true);
-    data->gscInstallCancel->setEnabled(true);
-
-    QString gscURL = "http://www.indilib.org/jdownloads/Mac/gsc.zip";
-
-    QNetworkReply *response = manager->get(QNetworkRequest(QUrl(gscURL)));
-
-    QMetaObject::Connection *cancelConnection = new QMetaObject::Connection();
-    QMetaObject::Connection *replyConnection = new QMetaObject::Connection();
-    QMetaObject::Connection *percentConnection = new QMetaObject::Connection();
-
-    *percentConnection = connect(response, &QNetworkReply::downloadProgress,
-                                 [ = ](qint64 bytesReceived, qint64 bytesTotal)
-    {
-        data->downloadProgress->setValue(bytesReceived);
-        data->downloadProgress->setMaximum(bytesTotal);
-    });
-
-    *cancelConnection = connect(data->gscInstallCancel, &QPushButton::clicked,
-                                [ = ]()
-    {
-        qDebug() << Q_FUNC_INFO << "Download Cancelled.";
-
-        if(cancelConnection)
-            disconnect(*cancelConnection);
-        if(replyConnection)
-            disconnect(*replyConnection);
-
-        if(response)
-        {
-            response->abort();
-            response->deleteLater();
-        }
-
-        data->downloadProgress->setVisible(false);
-        data->downloadProgress->setEnabled(false);
-
-        data->gscInstallCancel->setVisible(false);
-        data->gscInstallCancel->setEnabled(false);
-
-        if(manager)
-            manager->deleteLater();
-
-    });
-
-    *replyConnection = connect(response, &QNetworkReply::finished, this,
-                               [ = ]()
-    {
-        if(response)
-        {
-
-            if(cancelConnection)
-                disconnect(*cancelConnection);
-            if(replyConnection)
-                disconnect(*replyConnection);
-
-            data->downloadProgress->setVisible(false);
-            data->downloadProgress->setEnabled(false);
-
-            data->gscInstallCancel->setVisible(false);
-            data->gscInstallCancel->setEnabled(false);
-
-
-            response->deleteLater();
-            if(manager)
-                manager->deleteLater();
-            if (response->error() != QNetworkReply::NoError)
-                return;
-
-            QByteArray responseData = response->readAll();
-
-            QFile file(gscZipPath);
-            if (QFileInfo(QFileInfo(file).path()).isWritable())
-            {
-                if (!file.open(QIODevice::WriteOnly))
-                {
-                    KSNotification::error( i18n("File write error."));
-                    return;
-                }
-                else
-                {
-                    file.write(responseData.data(), responseData.size());
-                    file.close();
-                    slotExtractGSC();
-                }
-            }
-            else
-            {
-                KSNotification::error( i18n("Data folder permissions error."));
-            }
-        }
-    });
-
-#endif
-}
-
-void KSWizard::slotExtractGSC()
-{
-#ifdef Q_OS_MACOS
-    QString location =
-        QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kstars", QStandardPaths::LocateDirectory);
-    QProcess *gscExtractor = new QProcess();
-    connect(gscExtractor, SIGNAL(finished(int)), this, SLOT(slotGSCInstallerFinished()));
-    connect(gscExtractor, SIGNAL(finished(int)), this, SLOT(gscExtractor.deleteLater()));
-    gscExtractor->setWorkingDirectory(location);
-    gscExtractor->start("unzip", QStringList() << "-ao"
-                        << "gsc.zip");
-    gscMonitor->startAnimation();
-#endif
-}
-
-void KSWizard::slotGSCInstallerFinished()
-{
-#ifdef Q_OS_MACOS
-    if (downloadMonitor)
-    {
-        downloadMonitor->stop();
-        delete downloadMonitor;
-    }
-    data->downloadProgress->setEnabled(false);
-    data->downloadProgress->setValue(0);
-    data->downloadProgress->setVisible(false);
-    gscMonitor->stopAnimation();
-    slotUpdateDataButtons();
-    if (QFile(gscZipPath).exists())
-        QFile(gscZipPath).remove();
-#endif
-}
-
 #ifdef Q_OS_MACOS
 bool KSWizard::dataDirExists()
 {
     QString dataLocation =
         QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kstars", QStandardPaths::LocateDirectory);
     return !dataLocation.isEmpty();
-}
-
-bool KSWizard::GSCExists()
-{
-    QString GSCLocation =
-        QStandardPaths::locate(QStandardPaths::GenericDataLocation, "kstars/gsc", QStandardPaths::LocateDirectory);
-    return !GSCLocation.isEmpty();
 }
 
 #endif
@@ -474,12 +313,6 @@ void KSWizard::slotUpdateDataButtons()
                                       "or if you have a KStars directory already some place else, you can exit KStars "
                                       "and copy it to that location yourself.</p></body></html>");
     }
-    bool ifGSCExists = GSCExists();
-    data->GSCFound->setChecked(ifGSCExists);
-    data->installGSC->setDisabled(ifGSCExists || !dataDirExists());
-    if (ifGSCExists)
-        data->GSCFeedback->setText("GSC was found on your system.  To use it, just take an image in the CCD simulator. "
-                                   "To uninstall, just delete the gsc folder from your data directory above.");
     setButtonsEnabled();
 #endif
 }

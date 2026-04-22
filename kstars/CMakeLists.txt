@@ -1566,9 +1566,6 @@ if(APPLE)
         "${CMAKE_BINARY_DIR}/kstars-mac-files/dbus"
         DESTINATION "${KSTARS_APP}/Contents/Plugins/")
     file(COPY
-        "${CMAKE_BINARY_DIR}/kstars-mac-files/gsc"
-        DESTINATION "${KSTARS_APP}/Contents/MacOS/")
-    file(COPY
         "${CMAKE_CURRENT_SOURCE_DIR}/kstars.notifyrc"
         DESTINATION "${KSTARS_APP}/Contents/Resources/knotifications6/")
     file(COPY
