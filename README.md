@@ -43,6 +43,35 @@ If you plan to develop KStars, it is highly recommended to utilize an Integrated
 
 To open KStars in QtCreator, select the CMakeLists.txt file in the KStars source folder and then configure the build location and type.
 
+### Debugging with Visual Studio Code
+
+If you are using Visual Studio Code for development, KStars includes pre-configured debug configurations for both GDB and LLDB debuggers.
+
+#### Installing LLDB (Recommended)
+
+For the best debugging experience with custom formatters for KStars astronomy types (like `dms`, `SkyPoint`, `SkyObject`), we recommend using LLDB:
+
+**Debian/Ubuntu:**
+```bash
+sudo apt-get install lldb
+```
+
+**Arch Linux:**
+```bash
+sudo pacman -S lldb
+```
+
+**Other distributions:** Install the `lldb` package using your distribution's package manager.
+
+#### Visual Studio Code Setup
+
+1. Install the recommended VS Code extensions (the editor will prompt you when opening the project)
+2. The CodeLLDB extension (`vadimcn.vscode-lldb`) is recommended for LLDB debugging
+3. Select the "Debug KStars" configuration from the Run and Debug panel
+4. Custom formatters in `.lldb/formatters/` will automatically display KStars types in human-readable format
+
+For more information about the custom formatters, see `.lldb/formatters/README.md`.
+
 ### Building
 
 1. Prerequisite Packages
@@ -77,7 +106,7 @@ Debian/Ubuntu
 
 If your distribution does not provide `libstellarsolver-dev`, you will need to build and install it from https://github.com/rlancaste/stellarsolver. Remove `libstellarsolver-dev` from the `apt-get` command below if you plan to build it from source.
 ```
-sudo apt-get -y install build-essential cmake git libstellarsolver-dev libxisf-dev libeigen3-dev libcfitsio-dev zlib1g-dev libindi-dev extra-cmake-modules libkf6plotting-dev libqt6svg6-dev libkf6xmlgui-dev kio-dev kinit-dev libkf6newstuff-dev libkf6notifications-dev qt6-declarative-dev libkf6crash-dev gettext libnova-dev libgsl-dev libraw-dev libkf6notifyconfig-dev wcslib-dev libqt6websockets6-dev xplanet xplanet-images qtkeychain-qt6-dev libsecret-1-dev breeze-icon-theme libqt6datavisualization6-dev libcurl4-gnutls-dev
+sudo apt-get -y install build-essential cmake ninja-build git libstellarsolver-dev libxisf-dev libeigen3-dev libcfitsio-dev zlib1g-dev libindi-dev extra-cmake-modules libkf6plotting-dev libqt6svg6-dev libkf6xmlgui-dev kio-dev kinit-dev libkf6newstuff-dev libkf6notifications-dev qt6-declarative-dev libkf6crash-dev gettext libnova-dev libgsl-dev libraw-dev libkf6notifyconfig-dev wcslib-dev libqt6websockets6-dev xplanet xplanet-images qtkeychain-qt6-dev libsecret-1-dev breeze-icon-theme libqt6datavisualization6-dev libcurl4-gnutls-dev
 ```
 
 Fedora
@@ -86,7 +115,7 @@ Use Qt6 packages for Fedora builds. For optimal compatibility, use a recent Fedo
 
 Arch Linux packages for Qt6:
 ```
-sudo pacman -S base-devel cmake git eigen cfitsio zlib extra-cmake-modules kplotting qt6-svg kxmlgui kio knewstuff kdoctools knotifications qt6-declarative kcrash gettext libxisf libnova gsl libraw knotifyconfig wcslib qt6-websockets xplanet qtkeychain-qt6 libsecret breeze-icons qt6-quick3d curl stellarsolver
+sudo pacman -S base-devel cmake ninja git eigen cfitsio zlib extra-cmake-modules kplotting qt6-svg kxmlgui kio knewstuff kdoctools knotifications qt6-declarative kcrash gettext libxisf libnova gsl libraw knotifyconfig wcslib qt6-websockets xplanet qtkeychain-qt6 libsecret breeze-icons qt6-quick3d curl stellarsolver
 ```
 
 3. Compiling

@@ -3252,6 +3252,7 @@ void Message::processLiveStackerCommands(const QString &command, const QJsonObje
         params.postProcessing.sharpenAmt = m_LiveStackerSettings.value("sharpenAmt", 0.0).toDouble();
         params.postProcessing.denoiseAmt = m_LiveStackerSettings.value("denoiseAmt", 0.0).toDouble();
         params.postProcessing.deconvAmt = m_LiveStackerSettings.value("deconvAmt", 0.0).toDouble();
+        params.postProcessing.gradientAmt = m_LiveStackerSettings.value("gradientAmt", 0.0).toDouble();
 
         // Master dark/flat paths
         QString masterDark = m_LiveStackerSettings.value("masterDarkPath").toString();
@@ -3507,6 +3508,7 @@ void Message::onLiveStackerJobChanged(const QSharedPointer<Ekos::SequenceJob> &j
     params.postProcessing.sharpenAmt  = m_LiveStackerSettings.value("sharpenAmt", 0.0).toDouble();
     params.postProcessing.denoiseAmt  = m_LiveStackerSettings.value("denoiseAmt", 0.0).toDouble();
     params.postProcessing.deconvAmt   = m_LiveStackerSettings.value("deconvAmt", 0.0).toDouble();
+    params.postProcessing.gradientAmt   = m_LiveStackerSettings.value("gradientAmt", 0.0).toDouble();
 
     const QString masterDark = m_LiveStackerSettings.value("masterDarkPath").toString();
     const QString masterFlat = m_LiveStackerSettings.value("masterFlatPath").toString();
@@ -3650,6 +3652,33 @@ void Message::processArtificialHorizonCommands(const QString &command, const QJs
 
         horizonComponent->save();
         SkyMap::Instance()->forceUpdateNow();
+    }
+    else if (command == commands[ARTIFICIAL_HORIZON_GET])
+    {
+        QJsonArray regionsArray;
+        for (const auto *entity : *horizonComponent->getHorizon().horizonList())
+        {
+            QJsonObject regionObject;
+            regionObject["name"]    = entity->region();
+            regionObject["enabled"] = entity->enabled();
+            regionObject["ceiling"] = entity->ceiling();
+
+            QJsonArray pointsArray;
+            if (entity->list())
+            {
+                const auto *pts = entity->list()->points();
+                for (const auto &sp : *pts)
+                {
+                    QJsonObject pt;
+                    pt["az"]  = sp->az().Degrees();
+                    pt["alt"] = sp->alt().Degrees();
+                    pointsArray.append(pt);
+                }
+            }
+            regionObject["points"] = pointsArray;
+            regionsArray.append(regionObject);
+        }
+        sendResponse(commands[ARTIFICIAL_HORIZON_GET], regionsArray);
     }
 }
 
