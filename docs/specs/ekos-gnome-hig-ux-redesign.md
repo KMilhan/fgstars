@@ -1,4 +1,5 @@
-# Ekos UX/UI 개선 명세서: GNOME HIG 기반 "관측 및 타겟 중앙 정렬" 워크플로우 재설계
+# Star Studio (Powered by Ekos) UX/UI 개선 명세서
+## GNOME HIG 기반 "관측 및 타겟 중앙 정렬" 워크플로우 재설계
 
 ## 1. 배경 및 문제점 (Problem Statement)
 현재 Ekos의 UI 아키텍처는 철저히 "개발자 중심의 내부 코드 모듈(Module)" 단위로 화면이 분할되어 있습니다. 이로 인해 천체 사진 촬영의 가장 핵심적이고 빈번한 유저 저니(User Journey)인 **"대상을 찾고(Go-To) 구도를 맞추는(Plate Solving) 과정"**에서 심각한 탐색 비용(Discoverability Cost)과 인지 부하가 발생합니다.
