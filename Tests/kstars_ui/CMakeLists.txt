@@ -69,6 +69,15 @@ if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_wizard kstars_indi_test_runtime)
 endif()
 
+ADD_EXECUTABLE(test_headless_ux_screenshot ${KSTARS_UI_EKOS_SRC} test_headless_ux_screenshot.cpp test_headless_ux_screenshot.h)
+TARGET_LINK_LIBRARIES(test_headless_ux_screenshot ${KSTARS_UI_EKOS_LIBS})
+ADD_TEST(NAME TestHeadlessUxScreenshot COMMAND test_headless_ux_screenshot)
+set_tests_properties(TestHeadlessUxScreenshot PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_headless_ux_screenshot kstars_indi_test_runtime)
+endif()
+
+
 ADD_EXECUTABLE(test_ekos_simulator ${KSTARS_UI_EKOS_SRC} test_ekos_simulator.cpp test_ekos_simulator.h)
 TARGET_LINK_LIBRARIES(test_ekos_simulator ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosSimulator COMMAND test_ekos_simulator)
