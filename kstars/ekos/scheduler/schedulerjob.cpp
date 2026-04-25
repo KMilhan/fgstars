@@ -16,6 +16,7 @@
 #include "schedulerutils.h"
 #include "ksmoon.h"
 #include "ksnotification.h"
+#include <mutex>
 
 #include <ekos_scheduler_debug.h>
 
@@ -841,7 +842,7 @@ bool SchedulerJob::runsDuringAstronomicalNightTime(const QDateTime &time,
 
     // Lock this method because of all the statics
     static std::mutex nightTimeMutex;
-    const std::lock_guard<std::mutex> lock(nightTimeMutex);
+    const std::scoped_lock lock(nightTimeMutex);
 
     // We likely can rely on the previous calculations.
     // Only use the cache when 'time' is a concrete valid timestamp.
