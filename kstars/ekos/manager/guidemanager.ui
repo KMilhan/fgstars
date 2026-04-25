@@ -151,7 +151,7 @@
           <widget class="QLabel" name="label_15">
            <property name="minimumSize">
             <size>
-             <width>30</width>
+             <width>0</width>
              <height>24</height>
             </size>
            </property>
@@ -171,7 +171,7 @@
             <bool>false</bool>
            </property>
            <property name="text">
-            <string>Total RMS: </string>
+            <string>RMS: </string>
            </property>
            <property name="textFormat">
             <enum>Qt::RichText</enum>
@@ -287,7 +287,7 @@
           <widget class="QLabel" name="label_14">
            <property name="minimumSize">
             <size>
-             <width>30</width>
+             <width>0</width>
              <height>24</height>
             </size>
            </property>

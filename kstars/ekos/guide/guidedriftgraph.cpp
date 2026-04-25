@@ -63,7 +63,9 @@ GuideDriftGraph::GuideDriftGraph(QWidget *parent)
     //Horizontal Axis Time Ticker Settings
     QSharedPointer<QCPAxisTickerTime> timeTicker(new QCPAxisTickerTime);
     timeTicker->setTimeFormat("%m:%s");
+    timeTicker->setTickCount(4);
     xAxis->setTicker(timeTicker);
+    xAxis->setTickLabelRotation(30);
 
     // Axis Labels Settings
     yAxis2->setVisible(true);

@@ -24,6 +24,7 @@ class GuideStateWidget : public QWidget, public Ui::GuideStateWidget
     public:
         GuideStateWidget(QWidget * parent = nullptr);
         void init();
+        void hideLabels();
 
     public Q_SLOTS:
         void updateGuideStatus(GuideState state);

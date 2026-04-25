@@ -17,6 +17,7 @@ GuideManager::GuideManager(QWidget *parent) : QWidget(parent)
 {
     setupUi(this);
     guideStateWidget = new GuideStateWidget();
+    guideStateWidget->hideLabels();
     guideTitleLayout->addWidget(guideStateWidget, 0, Qt::AlignRight);
 }
 

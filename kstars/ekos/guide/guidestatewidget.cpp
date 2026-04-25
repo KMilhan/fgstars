@@ -38,6 +38,13 @@ void GuideStateWidget::init()
     }
 }
 
+void GuideStateWidget::hideLabels()
+{
+    idlingStateLabel->hide();
+    preparingStateLabel->hide();
+    runningStateLabel->hide();
+}
+
 void GuideStateWidget::updateGuideStatus(GuideState state)
 {
     idlingStateLed->off();
