@@ -65,8 +65,7 @@ MountModel::MountModel(Align *parent) : QDialog(parent)
     alignTable->verticalHeader()->setSectionsMovable(true);
     alignTable->verticalHeader()->setDragEnabled(true);
     alignTable->verticalHeader()->setDragDropMode(QAbstractItemView::InternalMove);
-    connect(alignTable->verticalHeader(), SIGNAL(sectionMoved(int, int, int)), this,
-            SLOT(moveAlignPoint(int, int, int)));
+    connect(alignTable->verticalHeader(), &QHeaderView::sectionMoved, this, &Ekos::MountModel::moveAlignPoint);
 
     loadAlignB->setIcon(
         QIcon::fromTheme("document-open"));
