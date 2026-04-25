@@ -175,6 +175,10 @@ Align::Align(const QSharedPointer<ProfileInfo> &activeProfile) : m_ActiveProfile
     m_CurrentGotoMode = GOTO_SLEW;
     gotoModeButtonGroup->button(m_CurrentGotoMode)->setChecked(true);
 
+    telescopeCoordinateGroup->setVisible(false);
+    plateSolverOptionsGroup->setVisible(false);
+    stellarSolverOptionsGroup->setVisible(false);
+
 #if QT_VERSION < QT_VERSION_CHECK(5, 15, 0)
     connect(gotoModeButtonGroup, static_cast<void (QButtonGroup::*)(int, bool)>(&QButtonGroup::buttonToggled), this,
             [ = ](int id, bool toggled)

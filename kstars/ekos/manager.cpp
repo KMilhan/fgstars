@@ -23,7 +23,9 @@
 #include "kstars.h"
 #include "kstarsdata.h"
 #include "Options.h"
+#include "dialogs/finddialog.h"
 #include "ekos/capture/rotatorsettings.h"
+#include <memory>
 #include "profileeditor.h"
 #include "profilewizard.h"
 #include "auxiliary/darklibrary.h"
@@ -122,6 +124,48 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     capturePreview->targetLabel->setVisible(false);
     capturePreview->mountTarget->setVisible(false);
     capturePreview->shareWorkspaceSession(m_workspaceSession.get());
+
+    connect(capturePreview, &CapturePreviewWidget::centerTargetRequested, this, [this]() {
+        if (alignModule()) {
+            alignModule()->setSolverAction(Ekos::Align::GOTO_SLEW);
+            alignModule()->captureAndSolve(true);
+        }
+    });
+
+    connect(capturePreview, &CapturePreviewWidget::centerTargetSettingsRequested, this, []() {
+        KConfigDialog * alignSettings = KConfigDialog::exists("alignsettings");
+        if (alignSettings)
+        {
+            alignSettings->setEnabled(true);
+            alignSettings->show();
+            alignSettings->raise();
+        }
+    });
+
+    connect(globalSearchB, &QPushButton::clicked, this, [this]() {
+        if (FindDialog::Instance()->execWithParent(this) == QDialog::Accepted)
+        {
+            auto object = FindDialog::Instance()->targetObject();
+            if (object != nullptr)
+            {
+                auto const data = KStarsData::Instance();
+                std::unique_ptr<SkyObject> o(object->clone());
+                o->updateCoords(data->updateNum(), true, data->geo()->lat(), data->lst(), false);
+                o->EquatorialToHorizontal(data->lst(), data->geo()->lat());
+
+                globalSearchB->setText(QString("🎯 %1").arg(o->name()));
+
+                if (alignModule()) {
+                    alignModule()->setTarget(*o);
+                    int ret = QMessageBox::question(this, i18n("Observe & Capture"), i18n("Do you want to slew to %1 and center it?", o->name()), QMessageBox::Yes | QMessageBox::No);
+                    if (ret == QMessageBox::Yes) {
+                        alignModule()->setSolverAction(Ekos::Align::GOTO_SLEW);
+                        alignModule()->captureAndSolve(true);
+                    }
+                }
+            }
+        }
+    });
 
     // Lift the workspace shell out of the Setup tab so it remains visible while the user
     // switches between image-heavy modules.

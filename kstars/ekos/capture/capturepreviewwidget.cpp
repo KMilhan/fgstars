@@ -35,6 +35,9 @@ CapturePreviewWidget::CapturePreviewWidget(QWidget *parent) : QWidget(parent)
     // deleting of captured frames
     connect(m_overlay->deleteCurrentFrameButton, &QPushButton::clicked, this, &CapturePreviewWidget::deleteCurrentFrame);
 
+    connect(centerTargetB, &QPushButton::clicked, this, &CapturePreviewWidget::centerTargetRequested);
+    connect(centerTargetSettingsB, &QPushButton::clicked, this, &CapturePreviewWidget::centerTargetSettingsRequested);
+
     // make invisible until we have at least two cameras active
     trainSelectionCB->setVisible(false);
 
