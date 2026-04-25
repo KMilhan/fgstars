@@ -951,7 +951,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Dark Lib.</string>
+                <string>Darks</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -1034,7 +1034,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Exp. Calc.</string>
+                <string>Calc</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -1157,7 +1157,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Calibration</string>
+                <string>Calib</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -1212,7 +1212,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Dark Flats</string>
+                <string>Flats</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>
@@ -1264,7 +1264,7 @@
                 </font>
                </property>
                <property name="text">
-                <string>Custom Val.</string>
+                <string>Custom</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignCenter</set>

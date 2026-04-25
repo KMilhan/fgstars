@@ -136,27 +136,27 @@ bool MeridianFlipState::checkMeridianFlip(dms lst)
     // checks if a flip is possible
     if (m_hasMount == false)
     {
-        publishMFMountStatusText(i18n("Meridian flip inactive (no scope connected)"));
+        publishMFMountStatusText(i18n("MF inactive (no scope connected)"));
         updateMFMountState(MOUNT_FLIP_NONE);
         return false;
     }
 
     if (isEnabled() == false)
     {
-        publishMFMountStatusText(i18n("Meridian flip inactive (flip not requested)"));
+        publishMFMountStatusText(i18n("MF inactive (flip not requested)"));
         return false;
     }
 
     // Will never get called when parked!
     if (m_MountParkStatus == ISD::PARK_PARKED)
     {
-        publishMFMountStatusText(i18n("Meridian flip inactive (parked)"));
+        publishMFMountStatusText(i18n("MF inactive (parked)"));
         return false;
     }
 
     if (targetPosition.valid == false || isEnabled() == false)
     {
-        publishMFMountStatusText(i18n("Meridian flip inactive (no target set)"));
+        publishMFMountStatusText(i18n("MF inactive (no target set)"));
         return false;
     }
 
@@ -195,7 +195,7 @@ bool MeridianFlipState::checkMeridianFlip(dms lst)
             // we can only attempt a flip if the mount started before the meridian, assumed in the unflipped state
             if (initialPositionHA() >= 0)
             {
-                publishMFMountStatusText(i18n("Meridian flip inactive (slew after meridian)"));
+                publishMFMountStatusText(i18n("MF inactive (slew after meridian)"));
                 if (getMeridianFlipMountState() == MOUNT_FLIP_NONE)
                     return false;
             }
@@ -211,7 +211,7 @@ bool MeridianFlipState::checkMeridianFlip(dms lst)
     int hh = static_cast<int> (hrsToFlip);
     int mm = static_cast<int> ((hrsToFlip - hh) * 60);
     int ss = static_cast<int> ((hrsToFlip - hh - mm / 60.0) * 3600);
-    QString message = i18n("Meridian flip in %1", QTime(hh, mm, ss).toString(Qt::TextDate));
+    QString message = i18n("MF in %1", QTime(hh, mm, ss).toString(Qt::TextDate));
 
     // handle the meridian flip state machine
     switch (getMeridianFlipMountState())
@@ -222,7 +222,7 @@ bool MeridianFlipState::checkMeridianFlip(dms lst)
             if (hrsToFlip <= 0)
             {
                 // signal that a flip can be done
-                qCInfo(KSTARS_EKOS_MOUNT) << "Meridian flip planned with LST=" <<
+                qCInfo(KSTARS_EKOS_MOUNT) << "MF planned with LST=" <<
                                           lst.toHMSString() <<
                 " scope RA=" << currentPosition.position.ra().toHMSString() <<
                 " ha=" << ha <<
@@ -270,7 +270,7 @@ bool MeridianFlipState::checkMeridianFlip(dms lst)
                     else if (currentPosition.pierSide == initialPierSide)
                     {
                         flipFailed = true;
-                        qCWarning(KSTARS_EKOS_MOUNT) << "Meridian flip failed, pier side not changed";
+                        qCWarning(KSTARS_EKOS_MOUNT) << "MF failed, pier side not changed";
                     }
 
                     if (flipFailed)
@@ -297,7 +297,7 @@ bool MeridianFlipState::checkMeridianFlip(dms lst)
                     else
                     {
                         setFlipDelayHrs(0);
-                        appendLogText(i18n("Meridian flip completed OK."));
+                        appendLogText(i18n("MF completed OK."));
                         // signal that capture can resume
                         updateMFMountState(MOUNT_FLIP_COMPLETED);
                     }
@@ -342,7 +342,7 @@ void MeridianFlipState::startMeridianFlip()
     double HA = rangeHA(lst.Hours() - targetPosition.position.ra().Hours());
 
     // execute meridian flip
-    qCInfo(KSTARS_EKOS_MOUNT) << "Meridian flip: slewing to RA=" <<
+    qCInfo(KSTARS_EKOS_MOUNT) << "MF: slewing to RA=" <<
                               targetPosition.position.ra().toHMSString() <<
     "DEC=" << targetPosition.position.dec().toDMSString() <<
     " Hour Angle " << dms(HA).toHMSString();
@@ -432,23 +432,23 @@ void MeridianFlipState::publishMFMountStatus(MeridianFlipMountState status)
             break;
 
         case MOUNT_FLIP_PLANNED:
-            publishMFMountStatusText(i18n("Meridian flip planned..."));
+            publishMFMountStatusText(i18n("MF planned..."));
             break;
 
         case MOUNT_FLIP_WAITING:
-            publishMFMountStatusText(i18n("Meridian flip waiting..."));
+            publishMFMountStatusText(i18n("MF waiting..."));
             break;
 
         case MOUNT_FLIP_ACCEPTED:
-            publishMFMountStatusText(i18n("Meridian flip ready to start..."));
+            publishMFMountStatusText(i18n("MF ready to start..."));
             break;
 
         case MOUNT_FLIP_RUNNING:
-            publishMFMountStatusText(i18n("Meridian flip running..."));
+            publishMFMountStatusText(i18n("MF running..."));
             break;
 
         case MOUNT_FLIP_COMPLETED:
-            publishMFMountStatusText(i18n("Meridian flip completed."));
+            publishMFMountStatusText(i18n("MF completed."));
             break;
 
         default:
@@ -551,7 +551,7 @@ void MeridianFlipState::updateTelescopeCoord(const SkyPoint &position, ISD::Moun
         startMeridianFlip();
     else
     {
-        const QString message(i18n("Meridian flip inactive (parked)"));
+        const QString message(i18n("MF inactive (parked)"));
         if (m_MountParkStatus == ISD::PARK_PARKED /* && meridianFlipStatusWidget->getStatus() != message */)
         {
             publishMFMountStatusText(message);
