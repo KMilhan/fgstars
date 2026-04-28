@@ -1,49 +1,302 @@
-# Star Studio (Powered by Ekos) UX/UI 개선 명세서
-## GNOME HIG 기반 "관측 및 타겟 중앙 정렬" 워크플로우 재설계
+# Star Studio UX Direction
 
-## 1. 배경 및 문제점 (Problem Statement)
-현재 Ekos의 UI 아키텍처는 철저히 "개발자 중심의 내부 코드 모듈(Module)" 단위로 화면이 분할되어 있습니다. 이로 인해 천체 사진 촬영의 가장 핵심적이고 빈번한 유저 저니(User Journey)인 **"대상을 찾고(Go-To) 구도를 맞추는(Plate Solving) 과정"**에서 심각한 탐색 비용(Discoverability Cost)과 인지 부하가 발생합니다.
+## Status
 
-*   **모듈화로 인한 흐름 단절:** 사용자는 Mount 탭에서 대상을 찾고, Capture 탭에서 구도를 확인한 뒤, 오차를 교정하기 위해 뜬금없이 Align 탭으로 이동해야 합니다.
-*   **용어의 모호성과 직관성 부족:** 'Align'이라는 단어는 극축 정렬, 관측소 모델링, Plate Solving 등 너무 많은 의미를 내포하며, 과녁 모양의 아이콘만으로는 그 기능을 유추하기 어렵습니다.
-*   **과도한 정보 노출:** 99%의 일반적인 상황에서는 필요 없는 전문가용 설정(Settle, Accuracy, Solver Action 등)이 화면 한가운데에 기본적으로 노출되어 있어 초보자에게 극심한 혼란을 줍니다.
+Draft product direction for the `fgstars v1` image-centric workspace.
 
-## 2. 핵심 철학 (GNOME HIG 디자인 원칙)
-본 개선안은 GNOME Human Interface Guidelines(HIG)의 미학적, 기능적 관점을 차용하여 **"단순함, 직관성, 그리고 작업(Task) 중심"**으로 Ekos의 프레이밍 워크플로우를 재설계합니다.
+This document describes the product-level UX shift from KStars/Ekos as a
+planetarium-first astronomy application toward Star Studio as an
+image-capture-first astrophotography workspace.
 
-*   **작업(Task) 중심 통합:** "어떤 모듈을 사용할 것인가?"가 아니라 "유저가 무엇을 하고 싶은가(대상을 중앙에 놓기)"에 집중합니다.
-*   **인라인 액션 (In-Context Action):** 사용자의 시선이 머무는 곳(이미지 뷰어)에 즉각적인 제어 요소를 배치합니다.
-*   **점진적 공개 (Progressive Disclosure):** 복잡한 설정은 기본적으로 숨기고('Just Work'), 전문가를 위한 팝오버(Popover) 형태로 분리합니다.
+The implementation order is tracked separately in
+[`Star Studio Implementation Blueprint`](star-studio-implementation-blueprint.md).
 
----
+## Product Decision
 
-## 3. 상세 개선 스펙 (Proposed Features)
+Star Studio should make the captured image the primary workspace.
 
-### 3.1. 모듈 탭의 장벽 완화 및 통합 뷰 지향
-*   Mount(이동), Capture(촬영), Align(보정)을 완전히 격리된 탭으로 취급하는 것을 지양합니다.
-*   이미지 뷰어(Image Viewer)를 중심으로 하는 단일 **[관측 및 촬영 (Observe & Capture)]** 메인 뷰 환경을 조성하여 흐름의 단절을 막습니다.
+The sky map remains valuable, but it should no longer be the product's first
+visual promise. In Star Studio, the planetarium surface becomes a supporting
+target-finding tool used to choose what to shoot, not the main place where the
+session is operated.
 
-### 3.2. 인라인 원클릭 마법 버튼: `[ ⌖ 타겟 중앙 정렬 (Center Target) ]`
-*   **위치:** 메인 이미지 뷰어 위(Overlay) 또는 Capture 제어부의 가장 눈에 띄는 위치에 `[ ⌖ 타겟 중앙 정렬 ]` (또는 `Solve & Sync`) 단일 버튼을 배치합니다.
-*   **동작:** 사용자가 이 버튼을 클릭하면, 복잡한 탭 이동 없이 다음의 일련의 프로세스가 백그라운드에서 자동 실행됩니다.
-    1. 현재 설정된 기본 노출값으로 사진 촬영
-    2. Astrometry (Plate Solving) 수행 및 오차(dRA, dDE) 계산
-    3. 마운트 Sync 및 오차만큼 Slew (이동)
-    4. 보정 확인용 재촬영
-*   **피드백 (Toast Notification):** 로그 텍스트나 복잡한 결과 테이블 대신, 화면 상단 중앙에 얇은 토스트 알림을 띄워 상태를 안내합니다.
-    *   *예: "현재 별의 위치를 분석 중입니다... ⏳" ➔ "마운트를 교정 중입니다... ✅"*
+The first-screen signal should be:
 
-### 3.3. 점진적 공개 (Progressive Disclosure) 적용
-*   기존 Align 탭에 기본 노출되어 있던 `Accuracy`, `Settle 시간`, `Plate Solve Capture Options`, `Solver Mode (StellarSolver vs Remote)` 등의 방대한 설정 폼을 메인 화면에서 전부 제거합니다.
-*   앞서 정의한 `[ ⌖ 타겟 중앙 정렬 ]` 버튼 바로 우측에 작은 **톱니바퀴 `[ ⚙ ]` 아이콘**을 배치합니다.
-*   솔빙이 실패하거나 커스텀 셋팅이 필요한 극소수의 유저가 톱니바퀴를 클릭했을 때만, 플로팅 팝오버(Popover) 창 형태로 세부 Astrometry 설정 화면이 부드럽게 나타나도록 설계합니다.
+- The user is in a capture studio.
+- The current or next image is the center of work.
+- Target search helps decide what to shoot.
+- Alignment, solving, guiding, and focusing are contextual assistants around
+  capture, not separate destinations the user must manually assemble.
 
-### 3.4. 글로벌 헤더 바 검색 (Global Header Bar Search)
-*   Mount 탭 구석에 위치했던 조그마한 대상 검색 상자를 폐지하고, GNOME 애플리케이션들처럼 창 최상단 **헤더 바(Header Bar) 정중앙에 거대한 통합 검색창**을 배치합니다.
-*   **동작:** 단축키(예: `Ctrl+F`)를 누르고 "Orion"을 타이핑하면 썸네일(가용 시)과 함께 즉각적인 드롭다운 검색 결과가 표시됩니다.
-*   **연계 액션:** 대상을 클릭하는 즉시 **"이 대상으로 망원경을 이동하고 중앙에 맞출까요?" (Go-To & Center)** 라는 콜투액션(Call To Action)이 제공되어, 한 번의 클릭으로 `3.2`의 백그라운드 워크플로우가 즉시 시작됩니다.
+## Problem Statement
 
----
+Current KStars/Ekos exposes internal modules directly as the user's workflow.
+That creates avoidable friction in the most common astrophotography journey:
+choose a target, slew to it, center it, focus, guide, and capture frames.
 
-## 4. 기대 효과
-이러한 구조적 개편을 통해 Ekos는 "전문 지식이 있어야만 조작 가능한 복잡한 기계"에서, "유저가 보고 싶은 천체에만 집중할 수 있게 도와주는 현대적이고 스마트한 어시스턴트"로 탈바꿈하게 됩니다. Plate Solving은 더 이상 유저가 능동적으로 조작해야 하는 '모듈'이 아니라, 카메라 오토포커스처럼 자연스럽게 작동하는 훌륭한 '보조 도구'로 기능할 것입니다.
+The main problems are:
+
+- The planetarium view is visually and conceptually dominant even when the user
+  is trying to run an imaging session.
+- Mount, Capture, Align, Focus, and Guide are presented as separate operating
+  stations instead of one continuous capture flow.
+- `Align` is overloaded language. It can mean polar alignment, plate solving,
+  mount sync, field correction, or model building.
+- Advanced solver controls consume primary screen space before the user has a
+  reason to tune them.
+- Detached FITS windows make image review feel secondary to the real workflow.
+
+## Design Principles
+
+### Task First
+
+Design around what the user is trying to do:
+
+- Find a target.
+- Center the target.
+- Capture a preview.
+- Start or monitor a sequence.
+- Inspect the latest image.
+
+Avoid making users think in implementation modules such as Mount, Align,
+Capture, or FITS Viewer unless they explicitly enter advanced tools.
+
+### Image First
+
+The largest and most stable surface should be the image workspace. Target
+selection, solving, focusing, guiding, and capture history should attach to that
+workspace as panels, overlays, or actions.
+
+### Progressive Disclosure
+
+Default controls should match the normal imaging path. Expert settings remain
+available, but they should move into popovers, secondary panels, or advanced
+dialogs.
+
+### Preserve Expert Escape Hatches
+
+Star Studio should not remove Ekos power features. It should change their
+default prominence. The detached FITS Viewer, detailed solver configuration,
+and module-specific panels remain available for advanced workflows.
+
+## First Screen Layout
+
+The default Star Studio workspace should open as a capture surface, not as a
+full planetarium.
+
+```text
++------------------------------------------------------------------+
+| Header: target search | current target | devices | session state |
++----------------------+-------------------------------------------+
+|                      |                                           |
+| Target / Tools       |        Image Workspace                    |
+| navigation           |        latest frame, preview, overlays    |
+|                      |                                           |
+|                      |                                           |
++----------------------+---------------------------+---------------+
+| Recent frames / capture history                 | Capture panel  |
++-------------------------------------------------+---------------+
+```
+
+Recommended hierarchy:
+
+- Center: `SummaryFITSView` or the shared image workspace.
+- Header bar: target search, current target, connection/session status.
+- Right panel: exposure, filter, count, storage, sequence start/stop.
+- Bottom strip: recent captured frames and previews.
+- Secondary navigation: `Capture`, `Targets`, `Focus`, `Guide`, `Advanced`.
+
+The first screen should answer "what am I shooting and what did the camera just
+see?" before it answers "where is this object on the whole sky map?"
+
+## Information Architecture
+
+Star Studio should rename user-facing destinations around capture tasks.
+
+| Current surface | Star Studio surface | Primary user intent |
+| --- | --- | --- |
+| KStars Planetarium | Target Finder | Choose what to shoot |
+| Ekos Capture | Capture Studio | Configure and run image capture |
+| Align | Center Target | Put the selected object in frame |
+| Focus | Focus Assistant | Improve star sharpness |
+| Guide | Guiding Status | Keep tracking stable |
+| FITS Viewer | Image Workspace | Inspect the latest image |
+| Scheduler | Capture Plan | Queue the night's imaging work |
+
+These names do not require immediate internal class renames. They define the
+product language and navigation model.
+
+## Target Finder
+
+The former planetarium role should become `Target Finder`.
+
+`Target Finder` is a supporting workflow for answering:
+
+- What can I shoot tonight?
+- Is this target visible from my location?
+- When is it high enough?
+- How will it fit my camera and telescope?
+- Can I slew and center it now?
+
+The default Target Finder surface should prioritize:
+
+- Search results for named objects.
+- Visibility window for tonight.
+- Altitude and azimuth over time.
+- Framing preview with the current optical train.
+- Actions: `Go To`, `Center Target`, `Add to Capture Plan`.
+
+A full interactive sky map can remain available, but it should behave like a
+detail view or advanced browsing mode. It should not dominate the main capture
+workspace.
+
+## Primary Workflow
+
+### Choose and Center a Target
+
+1. The user searches for a target in the header bar.
+2. Results show target identity, visibility, altitude window, and framing
+   suitability.
+3. The user chooses `Go To` or `Center Target`.
+4. Star Studio slews, captures a solve frame, plate-solves, syncs or corrects
+   the mount, and verifies framing.
+5. The image workspace shows the verification frame and target overlay.
+
+The user-facing concept is `Center Target`. `Plate Solve`, `Sync`, and `Slew`
+are implementation details unless the operation fails or the user opens
+advanced details.
+
+### Capture a Preview
+
+1. The user selects exposure and filter in the capture panel.
+2. The user clicks `Capture Preview`.
+3. The preview appears in the central image workspace.
+4. Recent frames update in the bottom history strip.
+5. Image overlays and quick tools remain attached to the current frame.
+
+### Start a Sequence
+
+1. The user confirms target, framing, exposure, filter, and frame count.
+2. The user clicks `Start Sequence`.
+3. Star Studio keeps the image workspace focused on the latest captured frame.
+4. Capture progress, guiding quality, and focus status appear as compact
+   contextual status, not as competing primary panes.
+
+## Core Actions
+
+Use direct task labels:
+
+- `Find Target`
+- `Go To`
+- `Center Target`
+- `Capture Preview`
+- `Start Sequence`
+- `Open Advanced Viewer`
+
+Avoid making primary controls depend on expert terms:
+
+- `Align`
+- `Solver Action`
+- `Sync`
+- `Slew to Target`
+- `Plate Solve Capture Options`
+
+Those terms can still appear in advanced details, logs, and diagnostic panels.
+
+## Center Target Interaction
+
+`Center Target` should be a first-class action visible from the image workspace
+and from Target Finder.
+
+Recommended placement:
+
+- Primary button near the image workspace toolbar or capture panel header.
+- Secondary entry in each target search result.
+- Optional image overlay when a target is selected but not yet centered.
+
+Expected behavior:
+
+1. Capture a solve frame with the current default solving exposure.
+2. Run astrometry.
+3. Calculate framing error.
+4. Sync or correct the mount.
+5. Re-capture to verify.
+6. Show success, residual error, or a compact failure explanation.
+
+Detailed solver settings should live behind an advanced popover next to the
+action. Failure states may expose relevant advanced controls inline.
+
+## Visual Priority
+
+The image workspace should receive the most visual weight:
+
+- It should be larger than any target list, log, or settings panel.
+- It should stay visible while switching between capture-related modes.
+- It should own overlays for target frame, solve result, focus ROI, guide
+  annotations, and image inspection tools.
+- It should avoid permanent chrome that reduces image area.
+
+The planetarium or sky map should be visually subordinate:
+
+- It can appear as a Target Finder detail pane.
+- It can appear as a popover or secondary view from search results.
+- It can support framing decisions, but should not replace the current image as
+  the main workspace during capture.
+
+## Relationship to fgstars v1
+
+This UX direction depends on the existing `fgstars v1` image-centric workspace
+plan:
+
+- Promote the embedded `SummaryFITSView` into the visually primary workspace.
+- Make the summary preview path the default capture surface.
+- Keep the detached FITS Viewer as an explicit advanced action.
+- Let Capture, Focus, Align, and Guide publish contextual information into the
+  same image workspace over time.
+
+The implementation should be incremental. Star Studio product language and
+navigation can land before every internal module is fully renamed or unified.
+
+## Implementation Sequence
+
+The full phased implementation order is maintained in
+[`Star Studio Implementation Blueprint`](star-studio-implementation-blueprint.md).
+At a product level, the sequence is:
+
+1. Promote the embedded image workspace so it is visually primary.
+2. Make routine preview and capture review open in the embedded workspace by
+   default.
+3. Add `Find Target` / `Target Finder` as the product-facing replacement for
+   the planetarium-first entry point.
+4. Add `Center Target` as the primary user-facing wrapper around the common
+   solve-and-correct flow.
+5. Move advanced solver controls behind a popover or advanced panel.
+6. Add capture history and latest-frame continuity around the image workspace.
+7. Add shared workspace contributions from Focus, Align, and Guide.
+8. Keep the full sky map and detached FITS Viewer available as explicit
+   advanced tools.
+
+## Acceptance Criteria
+
+Star Studio is moving in the right direction when:
+
+- Opening the app presents a capture image workspace as the dominant surface.
+- A user can search for a target without leaving the capture context.
+- A user can choose a target and run `Center Target` without knowing which Ekos
+  module owns plate solving.
+- Preview and routine captured frames appear in the embedded workspace by
+  default.
+- The detached FITS Viewer is available but no longer feels like the normal
+  capture-review path.
+- Advanced solver settings are reachable but do not occupy the default capture
+  workspace.
+
+## Non-Goals
+
+This direction does not require:
+
+- Rewriting KStars/Ekos in GTK or QML.
+- Removing the full planetarium engine.
+- Removing expert Ekos module controls.
+- Renaming all internal classes in the first implementation pass.
+- Replacing FITSView or FITSViewer infrastructure.

@@ -10,6 +10,15 @@ Define `fgstars v1` as the first major milestone that shifts Ekos from a tab-and
 
 The user goal is to let astrophotography users work against one central image surface while capture, focus, alignment, and guiding tools contribute contextual overlays, status, and actions instead of forcing routine work through detached image windows.
 
+The product-level UX direction is documented in
+[`Star Studio UX Direction`](ekos-gnome-hig-ux-redesign.md). That document
+defines the user-facing shift from a planetarium-first KStars experience toward
+Star Studio as an image-capture-first workspace where the planetarium role
+becomes a supporting target-finding workflow.
+
+The phased implementation order is documented in
+[`Star Studio Implementation Blueprint`](star-studio-implementation-blueprint.md).
+
 ## Background
 
 Ekos already contains most of the technical building blocks needed for an image-centric UI:

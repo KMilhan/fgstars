@@ -1,5 +1,6 @@
 Use $(nproc) when compiling
 Run UI tests non-headless mode, as headless mode is currently unstable
+For Star Studio/image-centric workspace work, use docs/specs/star-studio-implementation-blueprint.md as the implementation-order source of truth
 Treat all compiler warnings as errors
 For this repository, all commits must use gitmoji prefixes regardless of upstream conventions
 For this repository, work directly on master by default and push completed changes to origin/master immediately unless the user explicitly asks for a different branch workflow
