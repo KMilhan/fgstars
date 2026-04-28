@@ -15,12 +15,12 @@ jobs:
   astyle-check:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: https://data.forgejo.org/actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: https://data.forgejo.org/actions/setup-python@v5
         with:
           python-version: '3.12'
 
@@ -36,36 +36,36 @@ jobs:
 
       - name: Run AStyle Check
         run: |
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
-            bash tools/run_astyle.sh --check --changed-since "${{ github.event.pull_request.base.sha }}"
+          if [ "${{ forgejo.event_name }}" == "pull_request" ]; then
+            bash tools/run_astyle.sh --check --changed-since "${{ forgejo.event.pull_request.base.sha }}"
           else
-            # For pushes to main, check against previous commit
-            bash tools/run_astyle.sh --check --changed-since "${{ github.event.before }}"
+            # For pushes to main or master, check against the previous commit.
+            bash tools/run_astyle.sh --check --changed-since "${{ forgejo.event.before }}"
           fi
 
   accessibility-check:
     runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v5
+      - uses: https://data.forgejo.org/actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: https://data.forgejo.org/actions/setup-python@v5
         with:
           python-version: '3.12'
 
       - name: Run UI Accessibility Check
         run: |
           changed_files=()
-          if [ "${{ github.event_name }}" == "pull_request" ]; then
+          if [ "${{ forgejo.event_name }}" == "pull_request" ]; then
             while IFS= read -r file; do
               changed_files+=("${file}")
-            done < <(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.sha }}" | grep '\.ui$' || true)
+            done < <(git diff --name-only "${{ forgejo.event.pull_request.base.sha }}" "${{ forgejo.sha }}" | grep '\.ui$' || true)
           else
             while IFS= read -r file; do
               changed_files+=("${file}")
-            done < <(git diff --name-only "${{ github.event.before }}" "${{ github.sha }}" | grep '\.ui$' || true)
+            done < <(git diff --name-only "${{ forgejo.event.before }}" "${{ forgejo.sha }}" | grep '\.ui$' || true)
           fi
 
           if [ "${#changed_files[@]}" -gt 0 ]; then

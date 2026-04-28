@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Merge shard JUnit reports and verify that every expected stable case ran.
+Merge CI JUnit reports and verify that every expected stable case ran.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--input-dir",
         type=Path,
-        help="Directory containing shard JUnit XML reports.",
+        help="Directory containing JUnit XML reports.",
     )
     parser.add_argument(
         "--output-json",
@@ -37,7 +37,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--self-check",
         action="store_true",
-        help="Validate imports and shard metadata without reading reports.",
+        help="Validate imports and stable test metadata without reading reports.",
     )
     return parser.parse_args()
 
@@ -113,7 +113,7 @@ def to_markdown(summary: dict[str, object]) -> str:
     missing = summary["missing_cases"]
     failed = summary["failed_cases"]
     lines = [
-        "# CI Shard Summary",
+        "# CI Test Summary",
         "",
         f"- Reports: {summary['report_count']}",
         f"- Tests: {summary['tests']}",
@@ -141,12 +141,12 @@ def to_markdown(summary: dict[str, object]) -> str:
 def main() -> None:
     args = parse_args()
     if args.self_check:
-        ci_matrix.shard_by_name("unit-core")
-        ci_matrix.shard_by_name("unit-astro-fits")
-        ci_matrix.shard_by_name("unit-astro-ekos")
-        ci_matrix.shard_by_name("ui-capture")
-        ci_matrix.shard_by_name("ui-ops-scheduler")
-        ci_matrix.shard_by_name("ui-ops-runtime")
+        ci_matrix.group_by_name("unit-core")
+        ci_matrix.group_by_name("unit-astro-fits")
+        ci_matrix.group_by_name("unit-astro-ekos")
+        ci_matrix.group_by_name("ui-capture")
+        ci_matrix.group_by_name("ui-ops-scheduler")
+        ci_matrix.group_by_name("ui-ops-runtime")
         print("self_check=ok")
         return
 

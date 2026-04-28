@@ -4,109 +4,111 @@ set -euo pipefail
 
 SCRIPT_DIR=$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)
 REPO_ROOT=$(cd -- "${SCRIPT_DIR}/.." && pwd)
-WORKFLOW="${REPO_ROOT}/.github/workflows/build-and-test.yml"
+BUILD_WORKFLOW="${REPO_ROOT}/.forgejo/workflows/build-and-test.yml"
+VALIDATION_WORKFLOW="${REPO_ROOT}/.forgejo/workflows/validation.yml"
 LOG_DIR="${REPO_ROOT}/.artifacts/eval-ci"
 mkdir -p "${LOG_DIR}"
 STAMP=$(date +%Y%m%d-%H%M%S)
-ACTIONLINT_LOG="${LOG_DIR}/actionlint-${STAMP}.log"
 
 overall_score=0
 llm_average=0
 status=pass
 
-actionlint_status=0
-set +e
-actionlint -color < "${WORKFLOW}" > "${ACTIONLINT_LOG}" 2>&1
-actionlint_status=$?
-set -e
+score() {
+  local points=$1
+  overall_score=$((overall_score + points))
+  llm_average=$((llm_average + points))
+}
 
-overall_score=$((overall_score + 20))
-llm_average=$((llm_average + 20))
-if [[ "${actionlint_status}" -ne 0 ]]; then
+fail() {
+  local message=$1
   status=fail
-  overall_score=$((overall_score - 20))
-  llm_average=$((llm_average - 20))
-fi
+  printf 'FAIL: %s\n' "${message}" >> "${LOG_DIR}/forgejo-topology-${STAMP}.log"
+}
 
-python3 "${REPO_ROOT}/scripts/ci_matrix.py" --format github-matrix > "${LOG_DIR}/matrix-${STAMP}.json"
-overall_score=$((overall_score + 15))
-llm_average=$((llm_average + 15))
-
-python3 "${REPO_ROOT}/scripts/ci_merge_junit.py" --self-check > "${LOG_DIR}/merge-self-check-${STAMP}.txt"
-overall_score=$((overall_score + 10))
-llm_average=$((llm_average + 10))
-
-required_jobs=(plan-ci build-app test-shards aggregate-reports ci-gate)
-for job in "${required_jobs[@]}"; do
-  if yq -e ".jobs[\"${job}\"]" "${WORKFLOW}" > /dev/null; then
-    overall_score=$((overall_score + 8))
-    llm_average=$((llm_average + 8))
+for workflow in "${BUILD_WORKFLOW}" "${VALIDATION_WORKFLOW}"; do
+  if [[ -f "${workflow}" ]]; then
+    score 10
   else
-    status=fail
+    fail "missing workflow: ${workflow}"
   fi
 done
 
-if yq -e '.jobs["test-shards"].strategy.matrix.shard == "${{ fromJson(needs.plan-ci.outputs.test_shards_json) }}"' "${WORKFLOW}" > /dev/null; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+if [[ -d "${REPO_ROOT}/.github/workflows" ]]; then
+  fail ".github/workflows should not be active after Forgejo migration"
 else
-  status=fail
+  score 10
 fi
 
-if yq -e '.jobs["aggregate-reports"].needs[] == "test-shards"' "${WORKFLOW}" > /dev/null; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+python3 "${REPO_ROOT}/scripts/ci_matrix.py" --format stable-non-ui-regex > "${LOG_DIR}/stable-non-ui-${STAMP}.txt"
+python3 "${REPO_ROOT}/scripts/ci_matrix.py" --format stable-ui-regex > "${LOG_DIR}/stable-ui-${STAMP}.txt"
+python3 "${REPO_ROOT}/scripts/ci_merge_junit.py" --self-check > "${LOG_DIR}/merge-self-check-${STAMP}.txt"
+score 15
+
+if yq -e '.jobs["build-and-test"]' "${BUILD_WORKFLOW}" > /dev/null; then
+  score 10
 else
-  status=fail
+  fail "build-and-test job missing"
 fi
 
-if yq -e '.jobs["test-shards"].steps[] | select((.uses // "") | test("^actions/upload-artifact@v[0-9]+$"))' "${WORKFLOW}" > /dev/null; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+if yq -e '.jobs | length == 1' "${BUILD_WORKFLOW}" > /dev/null; then
+  score 10
 else
-  status=fail
+  fail "build workflow should use one combined job"
 fi
 
-if yq -e '.jobs["aggregate-reports"].steps[] | select((.uses // "") | test("^actions/download-artifact@v[0-9]+$"))' "${WORKFLOW}" > /dev/null; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+if yq -e '.jobs["build-and-test"].steps[] | select(.name == "Build all targets")' "${BUILD_WORKFLOW}" > /dev/null; then
+  score 8
 else
-  status=fail
+  fail "combined build step missing"
 fi
 
-if yq -e '.defaults.run.shell == "bash"' "${WORKFLOW}" > /dev/null; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+if yq -e '.jobs["build-and-test"].steps[] | select(.name == "Run non-UI stable tests")' "${BUILD_WORKFLOW}" > /dev/null; then
+  score 8
 else
-  status=fail
+  fail "non-UI stable test step missing"
 fi
 
-if rg -q "FIX_WARNINGS=ON" "${WORKFLOW}" "${REPO_ROOT}/scripts/ci_configure.sh"; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+if yq -e '.jobs["build-and-test"].steps[] | select(.name == "Run UI stable tests")' "${BUILD_WORKFLOW}" > /dev/null; then
+  score 8
 else
-  status=fail
+  fail "UI stable test step missing"
 fi
 
-if rg -q "scripts/ci_run_ctest.sh" "${WORKFLOW}"; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+if rg -q "FORGEJO_WORKSPACE|forgejo\\.workspace|forgejo\\.sha|FORGEJO_STEP_SUMMARY" "${BUILD_WORKFLOW}" "${VALIDATION_WORKFLOW}"; then
+  score 8
 else
-  status=fail
+  fail "Forgejo context or environment variables not used"
+fi
+
+if rg -q "https://data\\.forgejo\\.org/actions/checkout@v[0-9]+" "${BUILD_WORKFLOW}" "${VALIDATION_WORKFLOW}"; then
+  score 6
+else
+  fail "Forgejo action URL for checkout missing"
+fi
+
+if rg -q "scripts/ci_run_ctest.sh" "${BUILD_WORKFLOW}"; then
+  score 5
+else
+  fail "ctest wrapper missing from build workflow"
+fi
+
+if rg -q "FIX_WARNINGS=ON" "${REPO_ROOT}/scripts/ci_configure.sh"; then
+  score 5
+else
+  fail "warnings-as-errors configure flag missing"
 fi
 
 if rg -q "openbox" "${REPO_ROOT}/scripts/ci_prepare_runtime.sh" "${REPO_ROOT}/scripts/ci_run_ctest.sh"; then
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+  score 5
 else
-  status=fail
+  fail "UI runtime wrapper missing openbox support"
 fi
 
-if rg -q "ninja -j\\$\\(nproc\\) all install" "${WORKFLOW}"; then
-  status=fail
+if rg -qi "gitlab|github-matrix|\\.github/workflows" "${BUILD_WORKFLOW}" "${VALIDATION_WORKFLOW}" "${REPO_ROOT}/scripts/ci_matrix.py"; then
+  fail "stale GitHub/GitLab workflow wording remains"
 else
-  overall_score=$((overall_score + 5))
-  llm_average=$((llm_average + 5))
+  score 5
 fi
 
 if [[ "${overall_score}" -gt 100 ]]; then
@@ -124,8 +126,9 @@ cat <<EOF
 overall_score=${overall_score}
 llm_average=${llm_average}
 status=${status}
-workflow=${WORKFLOW}
-actionlint_log=${ACTIONLINT_LOG}
+build_workflow=${BUILD_WORKFLOW}
+validation_workflow=${VALIDATION_WORKFLOW}
+log=${LOG_DIR}/forgejo-topology-${STAMP}.log
 EOF
 
 if [[ "${status}" == "fail" ]]; then

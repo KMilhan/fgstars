@@ -1,0 +1,118 @@
+name: Build and Test
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-24.04
+    container:
+      image: sternejaeger/kstars-ci:qt6
+      options: --privileged
+    timeout-minutes: 240
+    env:
+      BUILD_DIR: ${{ forgejo.workspace }}/kstars-build
+      CCACHE_BASEDIR: ${{ forgejo.workspace }}
+      CCACHE_DIR: ${{ forgejo.workspace }}/.ccache
+      VENDORED_INDI_RUNTIME: ON
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v4
+
+      - name: Restore ccache
+        id: ccache
+        uses: https://data.forgejo.org/actions/cache/restore@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ runner.os }}-qt6-forgejo-ccache-${{ forgejo.sha }}
+          restore-keys: |
+            ${{ runner.os }}-qt6-forgejo-ccache-
+
+      - name: Prepare ccache
+        run: |
+          mkdir -p "${CCACHE_DIR}"
+          ccache --set-config=max_size=8G
+          ccache --zero-stats
+
+      - name: Install UI test runtime
+        run: |
+          bash scripts/ci_prepare_runtime.sh
+
+      - name: Configure
+        run: |
+          workspace="${FORGEJO_WORKSPACE}"
+          report_dir="${workspace}/.artifacts/ci/build-and-test"
+          mkdir -p "${report_dir}"
+          bash scripts/ci_configure.sh 2>&1 | tee "${report_dir}/configure.log"
+
+      - name: Build all targets
+        run: |
+          workspace="${FORGEJO_WORKSPACE}"
+          report_dir="${workspace}/.artifacts/ci/build-and-test"
+          cmake --build "${BUILD_DIR}" --target all -- -j"$(nproc)" \
+            2>&1 | tee "${report_dir}/build.log"
+
+      - name: Run non-UI stable tests
+        run: |
+          workspace="${FORGEJO_WORKSPACE}"
+          report_dir="${workspace}/.artifacts/ci/build-and-test"
+          bash scripts/ci_run_ctest.sh \
+            --build-dir "${BUILD_DIR}" \
+            --regex "$(python3 scripts/ci_matrix.py --format stable-non-ui-regex)" \
+            --junit "${report_dir}/stable-non-ui.xml" \
+            --log-file "${report_dir}/stable-non-ui.log" \
+            --jobs "$(nproc)"
+
+      - name: Run UI stable tests
+        run: |
+          workspace="${FORGEJO_WORKSPACE}"
+          report_dir="${workspace}/.artifacts/ci/build-and-test"
+          bash scripts/ci_run_ctest.sh \
+            --build-dir "${BUILD_DIR}" \
+            --regex "$(python3 scripts/ci_matrix.py --format stable-ui-regex)" \
+            --junit "${report_dir}/stable-ui.xml" \
+            --log-file "${report_dir}/stable-ui.log" \
+            --jobs 1 \
+            --ui
+
+      - name: Summarize JUnit results
+        if: always()
+        run: |
+          workspace="${FORGEJO_WORKSPACE}"
+          summary_dir="${workspace}/.artifacts/ci/summary"
+          mkdir -p "${summary_dir}"
+          python3 scripts/ci_merge_junit.py \
+            --input-dir "${workspace}/.artifacts/ci/build-and-test" \
+            --output-json "${summary_dir}/summary.json" \
+            --output-md "${summary_dir}/summary.md"
+          if [[ -n "${FORGEJO_STEP_SUMMARY:-}" ]]; then
+            cat "${summary_dir}/summary.md" >> "${FORGEJO_STEP_SUMMARY}"
+          else
+            cat "${summary_dir}/summary.md"
+          fi
+
+      - name: Upload CI reports
+        if: always()
+        uses: https://data.forgejo.org/actions/upload-artifact@v4
+        with:
+          name: ci-reports
+          path: ${{ forgejo.workspace }}/.artifacts/ci
+          if-no-files-found: error
+
+      - name: Show ccache stats
+        if: always()
+        run: ccache --show-stats
+
+      - name: Save ccache
+        if: ${{ always() && forgejo.event_name == 'push' }}
+        uses: https://data.forgejo.org/actions/cache/save@v4
+        with:
+          path: ${{ env.CCACHE_DIR }}
+          key: ${{ steps.ccache.outputs.cache-primary-key }}

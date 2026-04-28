@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Emit the shard metadata used by GitHub Actions and local CI tooling.
+Emit stable test metadata used by Forgejo Actions and local CI tooling.
 """
 
 from __future__ import annotations
@@ -13,7 +13,7 @@ from typing import Iterable
 
 
 @dataclass(frozen=True)
-class TestShard:
+class TestGroup:
     name: str
     description: str
     build_targets: tuple[str, ...]
@@ -28,7 +28,7 @@ class TestShard:
         escaped = [name.replace("+", r"\+") for name in self.test_names]
         return "^(" + "|".join(escaped) + ")$"
 
-    def github_matrix_entry(self) -> dict[str, object]:
+    def actions_matrix_entry(self) -> dict[str, object]:
         return {
             "name": self.name,
             "description": self.description,
@@ -41,8 +41,8 @@ class TestShard:
         }
 
 
-TEST_SHARDS: tuple[TestShard, ...] = (
-    TestShard(
+TEST_GROUPS: tuple[TestGroup, ...] = (
+    TestGroup(
         name="unit-core",
         description="Auxiliary, tools, skyobjects, time, and datahandlers stable tests.",
         build_targets=(
@@ -92,7 +92,7 @@ TEST_SHARDS: tuple[TestShard, ...] = (
         needs_indi_runtime=False,
         timeout_minutes=45,
     ),
-    TestShard(
+    TestGroup(
         name="unit-astro-fits",
         description="Fitsviewer and capture preprocessing stable tests.",
         build_targets=(
@@ -112,7 +112,7 @@ TEST_SHARDS: tuple[TestShard, ...] = (
         needs_indi_runtime=False,
         timeout_minutes=45,
     ),
-    TestShard(
+    TestGroup(
         name="unit-astro-ekos",
         description="Focus, guide, align, and scheduler stable tests.",
         build_targets=(
@@ -140,7 +140,7 @@ TEST_SHARDS: tuple[TestShard, ...] = (
         needs_indi_runtime=False,
         timeout_minutes=45,
     ),
-    TestShard(
+    TestGroup(
         name="ui-capture",
         description="Stable UI capture and workspace tests under xvfb.",
         build_targets=(
@@ -157,7 +157,7 @@ TEST_SHARDS: tuple[TestShard, ...] = (
         needs_indi_runtime=True,
         timeout_minutes=60,
     ),
-    TestShard(
+    TestGroup(
         name="ui-ops-scheduler",
         description="Stable scheduler UI tests under xvfb.",
         build_targets=(
@@ -173,7 +173,7 @@ TEST_SHARDS: tuple[TestShard, ...] = (
         needs_indi_runtime=True,
         timeout_minutes=60,
     ),
-    TestShard(
+    TestGroup(
         name="ui-ops-runtime",
         description="Stable runtime-dependent UI orchestration tests under xvfb.",
         build_targets=(
@@ -194,16 +194,35 @@ TEST_SHARDS: tuple[TestShard, ...] = (
 )
 
 STABLE_TEST_NAMES: tuple[str, ...] = tuple(
-    test_name for shard in TEST_SHARDS for test_name in shard.test_names
+    test_name for group in TEST_GROUPS for test_name in group.test_names
+)
+
+STABLE_NON_UI_TEST_NAMES: tuple[str, ...] = tuple(
+    test_name
+    for group in TEST_GROUPS
+    if not group.needs_display
+    for test_name in group.test_names
+)
+
+STABLE_UI_TEST_NAMES: tuple[str, ...] = tuple(
+    test_name
+    for group in TEST_GROUPS
+    if group.needs_display
+    for test_name in group.test_names
 )
 
 
-def shard_by_name(name: str) -> TestShard:
-    for shard in TEST_SHARDS:
-        if shard.name == name:
-            return shard
-    available = ", ".join(shard.name for shard in TEST_SHARDS)
-    raise SystemExit(f"Unknown shard '{name}'. Expected one of: {available}")
+def ctest_regex(test_names: Iterable[str]) -> str:
+    escaped = [name.replace("+", r"\+") for name in test_names]
+    return "^(" + "|".join(escaped) + ")$"
+
+
+def group_by_name(name: str) -> TestGroup:
+    for group in TEST_GROUPS:
+        if group.name == name:
+            return group
+    available = ", ".join(group.name for group in TEST_GROUPS)
+    raise SystemExit(f"Unknown test group '{name}'. Expected one of: {available}")
 
 
 def emit_lines(values: Iterable[str]) -> None:
@@ -217,14 +236,17 @@ def parse_args() -> argparse.Namespace:
         "--format",
         required=True,
         choices=(
-            "github-matrix",
+            "actions-matrix",
             "stable-tests",
+            "stable-regex",
+            "stable-non-ui-regex",
+            "stable-ui-regex",
             "ctest-regex",
             "build-targets",
-            "shard-json",
+            "group-json",
         ),
     )
-    parser.add_argument("--shard", help="Shard name for shard-specific formats.")
+    parser.add_argument("--group", help="Test group name for group-specific formats.")
     parser.add_argument(
         "--pretty",
         action="store_true",
@@ -236,8 +258,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> None:
     args = parse_args()
 
-    if args.format == "github-matrix":
-        payload = [shard.github_matrix_entry() for shard in TEST_SHARDS]
+    if args.format == "actions-matrix":
+        payload = [group.actions_matrix_entry() for group in TEST_GROUPS]
         json.dump(payload, sys.stdout, indent=2 if args.pretty else None)
         sys.stdout.write("\n")
         return
@@ -245,19 +267,28 @@ def main() -> None:
     if args.format == "stable-tests":
         emit_lines(STABLE_TEST_NAMES)
         return
+    if args.format == "stable-regex":
+        print(ctest_regex(STABLE_TEST_NAMES))
+        return
+    if args.format == "stable-non-ui-regex":
+        print(ctest_regex(STABLE_NON_UI_TEST_NAMES))
+        return
+    if args.format == "stable-ui-regex":
+        print(ctest_regex(STABLE_UI_TEST_NAMES))
+        return
 
-    if not args.shard:
-        raise SystemExit(f"--shard is required for --format {args.format}")
+    if not args.group:
+        raise SystemExit(f"--group is required for --format {args.format}")
 
-    shard = shard_by_name(args.shard)
+    group = group_by_name(args.group)
     if args.format == "ctest-regex":
-        print(shard.ctest_regex)
+        print(group.ctest_regex)
         return
     if args.format == "build-targets":
-        emit_lines(shard.build_targets)
+        emit_lines(group.build_targets)
         return
-    if args.format == "shard-json":
-        payload = asdict(shard) | {"ctest_regex": shard.ctest_regex}
+    if args.format == "group-json":
+        payload = asdict(group) | {"ctest_regex": group.ctest_regex}
         json.dump(payload, sys.stdout, indent=2 if args.pretty else None)
         sys.stdout.write("\n")
         return
