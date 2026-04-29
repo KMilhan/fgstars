@@ -132,7 +132,6 @@ void TestKSPaths::testKStarsInstallation_data()
     typedef QPair <QStandardPaths::StandardLocation, QString> KPair;
     QList <KPair> fixtures;
 
-    fixtures << KPair(QStandardPaths::AppLocalDataLocation, "TZrules.dat");
     fixtures << KPair(QStandardPaths::AppLocalDataLocation, "themes/whitebalance.colors");
     fixtures << KPair(QStandardPaths::AppLocalDataLocation, "textures/moon00.png");
     //fixtures << KPair(QStandardPaths::GenericDataLocation, "skycomponent.sqlite");

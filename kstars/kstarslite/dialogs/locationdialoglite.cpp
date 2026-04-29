@@ -112,14 +112,7 @@ void LocationDialogLite::initCityList()
         TZ.append(QLocale().toString((double)(i - 12)));
     setProperty("TZList", TZ);
 
-    QStringList DST;
-
-    for (auto key : data->getRulebook().keys())
-    {
-        if (!key.isEmpty())
-            DST.append(key);
-    }
-    setProperty("DSTRules", DST);
+    setProperty("DSTRules", QStringList { QStringLiteral("--") });
 }
 
 void LocationDialogLite::filterCity(const QString &city, const QString &province, const QString &country)
@@ -154,6 +147,8 @@ bool LocationDialogLite::addCity(const QString &city, const QString &province, c
                                  const QString &latitude, const QString &longitude,
                                  const QString &TimeZoneString, const QString &TZRule)
 {
+    Q_UNUSED(TZRule)
+
     QSqlDatabase mycitydb = getDB();
 
     if (mycitydb.isValid())
@@ -204,7 +199,7 @@ bool LocationDialogLite::addCity(const QString &city, const QString &province, c
         add_query.bindValue(":Latitude", lat.toDMSString());
         add_query.bindValue(":Longitude", lng.toDMSString());
         add_query.bindValue(":TZ", TZ);
-        add_query.bindValue(":TZRule", TZRule);
+        add_query.bindValue(":TZRule", QStringLiteral("--"));
         if (add_query.exec() == false)
         {
             qWarning() << add_query.lastError() << endl;
@@ -212,7 +207,7 @@ bool LocationDialogLite::addCity(const QString &city, const QString &province, c
         }
 
         //Add city to geoList
-        g = new GeoLocation(lng, lat, City, Province, Country, TZ, &KStarsData::Instance()->Rulebook[TZRule]);
+        g = new GeoLocation(lng, lat, City, Province, Country, TZ, &KStarsData::Instance()->Rulebook["--"]);
         KStarsData::Instance()->getGeoList().append(g);
 
         mycitydb.commit();
@@ -255,6 +250,8 @@ bool LocationDialogLite::editCity(const QString &fullName, const QString &city, 
                                   const QString &country, const QString &latitude,
                                   const QString &longitude, const QString &TimeZoneString, const QString &TZRule)
 {
+    Q_UNUSED(TZRule)
+
     QSqlDatabase mycitydb = getDB();
     GeoLocation *geo      = filteredCityList.value(fullName);
 
@@ -278,7 +275,7 @@ bool LocationDialogLite::editCity(const QString &fullName, const QString &city, 
         update_query.bindValue(":Latitude", lat.toDMSString());
         update_query.bindValue(":Longitude", lng.toDMSString());
         update_query.bindValue(":TZ", TZ);
-        update_query.bindValue(":TZRule", TZRule);
+        update_query.bindValue(":TZRule", QStringLiteral("--"));
         if (update_query.exec() == false)
         {
             qWarning() << update_query.lastError() << endl;
@@ -291,7 +288,7 @@ bool LocationDialogLite::editCity(const QString &fullName, const QString &city, 
         geo->setLat(lat);
         geo->setLong(lng);
         geo->setTZ0(TZ);
-        geo->setTZRule(&KStarsData::Instance()->Rulebook[TZRule]);
+        geo->setTZRule(&KStarsData::Instance()->Rulebook["--"]);
 
         //If we are changing current location update it
         if (m_currentLocation == fullName)
@@ -374,16 +371,8 @@ int LocationDialogLite::getTZ(const QString &fullName)
 int LocationDialogLite::getDST(const QString &fullName)
 {
     GeoLocation *geo                      = filteredCityList.value(fullName);
-    QMap<QString, TimeZoneRule> &Rulebook = KStarsData::Instance()->Rulebook;
-
     if (geo)
-    {
-        for (auto key : Rulebook.keys())
-        {
-            if (!key.isEmpty() && geo->tzrule()->equals(&Rulebook[key]))
-                return m_DSTRules.indexOf(key);
-        }
-    }
+        return m_DSTRules.indexOf(QStringLiteral("--"));
     return -1;
 }
 

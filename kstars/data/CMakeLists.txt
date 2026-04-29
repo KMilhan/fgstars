@@ -29,7 +29,7 @@ install(FILES
     asteroids.dat comets.dat cometels.json.gz wzserialportassistant.png
     wzstars.png wzgeo.png wzscope.png wzdownload.png wzekos.png ekoslive.png
     chart.colors classic.colors moonless-night.colors night.colors
-    tips TZrules.dat Interesting.dat PlanetFacts.dat indidrivers.xml
+    tips Interesting.dat PlanetFacts.dat indidrivers.xml
     advinterface.dat catalog.min.json satellites.dat glossary.xml defaultflag.gif
     OpenNGC.kscat tns_public_objects.csv
     DESTINATION ${KSTARS_DATADIR}/kstars

@@ -499,8 +499,8 @@ class KStarsData : public QObject
          */
         bool readCityData();
 
-        /** Read the data file that contains daylight savings time rules. */
-        bool readTimeZoneRulebook();
+        /** Initialize the legacy fixed-offset fallback rule. */
+        void initializeTimeZoneRulebook();
 
         //TODO JM: ADV tree should use XML instead
         /**

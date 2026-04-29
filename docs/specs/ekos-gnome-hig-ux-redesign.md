@@ -145,9 +145,10 @@ Frame timestamps should remain UTC instants for scientific and device
 interoperability, while local labels, target visibility windows, schedule
 boundaries, and night summaries derive from the capture site's time zone.
 
-The current `TZrules.dat` table is not an authoritative time zone database. It
-can remain as a legacy compatibility fallback while the new path lands, but Star
-Studio should not build new workflows around its abbreviated DST rules.
+The former `TZrules.dat` table was not an authoritative time zone database. Star
+Studio should not build new workflows around abbreviated DST rules; until an
+IANA resolver is available, legacy locations fall back to their stored fixed UTC
+offset.
 
 Neither Qt nor the C++ standard library maps GPS coordinates directly to IANA
 time zone IDs. Star Studio therefore needs a small `coordinates -> IANA time

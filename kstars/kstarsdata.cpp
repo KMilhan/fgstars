@@ -133,13 +133,8 @@ KStarsData::~KStarsData()
 
 bool KStarsData::initialize()
 {
-    //Load Time Zone Rules//
-    Q_EMIT progressText(i18n("Reading time zone rules"));
-    if (!readTimeZoneRulebook())
-    {
-        fatalErrorMessage("TZrules.dat");
-        return false;
-    }
+    Q_EMIT progressText(i18n("Initializing time zone fallback"));
+    initializeTimeZoneRulebook();
 
     Q_EMIT progressText(
         i18n("Upgrade existing user city db to support geographic elevation."));
@@ -253,9 +248,8 @@ void KStarsData::updateTime(GeoLocation *geo, const bool automaticDSTchange)
     LTime = geo->UTtoLT(ut());
     syncLST();
 
-    //Only check DST if (1) TZrule is not the empty rule, and (2) if we have crossed
-    //the DST change date/time.
-    if (!geo->tzrule()->isEmptyRule())
+    auto *rule = geo->tzrule();
+    if (rule && !rule->isEmptyRule())
     {
         if (TimeRunsForward)
         {
@@ -354,20 +348,20 @@ void KStarsData::changeDateTime(const KStarsDateTime &newDate)
     //Make sure Numbers, Moon, planets, and sky objects are updated immediately
     setFullTimeUpdate();
 
-    // reset tzrules data with new local time and time direction (forward or backward)
-    geo()->tzrule()->reset_with_ltime(LTime, geo()->TZ0(), isTimeRunningForward());
-
-    // reset next dst change time
-    setNextDSTChange(geo()->tzrule()->nextDSTChange());
+    if (auto *rule = geo()->tzrule())
+    {
+        rule->reset_with_ltime(LTime, geo()->TZ0(), isTimeRunningForward());
+        setNextDSTChange(rule->nextDSTChange());
+    }
 }
 
 void KStarsData::resetToNewDST(GeoLocation *geo, const bool automaticDSTchange)
 {
-    // reset tzrules data with local time, timezone offset and time direction (forward or backward)
-    // force a DST change with option true for 3. parameter
-    geo->tzrule()->reset_with_ltime(LTime, geo->TZ0(), TimeRunsForward, automaticDSTchange);
-    // reset next DST change time
-    setNextDSTChange(geo->tzrule()->nextDSTChange());
+    if (auto *rule = geo->tzrule())
+    {
+        rule->reset_with_ltime(LTime, geo->TZ0(), TimeRunsForward, automaticDSTchange);
+        setNextDSTChange(rule->nextDSTChange());
+    }
     //reset LTime, because TZoffset has changed
     LTime = geo->UTtoLT(ut());
 }
@@ -413,7 +407,7 @@ void KStarsData::setLocationFromOptions()
 {
     setLocation(GeoLocation(dms(Options::longitude()), dms(Options::latitude()), Options::cityName(),
                             Options::provinceName(), Options::countryName(), Options::timeZone(),
-                            &(Rulebook[Options::dST()]), Options::elevation(), false, 4));
+                            &(Rulebook["--"]), Options::elevation(), false, 4));
 }
 
 void KStarsData::setLocation(const GeoLocation &l)
@@ -432,12 +426,7 @@ void KStarsData::setLocation(const GeoLocation &l)
     Options::setElevation(m_Geo.elevation());
     Options::setLongitude(m_Geo.lng()->Degrees());
     Options::setLatitude(m_Geo.lat()->Degrees());
-    // set the rule from rulebook
-    for (auto key : Rulebook.keys())
-    {
-        if (!key.isEmpty() && m_Geo.tzrule()->equals(&Rulebook[key]))
-            Options::setDST(key);
-    }
+    Options::setDST("--");
 
     Q_EMIT geoChanged();
 }
@@ -480,7 +469,7 @@ bool KStarsData::readCityData()
         dms lat              = dms(get_query.value(4).toString());
         dms lng              = dms(get_query.value(5).toString());
         double TZ            = get_query.value(6).toDouble();
-        TimeZoneRule *TZrule = &(Rulebook[get_query.value(7).toString()]);
+        TimeZoneRule *TZrule = &(Rulebook["--"]);
         double elevation     = get_query.value(8).toDouble();
 
         // appends city names to list
@@ -512,7 +501,7 @@ bool KStarsData::readCityData()
                 dms lat              = dms(get_query.value(4).toString());
                 dms lng              = dms(get_query.value(5).toString());
                 double TZ            = get_query.value(6).toDouble();
-                TimeZoneRule *TZrule = &(Rulebook[get_query.value(7).toString()]);
+                TimeZoneRule *TZrule = &(Rulebook["--"]);
                 double elevation     = get_query.value(8).toDouble();
 
                 // appends city names to list
@@ -525,35 +514,10 @@ bool KStarsData::readCityData()
     return citiesFound;
 }
 
-bool KStarsData::readTimeZoneRulebook()
+void KStarsData::initializeTimeZoneRulebook()
 {
-    QFile file;
-
-    if (KSUtils::openDataFile(file, "TZrules.dat"))
-    {
-        QTextStream stream(&file);
-
-        while (!stream.atEnd())
-        {
-            QString line = stream.readLine().trimmed();
-            if (line.length() && !line.startsWith('#')) //ignore commented and blank lines
-            {
-                QStringList fields = line.split(' ', Qt::SkipEmptyParts);
-                QString id         = fields[0];
-                QTime stime        = QTime(fields[3].left(fields[3].indexOf(':')).toInt(),
-                                           fields[3].mid(fields[3].indexOf(':') + 1, fields[3].length()).toInt());
-                QTime rtime        = QTime(fields[6].left(fields[6].indexOf(':')).toInt(),
-                                           fields[6].mid(fields[6].indexOf(':') + 1, fields[6].length()).toInt());
-
-                Rulebook[id] = TimeZoneRule(fields[1], fields[2], stime, fields[4], fields[5], rtime);
-            }
-        }
-        return true;
-    }
-    else
-    {
-        return false;
-    }
+    Rulebook.clear();
+    Rulebook["--"] = TimeZoneRule();
 }
 
 bool KStarsData::openUrlFile(const QString &urlfile, QFile &file)

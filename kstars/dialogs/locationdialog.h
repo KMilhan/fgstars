@@ -173,7 +173,6 @@ class LocationDialog : public QDialog
 #endif
 
         void clearFields();
-        void showTZRules();
         void nameChanged();
         void dataChanged();
         void slotOk();

@@ -11,7 +11,6 @@
 #include "Options.h"
 #include "ksnotification.h"
 #include "kstars_debug.h"
-#include "ksutils.h"
 
 #include <QSqlQuery>
 
@@ -26,7 +25,6 @@
 #include <QNetworkReply>
 #include <QQmlContext>
 #include <QUrlQuery>
-#include <QPlainTextEdit>
 
 
 LocationDialogUI::LocationDialogUI(QWidget *parent) : QFrame(parent)
@@ -39,8 +37,6 @@ LocationDialog::LocationDialog(QWidget *parent) : QDialog(parent), timer(nullptr
 #ifdef Q_OS_MACOS
     setWindowFlags(Qt::Tool | Qt::WindowStaysOnTopHint);
 #endif
-    KStarsData *data = KStarsData::Instance();
-
     SelectedCity = nullptr;
     ld           = new LocationDialogUI(this);
 
@@ -60,12 +56,9 @@ LocationDialog::LocationDialog(QWidget *parent) : QDialog(parent), timer(nullptr
     for (int i = 0; i < 25; ++i)
         ld->TZBox->addItem(QLocale().toString(static_cast<double>(i - 12)));
 
-    //Populate DSTRuleBox
-    for (auto key : data->getRulebook().keys())
-    {
-        if (!key.isEmpty())
-            ld->DSTRuleBox->addItem(key);
-    }
+    ld->DSTRuleBox->addItem("--");
+    ld->DSTRuleBox->hide();
+    ld->DSTLabel->hide();
 
     connect(ld->CityFilter, SIGNAL(textChanged(QString)), this, SLOT(enqueueFilterCity()));
     connect(ld->ProvinceFilter, SIGNAL(textChanged(QString)), this, SLOT(enqueueFilterCity()));
@@ -98,9 +91,6 @@ LocationDialog::LocationDialog(QWidget *parent) : QDialog(parent), timer(nullptr
 
     connect(ld->GetLocationButton, SIGNAL(clicked()), this, SLOT(requestUpdate()));
 #endif
-
-    ld->DSTLabel->setText("<a href=\"showrules\">" + i18n("DST rule:") + "</a>");
-    connect(ld->DSTLabel, SIGNAL(linkActivated(QString)), this, SLOT(showTZRules()));
 
     dataModified = false;
     nameModified = false;
@@ -214,8 +204,6 @@ void LocationDialog::filterCity()
 
 void LocationDialog::changeCity()
 {
-    KStarsData *data = KStarsData::Instance();
-
     //when the selected city changes, set newCity, and redraw map
     SelectedCity = nullptr;
     if (ld->GeoBox->currentItem())
@@ -246,17 +234,6 @@ void LocationDialog::changeCity()
         ld->NewLat->show(SelectedCity->lat());
         ld->TZBox->setEditText(QLocale().toString(SelectedCity->TZ0()));
         ld->NewElev->setValue(SelectedCity->elevation());
-
-        //Pick the City's rule from the rulebook
-        for (int i = 0; i < ld->DSTRuleBox->count(); ++i)
-        {
-            TimeZoneRule tzr = data->getRulebook().value(ld->DSTRuleBox->itemText(i));
-            if (tzr.equals(SelectedCity->tzrule()))
-            {
-                ld->DSTRuleBox->setCurrentIndex(i);
-                break;
-            }
-        }
 
         ld->RemoveButton->setEnabled(SelectedCity->isReadOnly() == false);
     }
@@ -377,7 +354,7 @@ bool LocationDialog::updateCity(CityOperation operation)
     QString name     = ld->NewCityName->text().trimmed();
     QString province = ld->NewProvinceName->text().trimmed();
     QString country  = ld->NewCountryName->text().trimmed();
-    QString TZrule   = ld->DSTRuleBox->currentText();
+    QString TZrule   = QStringLiteral("--");
     double Elevation = ld->NewElev->value();
     GeoLocation *g   = nullptr;
 
@@ -403,7 +380,7 @@ bool LocationDialog::updateCity(CityOperation operation)
             }
 
             //Add city to geoList...don't need to insert it alphabetically, since we always sort GeoList
-            g = new GeoLocation(lng, lat, name, province, country, TZ, &KStarsData::Instance()->Rulebook[TZrule], Elevation);
+            g = new GeoLocation(lng, lat, name, province, country, TZ, &KStarsData::Instance()->Rulebook["--"], Elevation);
             KStarsData::Instance()->getGeoList().append(g);
         }
         break;
@@ -439,7 +416,7 @@ bool LocationDialog::updateCity(CityOperation operation)
             g->setLat(lat);
             g->setLong(lng);
             g->setTZ0(TZ);
-            g->setTZRule(&KStarsData::Instance()->Rulebook[TZrule]);
+            g->setTZRule(&KStarsData::Instance()->Rulebook["--"]);
             g->setElevation(height);
 
         }
@@ -558,45 +535,6 @@ void LocationDialog::clearFields()
     ld->AddCityButton->setEnabled(false);
     ld->UpdateButton->setEnabled(false);
     ld->NewCityName->setFocus();
-}
-
-void LocationDialog::showTZRules()
-{
-    QFile file;
-
-    if (KSUtils::openDataFile(file, "TZrules.dat") == false)
-        return;
-
-    QTextStream stream(&file);
-
-    QString message = i18n("Daylight Saving Time Rules");
-
-    QPointer<QDialog> tzd = new QDialog(this);
-    tzd->setWindowTitle(message);
-
-    QPlainTextEdit *textEdit = new QPlainTextEdit(tzd);
-    textEdit->setReadOnly(true);
-    while (stream.atEnd() == false)
-    {
-        QString line = stream.readLine();
-        if (line.startsWith('#'))
-            textEdit->appendPlainText(line);
-    }
-    textEdit->moveCursor(QTextCursor::Start);
-    textEdit->ensureCursorVisible();
-
-    QVBoxLayout *mainLayout = new QVBoxLayout;
-    mainLayout->addWidget(textEdit);
-
-    QDialogButtonBox *buttonBox = new QDialogButtonBox(QDialogButtonBox::Close);
-    mainLayout->addWidget(buttonBox);
-    connect(buttonBox, SIGNAL(rejected()), tzd, SLOT(reject()));
-
-    tzd->setLayout(mainLayout);
-
-    tzd->exec();
-
-    delete tzd;
 }
 
 void LocationDialog::nameChanged()
