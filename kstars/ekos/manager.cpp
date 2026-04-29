@@ -50,6 +50,7 @@
 #include "skymapcomposite.h"
 #include "mosaiccomponent.h"
 #include "mosaictiles.h"
+#include "skyobjects/skyobject.h"
 #include "mount/meridianflipstatuswidget.h"
 #include "ekos/auxiliary/rotatorutils.h"
 #include "ekos/align/pushtoassistant.h"
@@ -125,12 +126,7 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     capturePreview->mountTarget->setVisible(false);
     capturePreview->shareWorkspaceSession(m_workspaceSession.get());
 
-    connect(capturePreview, &CapturePreviewWidget::centerTargetRequested, this, [this]() {
-        if (alignModule()) {
-            alignModule()->setSolverAction(Ekos::Align::GOTO_SLEW);
-            alignModule()->captureAndSolve(true);
-        }
-    });
+    connect(capturePreview, &CapturePreviewWidget::centerTargetRequested, this, &Manager::centerStarStudioTarget);
 
     connect(capturePreview, &CapturePreviewWidget::centerTargetSettingsRequested, this, []() {
         KConfigDialog * alignSettings = KConfigDialog::exists("alignsettings");
@@ -148,24 +144,31 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
             auto object = FindDialog::Instance()->targetObject();
             if (object != nullptr)
             {
-                auto const data = KStarsData::Instance();
-                std::unique_ptr<SkyObject> o(object->clone());
-                o->updateCoords(data->updateNum(), true, data->geo()->lat(), data->lst(), false);
-                o->EquatorialToHorizontal(data->lst(), data->geo()->lat());
-
-                globalSearchB->setText(QString("🎯 %1").arg(o->name()));
-
-                if (alignModule()) {
-                    alignModule()->setTarget(*o);
-                    int ret = QMessageBox::question(this, i18n("Observe & Capture"), i18n("Do you want to slew to %1 and center it?", o->name()), QMessageBox::Yes | QMessageBox::No);
-                    if (ret == QMessageBox::Yes) {
-                        alignModule()->setSolverAction(Ekos::Align::GOTO_SLEW);
-                        alignModule()->captureAndSolve(true);
-                    }
-                }
+                setStarStudioTarget(*object);
             }
         }
     });
+
+    connect(goToTargetB, &QPushButton::clicked, this, &Manager::goToStarStudioTarget);
+    connect(centerSelectedTargetB, &QPushButton::clicked, this, &Manager::centerStarStudioTarget);
+    connect(addTargetPlanB, &QPushButton::clicked, this, &Manager::addStarStudioTargetToCapturePlan);
+    connect(openSkyMapB, &QPushButton::clicked, this, &Manager::openStarStudioSkyMap);
+    connect(advancedEkosB, &QPushButton::toggled, this, &Manager::setStarStudioAdvancedVisible);
+    globalSearchB->setAccessibleName(i18n("Find Target"));
+    globalSearchB->setAccessibleDescription(i18n("Search for an imaging target without leaving the capture workspace."));
+    goToTargetB->setAccessibleName(i18n("Go To Target"));
+    goToTargetB->setAccessibleDescription(i18n("Slew the mount to the selected target."));
+    centerSelectedTargetB->setAccessibleName(i18n("Center Target"));
+    centerSelectedTargetB->setAccessibleDescription(i18n("Capture, plate solve, and correct the mount for the selected target."));
+    addTargetPlanB->setAccessibleName(i18n("Add to Capture Plan"));
+    addTargetPlanB->setAccessibleDescription(i18n("Add the selected target to the capture plan."));
+    openSkyMapB->setAccessibleName(i18n("Open Sky Map"));
+    openSkyMapB->setAccessibleDescription(i18n("Open the full planetarium sky map as a secondary target-finding view."));
+    advancedEkosB->setAccessibleName(i18n("Advanced Controls"));
+    advancedEkosB->setAccessibleDescription(i18n("Show or hide expert module controls and diagnostics."));
+    updateStarStudioHeaderForWidth();
+    updateStarStudioTargetActions();
+    updateStarStudioTargetSummary();
 
     // Lift the workspace shell out of the Setup tab so it remains visible while the user
     // switches between image-heavy modules.
@@ -320,12 +323,14 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
         {
             processINDIB->setIcon(QIcon::fromTheme("media-playback-stop"));
             processINDIB->setToolTip(i18n("Stop"));
-            setWindowTitle(i18nc("@title:window", "Ekos - %1 Profile", m_CurrentProfile->name));
+            setWindowTitle(i18nc("@title:window", "Star Studio - %1 Profile", m_CurrentProfile->name));
+            setStarStudioAdvancedVisible(false);
         }
         else if (status == Ekos::Error || status == Ekos::Idle)
         {
             processINDIB->setIcon(QIcon::fromTheme("media-playback-start"));
             processINDIB->setToolTip(i18n("Start"));
+            setStarStudioAdvancedVisible(false);
         }
         else
         {
@@ -631,6 +636,8 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     else
         resize(Options::ekosWindowWidth(), Options::ekosWindowHeight());
 
+    setStarStudioAdvancedVisible(false);
+
 }
 
 void Manager::changeAlwaysOnTop(Qt::ApplicationState state)
@@ -788,6 +795,7 @@ void Manager::resizeEvent(QResizeEvent *)
 
     focusProgressWidget->updateFocusDetailView();
     guideManager->updateGuideDetailView();
+    updateStarStudioHeaderForWidth();
 }
 
 void Manager::rememberWorkspacePriorityRatio()
@@ -1210,7 +1218,7 @@ void Manager::stop()
 
     profileGroup->setEnabled(true);
 
-    setWindowTitle(i18nc("@title:window", "Ekos"));
+    setWindowTitle(i18nc("@title:window", "Star Studio"));
 
     // Clear extensions list ready for rediscovery if start is called again
     extensionCombo->clear();
@@ -3469,6 +3477,203 @@ void Manager::setTarget(const QString &name)
         mountModule()->setTargetName(name);
 }
 
+void Manager::setStarStudioTarget(const SkyObject &object)
+{
+    m_starStudioTarget.reset(object.clone());
+    if (m_starStudioTarget == nullptr)
+        return;
+
+    auto const data = KStarsData::Instance();
+    m_starStudioTarget->updateCoords(data->updateNum(), true, data->geo()->lat(), data->lst(), false);
+    m_starStudioTarget->EquatorialToHorizontal(data->lst(), data->geo()->lat());
+
+    const QString targetName = m_starStudioTarget->name();
+    globalSearchB->setText(i18n("Target: %1", targetName));
+    setTarget(targetName);
+
+    if (captureModule())
+        captureModule()->setTargetName(targetName);
+
+    if (alignModule())
+        alignModule()->setTarget(*m_starStudioTarget);
+
+    updateStarStudioTargetActions();
+    updateStarStudioTargetSummary();
+}
+
+bool Manager::selectStarStudioTarget(const QString &name)
+{
+    SkyObject * const object = KStarsData::Instance()->objectNamed(name);
+    if (object == nullptr)
+        return false;
+
+    setStarStudioTarget(*object);
+    return true;
+}
+
+void Manager::updateStarStudioTargetActions()
+{
+    const bool hasTarget = m_starStudioTarget != nullptr && !m_starStudioTarget->name().isEmpty();
+    const bool canCenterTarget = hasTarget && alignModule() != nullptr;
+
+    goToTargetB->setEnabled(hasTarget && mountModule() != nullptr);
+    centerSelectedTargetB->setEnabled(canCenterTarget);
+    addTargetPlanB->setEnabled(hasTarget && schedulerModule() != nullptr);
+    capturePreview->setCenterTargetAvailable(canCenterTarget);
+}
+
+void Manager::updateStarStudioTargetSummary()
+{
+    if (m_starStudioTarget == nullptr)
+    {
+        starStudioTargetStatusL->setText(i18n("No target"));
+        return;
+    }
+
+    const double altitude = m_starStudioTarget->alt().Degrees();
+    const QString visibility = altitude > 0 ? i18n("Ready") : i18n("Low");
+    m_workspaceSession->setTargetContext(Ekos::WorkspaceSession::TargetContext {
+        m_starStudioTarget->name(),
+        altitude,
+        altitude > 0,
+        altitude > 0,
+    });
+    starStudioTargetStatusL->setText(i18n("Alt %1 %2",
+                                          QString::number(altitude, 'f', 1), visibility));
+}
+
+void Manager::handleStarStudioAlignStatus(Ekos::AlignState state)
+{
+    switch (state)
+    {
+        case ALIGN_COMPLETE:
+        case ALIGN_SUCCESSFUL:
+            m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::Complete);
+            starStudioCenterStatusL->setText(i18n("Center complete"));
+            break;
+        case ALIGN_FAILED:
+            m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::Failed);
+            starStudioCenterStatusL->setText(i18n("Center failed"));
+            break;
+        case ALIGN_ABORTED:
+            m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::Aborted);
+            starStudioCenterStatusL->setText(i18n("Center aborted"));
+            break;
+        case ALIGN_PROGRESS:
+        case ALIGN_SYNCING:
+        case ALIGN_SLEWING:
+        case ALIGN_ROTATING:
+        case ALIGN_SUSPENDED:
+            m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::Running);
+            starStudioCenterStatusL->setText(i18n("Center: %1", getAlignStatusString(state)));
+            break;
+        case ALIGN_IDLE:
+            m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::Idle);
+            starStudioCenterStatusL->setText(i18n("Center idle"));
+            break;
+    }
+}
+
+void Manager::goToStarStudioTarget()
+{
+    if (m_starStudioTarget == nullptr)
+        return;
+
+    setTarget(m_starStudioTarget->name());
+
+    if (captureModule())
+        captureModule()->setTargetName(m_starStudioTarget->name());
+
+    if (mountModule())
+        mountModule()->gotoTarget(m_starStudioTarget->name());
+}
+
+void Manager::centerStarStudioTarget()
+{
+    if (m_starStudioTarget == nullptr)
+    {
+        m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::NeedsTarget);
+        starStudioCenterStatusL->setText(i18n("Select target first"));
+        return;
+    }
+
+    const std::optional targetContext = m_workspaceSession->targetContext();
+    if (targetContext.has_value() && !targetContext->visible)
+    {
+        m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::TargetNotVisible);
+        starStudioCenterStatusL->setText(i18n("Target too low"));
+        return;
+    }
+
+    if (alignModule() == nullptr)
+    {
+        m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::Unavailable);
+        starStudioCenterStatusL->setText(i18n("Center unavailable"));
+        return;
+    }
+
+    alignModule()->setTarget(*m_starStudioTarget);
+
+    starStudioCenterStatusL->setText(i18n("Centering"));
+    m_workspaceSession->setCenterTargetState(Ekos::WorkspaceSession::CenterTargetState::Running);
+    alignModule()->setSolverAction(Ekos::Align::GOTO_SLEW);
+    alignModule()->captureAndSolve(true);
+}
+
+void Manager::addStarStudioTargetToCapturePlan()
+{
+    if (m_starStudioTarget == nullptr)
+        return;
+
+    addObjectToScheduler(m_starStudioTarget.get());
+}
+
+void Manager::openStarStudioSkyMap()
+{
+    auto * const kstars = KStars::Instance();
+    if (kstars == nullptr)
+        return;
+
+    kstars->show();
+    kstars->raise();
+    kstars->activateWindow();
+}
+
+void Manager::setStarStudioAdvancedVisible(bool visible)
+{
+    toolsWidget->setVisible(visible);
+    layoutWidget->setVisible(visible);
+    rightLayoutWidget->setVisible(visible);
+
+    if (advancedEkosB->isChecked() != visible)
+    {
+        const QSignalBlocker blocker(advancedEkosB);
+        advancedEkosB->setChecked(visible);
+    }
+
+    splitter->setStretchFactor(0, visible ? 5 : 1);
+    splitter->setStretchFactor(1, visible ? 3 : 0);
+    splitter->setStretchFactor(2, visible ? 1 : 0);
+    splitter->setSizes(visible ? QList<int>({36000, 18000, 7000}) : QList<int>({1, 0, 0}));
+    deviceSplitter->setStretchFactor(0, visible ? 4 : 1);
+    deviceSplitter->setStretchFactor(1, visible ? 1 : 0);
+    deviceSplitter->setSizes(visible ? QList<int>({36000, 9000}) : QList<int>({1, 0}));
+    updateStarStudioHeaderForWidth();
+    repairWorkspacePriorityAfterResize();
+}
+
+void Manager::updateStarStudioHeaderForWidth()
+{
+    const bool compact = width() < 1100;
+    goToTargetB->setText(compact ? i18n("Slew") : i18n("Go To"));
+    centerSelectedTargetB->setText(compact ? i18n("Center") : i18n("Center Target"));
+    addTargetPlanB->setText(i18n("Plan"));
+    openSkyMapB->setText(i18n("Map"));
+    advancedEkosB->setText(advancedEkosB->isChecked()
+                           ? (compact ? i18n("Hide") : i18n("Hide Advanced"))
+                           : i18n("Advanced"));
+}
+
 void Manager::showEkosOptions()
 {
     QWidget * currentWidget = toolsWidget->currentWidget();
@@ -3750,6 +3955,8 @@ void Manager::connectModules()
     {
         // Alignment flag
         connect(alignModule(), &Ekos::Align::newStatus, captureModule(), &Ekos::Capture::setAlignStatus,
+                Qt::UniqueConnection);
+        connect(alignModule(), &Ekos::Align::newStatus, this, &Manager::handleStarStudioAlignStatus,
                 Qt::UniqueConnection);
         // Solver data
         connect(alignModule(), &Ekos::Align::newSolverResults, captureModule(),  &Ekos::Capture::setAlignResults,

@@ -37,6 +37,11 @@ CapturePreviewWidget::CapturePreviewWidget(QWidget *parent) : QWidget(parent)
 
     connect(centerTargetB, &QPushButton::clicked, this, &CapturePreviewWidget::centerTargetRequested);
     connect(centerTargetSettingsB, &QPushButton::clicked, this, &CapturePreviewWidget::centerTargetSettingsRequested);
+    centerTargetB->setAccessibleName(i18n("Center Target"));
+    centerTargetB->setAccessibleDescription(i18n("Capture, plate solve, and correct the mount for the selected target."));
+    centerTargetSettingsB->setAccessibleName(i18n("Center Target Settings"));
+    centerTargetSettingsB->setAccessibleDescription(i18n("Open advanced astrometry settings for centering the selected target."));
+    setCenterTargetAvailable(false);
 
     // make invisible until we have at least two cameras active
     trainSelectionCB->setVisible(false);
@@ -397,4 +402,9 @@ void CapturePreviewWidget::setTargetName(QString name)
     mountTarget->setText(name);
     m_mountTarget = name;
     m_currentFrame[trainSelectionCB->currentText()].target = name;
+}
+
+void CapturePreviewWidget::setCenterTargetAvailable(bool available)
+{
+    centerTargetB->setEnabled(available);
 }

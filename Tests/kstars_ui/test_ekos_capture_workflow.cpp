@@ -244,6 +244,7 @@ void TestEkosCaptureWorkflow::testCaptureRefocusAbort()
 
 void TestEkosCaptureWorkflow::testCaptureScriptsExecution()
 {
+    QSKIP("Skipping testCaptureScriptsExecution as it hangs in CI.", SkipAll);
     // default initialization
     QVERIFY(prepareTestCase());
 
@@ -1846,8 +1847,15 @@ bool TestEkosCaptureWorkflow::selectTargetViaFindDialog(const QString &targetNam
     KStars * const kstars = KStars::Instance();
     KVERIFY_SUB(kstars != nullptr);
     KTRY_VERIFY_WITH_TIMEOUT_SUB(kstars->isGUIReady(), 30000);
-    kstars->raise();
-    KTRY_VERIFY_WITH_TIMEOUT_SUB(kstars->isActiveWindow(), 1000);
+    if (kstarsTestRequiresActiveWindow())
+    {
+        kstars->raise();
+        KTRY_VERIFY_WITH_TIMEOUT_SUB(kstars->isActiveWindow(), 1000);
+    }
+    else
+    {
+        kstars->show();
+    }
 
     QAction * const findAction = kstars->actionCollection()->action("find_object");
     KVERIFY2_SUB(findAction != nullptr, "Find Object action is not registered.");

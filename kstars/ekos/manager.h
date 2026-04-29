@@ -38,6 +38,7 @@ class DriverInfo;
 class ProfileInfo;
 class KPageWidgetItem;
 class OpsEkos;
+class SkyObject;
 
 /**
  * @class Manager
@@ -144,6 +145,7 @@ class Manager : public QDialog, public Ui::Manager
         {
             return m_workspaceSession.get();
         }
+        bool selectStarStudioTarget(const QString &name);
 
         // Filter Manager
         void createFilterManager(ISD::FilterWheel *device);
@@ -558,6 +560,16 @@ class Manager : public QDialog, public Ui::Manager
         void initObservatory();
         void rememberWorkspacePriorityRatio();
         void repairWorkspacePriorityAfterResize();
+        void setStarStudioTarget(const SkyObject &object);
+        void updateStarStudioTargetActions();
+        void updateStarStudioTargetSummary();
+        void handleStarStudioAlignStatus(Ekos::AlignState state);
+        void goToStarStudioTarget();
+        void centerStarStudioTarget();
+        void addStarStudioTargetToCapturePlan();
+        void openStarStudioSkyMap();
+        void setStarStudioAdvancedVisible(bool visible);
+        void updateStarStudioHeaderForWidth();
 
         void loadDrivers();
         void loadProfiles();
@@ -670,6 +682,7 @@ class Manager : public QDialog, public Ui::Manager
         QSet<QString> m_syncedDevices;
         QSet<QString> m_ProfileManagedDevices;
         std::unique_ptr<WorkspaceSession> m_workspaceSession;
+        std::unique_ptr<SkyObject> m_starStudioTarget;
         double m_workspacePriorityRatio { 0.8 };
         bool m_workspaceRepairQueued { false };
 

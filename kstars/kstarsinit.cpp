@@ -36,6 +36,7 @@
 
 #include <QMenu>
 #include <QStatusBar>
+#include <QTimer>
 
 //This file contains functions that kstars calls at startup (except constructors).
 //These functions are declared in kstars.h
@@ -991,6 +992,16 @@ void KStars::datainitFinished()
 
 #ifdef HAVE_INDI
     Ekos::Manager::Instance()->initialize();
+    if (!Options::runStartupWizard())
+    {
+        QTimer::singleShot(0, this, []()
+        {
+            Ekos::Manager * const manager = Ekos::Manager::Instance();
+            manager->showNormal();
+            manager->raise();
+            manager->activateWindow();
+        });
+    }
 #endif
 }
 

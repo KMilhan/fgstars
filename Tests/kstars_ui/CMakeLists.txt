@@ -117,6 +117,47 @@ if(TARGET kstars_indi_test_runtime)
     add_dependencies(test_ekos_capture kstars_indi_test_runtime)
 endif()
 
+ADD_EXECUTABLE(test_starstudio_targetfinder ${KSTARS_UI_EKOS_SRC} test_ekos_helper.cpp test_ekos_helper.h test_starstudio_targetfinder.cpp test_starstudio_targetfinder.h)
+TARGET_LINK_LIBRARIES(test_starstudio_targetfinder ${KSTARS_UI_EKOS_LIBS})
+ADD_TEST(
+    NAME TestStarStudioTargetFinderJourney
+    COMMAND test_starstudio_targetfinder
+            testTargetFinderSelectsImagingTarget
+)
+ADD_TEST(
+    NAME TestStarStudioCenterTargetJourney
+    COMMAND test_starstudio_targetfinder
+            testCenterTargetStartsFromCaptureContext
+)
+ADD_TEST(
+    NAME TestStarStudioShellJourney
+    COMMAND test_starstudio_targetfinder
+            testShellKeepsImageWorkspacePrimary
+)
+ADD_TEST(
+    NAME TestStarStudioFailureStates
+    COMMAND test_starstudio_targetfinder
+            testCenterTargetRequiresSelectedTarget
+)
+ADD_TEST(
+    NAME TestStarStudioTargetVisibilityFailure
+    COMMAND test_starstudio_targetfinder
+            testCenterTargetRejectsTargetBelowHorizon
+)
+SET_TESTS_PROPERTIES(TestStarStudioTargetFinderJourney PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
+SET_TESTS_PROPERTIES(TestStarStudioCenterTargetJourney PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
+SET_TESTS_PROPERTIES(TestStarStudioShellJourney PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
+SET_TESTS_PROPERTIES(TestStarStudioFailureStates PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
+SET_TESTS_PROPERTIES(TestStarStudioTargetVisibilityFailure PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
+set_tests_properties(TestStarStudioTargetFinderJourney PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+set_tests_properties(TestStarStudioCenterTargetJourney PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+set_tests_properties(TestStarStudioShellJourney PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+set_tests_properties(TestStarStudioFailureStates PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+set_tests_properties(TestStarStudioTargetVisibilityFailure PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+if(TARGET kstars_indi_test_runtime)
+    add_dependencies(test_starstudio_targetfinder kstars_indi_test_runtime)
+endif()
+
 ADD_EXECUTABLE(test_ekos_filterwheel ${KSTARS_UI_EKOS_SRC} test_ekos_filterwheel.cpp test_ekos_filterwheel.h test_ekos_helper.cpp test_ekos_helper.h)
 TARGET_LINK_LIBRARIES(test_ekos_filterwheel ${KSTARS_UI_EKOS_LIBS})
 ADD_TEST(NAME TestEkosFilterWheel COMMAND test_ekos_filterwheel)

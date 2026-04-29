@@ -87,6 +87,7 @@ class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
          * @brief set the target name
          */
         void setTargetName(QString name);
+        void setCenterTargetAvailable(bool available);
 
     signals:
         void centerTargetRequested();

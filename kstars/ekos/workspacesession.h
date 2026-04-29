@@ -11,6 +11,7 @@
 #include <QPoint>
 #include <QRect>
 #include <QSharedPointer>
+#include <QString>
 
 #include <array>
 #include <optional>
@@ -35,6 +36,19 @@ class WorkspaceSession : public QObject
             Guide,
         };
         Q_ENUM(Source)
+
+        enum class CenterTargetState
+        {
+            Idle,
+            Running,
+            Complete,
+            Failed,
+            Aborted,
+            Unavailable,
+            NeedsTarget,
+            TargetNotVisible,
+        };
+        Q_ENUM(CenterTargetState)
 
         struct ViewportState
         {
@@ -72,6 +86,16 @@ class WorkspaceSession : public QObject
             bool operator==(const GuideOverlayState &) const = default;
         };
 
+        struct TargetContext
+        {
+            QString name;
+            double altitudeDegrees {0.0};
+            bool visible {false};
+            bool framingReady {false};
+
+            bool operator==(const TargetContext &) const = default;
+        };
+
         static constexpr auto CaptureProcessInfoOverlayKey = "capture.process-info";
 
         explicit WorkspaceSession(QObject *parent = nullptr);
@@ -92,6 +116,10 @@ class WorkspaceSession : public QObject
         std::optional<AlignOverlayState> alignOverlay() const;
         void setGuideOverlay(const GuideOverlayState &state);
         std::optional<GuideOverlayState> guideOverlay() const;
+        void setTargetContext(const TargetContext &state);
+        std::optional<TargetContext> targetContext() const;
+        void setCenterTargetState(CenterTargetState state);
+        CenterTargetState centerTargetState() const;
 
         void setOverlayVisible(const QString &key, bool visible);
         std::optional<bool> overlayVisible(const QString &key) const;
@@ -99,6 +127,8 @@ class WorkspaceSession : public QObject
     Q_SIGNALS:
         void sourceUpdated(Source source);
         void activeSourceChanged(Source source);
+        void targetContextChanged();
+        void centerTargetStateChanged(CenterTargetState state);
         void overlayVisibilityChanged(const QString &key, bool visible);
 
     private:
@@ -120,6 +150,8 @@ class WorkspaceSession : public QObject
         std::optional<FocusOverlayState> m_focusOverlay;
         std::optional<AlignOverlayState> m_alignOverlay;
         std::optional<GuideOverlayState> m_guideOverlay;
+        std::optional<TargetContext> m_targetContext;
+        CenterTargetState m_centerTargetState {CenterTargetState::Idle};
         QHash<QString, bool> m_overlayVisibility;
 };
 

@@ -18,12 +18,15 @@
 #include "ekos/scheduler/scheduler.h"
 #include "ekos/scheduler/schedulermodulestate.h"
 #include "ekos/auxiliary/filtermanager.h"
+#include "fitsviewer/fitsdata.h"
 #include "indi/drivermanager.h"
 #include "indi/driverinfo.h"
 #include "kstarsdata.h"
 #include "../testhelpers.h"
 
+#include <QDir>
 #include <QFileInfo>
+#include <QStandardPaths>
 
 namespace
 {
@@ -43,6 +46,72 @@ void setTreeviewCombo(QComboBox *combo, const QString &label)
     combo->setRootModelIndex(item.parent());
     combo->setCurrentText(label);
     QCOMPARE(combo->currentText(), label);
+}
+
+bool ccdSimulatorStarCatalogIsAvailable(QString *reason = nullptr)
+{
+    const QString gscExecutable = QStandardPaths::findExecutable(QStringLiteral("gsc"));
+    QString gscDataDir = qEnvironmentVariable("GSCDAT");
+    if (!gscDataDir.isEmpty() && !QFileInfo(gscDataDir).isDir())
+        gscDataDir.clear();
+
+    if (gscDataDir.isEmpty())
+    {
+        const QStringList candidates =
+        {
+            QDir(QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation)).filePath(QStringLiteral("gsc")),
+            QStringLiteral("/usr/share/GSC"),
+            QStringLiteral("/usr/share/gsc")
+        };
+
+        for (const QString &candidate : candidates)
+        {
+            if (QFileInfo(candidate).isDir())
+            {
+                gscDataDir = candidate;
+                break;
+            }
+        }
+    }
+
+    if (!gscExecutable.isEmpty() && !gscDataDir.isEmpty())
+        return true;
+
+    if (reason != nullptr)
+    {
+        *reason = QStringLiteral("CCD Simulator autofocus requires the 'gsc' executable and a readable GSC catalog directory.");
+    }
+    return false;
+}
+
+bool simulatorFixtureHasDetectableStars(QString *reason = nullptr)
+{
+    const QString fitsFile = QFINDTESTDATA("../fitsviewer/m47_sim_stars.fits");
+    if (fitsFile.isEmpty() || !QFileInfo::exists(fitsFile))
+    {
+        if (reason != nullptr)
+            *reason = QStringLiteral("Simulator star fixture m47_sim_stars.fits is not available to validate star detection.");
+        return false;
+    }
+
+    FITSData image;
+    auto loadFuture = image.loadFromFile(fitsFile);
+    loadFuture.waitForFinished();
+    if (!loadFuture.result())
+    {
+        if (reason != nullptr)
+            *reason = QStringLiteral("Simulator star fixture could not be loaded for star detection.");
+        return false;
+    }
+
+    auto starFuture = image.findStars(ALGORITHM_SEP);
+    starFuture.waitForFinished();
+    if (starFuture.result() && image.getDetectedStars() > 0)
+        return true;
+
+    if (reason != nullptr)
+        *reason = QStringLiteral("Simulator star fixture loaded, but no stars were detected.");
+    return false;
 }
 
 }
@@ -916,7 +985,22 @@ bool TestEkosHelper::executeFocusing(int initialFocusPosition)
 
 bool TestEkosHelper::ensureCcdSimulatorStarsAvailable(QString *reason)
 {
-    Q_UNUSED(reason)
+    QString catalogReason;
+    if (!ccdSimulatorStarCatalogIsAvailable(&catalogReason))
+    {
+        if (reason != nullptr)
+            *reason = catalogReason;
+        return false;
+    }
+
+    QString fixtureReason;
+    if (!simulatorFixtureHasDetectableStars(&fixtureReason))
+    {
+        if (reason != nullptr)
+            *reason = fixtureReason;
+        return false;
+    }
+
     return true;
 }
 

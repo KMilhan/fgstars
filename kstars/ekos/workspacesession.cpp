@@ -247,6 +247,34 @@ std::optional<WorkspaceSession::GuideOverlayState> WorkspaceSession::guideOverla
     return m_guideOverlay;
 }
 
+void WorkspaceSession::setTargetContext(const TargetContext &state)
+{
+    if (m_targetContext == state)
+        return;
+
+    m_targetContext = state;
+    Q_EMIT targetContextChanged();
+}
+
+std::optional<WorkspaceSession::TargetContext> WorkspaceSession::targetContext() const
+{
+    return m_targetContext;
+}
+
+void WorkspaceSession::setCenterTargetState(CenterTargetState state)
+{
+    if (m_centerTargetState == state)
+        return;
+
+    m_centerTargetState = state;
+    Q_EMIT centerTargetStateChanged(state);
+}
+
+WorkspaceSession::CenterTargetState WorkspaceSession::centerTargetState() const
+{
+    return m_centerTargetState;
+}
+
 void WorkspaceSession::setOverlayVisible(const QString &key, bool visible)
 {
     const auto existing = overlayVisible(key);

@@ -62,7 +62,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
+         <width>0</width>
          <height>20</height>
         </size>
        </property>
@@ -72,15 +72,118 @@
       <widget class="QPushButton" name="globalSearchB">
        <property name="minimumSize">
         <size>
-         <width>400</width>
+         <width>136</width>
          <height>32</height>
         </size>
        </property>
        <property name="text">
-        <string>🔍 Search Target to Observe &amp; Capture...</string>
+        <string>Find Target</string>
        </property>
        <property name="flat">
         <bool>false</bool>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="goToTargetB">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>64</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Go To</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="centerSelectedTargetB">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>112</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Center Target</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="addTargetPlanB">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>92</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Add to Plan</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="openSkyMapB">
+       <property name="minimumSize">
+        <size>
+         <width>88</width>
+         <height>32</height>
+       </size>
+      </property>
+      <property name="text">
+        <string>Map</string>
+      </property>
+     </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="advancedEkosB">
+       <property name="checkable">
+        <bool>true</bool>
+       </property>
+       <property name="minimumSize">
+       <size>
+         <width>88</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Advanced</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="starStudioTargetStatusL">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>No target</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLabel" name="starStudioCenterStatusL">
+       <property name="minimumSize">
+        <size>
+         <width>126</width>
+         <height>32</height>
+        </size>
+       </property>
+       <property name="text">
+        <string>Center idle</string>
        </property>
       </widget>
      </item>
@@ -91,7 +194,7 @@
        </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
+         <width>0</width>
          <height>20</height>
         </size>
        </property>
@@ -1113,7 +1216,7 @@
          <item>
           <widget class="QPushButton" name="ekosOptionsB">
            <property name="toolTip">
-            <string>Advanced Ekos Options</string>
+            <string>Advanced Options</string>
            </property>
            <property name="text">
             <string>Options...</string>

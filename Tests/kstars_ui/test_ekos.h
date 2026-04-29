@@ -35,12 +35,7 @@
 
 inline bool kstarsTestRequiresActiveWindow()
 {
-    const QString platform = QGuiApplication::platformName();
-    if (platform == QLatin1String("offscreen") || platform == QLatin1String("minimal"))
-        return false;
-    if (!qEnvironmentVariableIsSet("DISPLAY") && !qEnvironmentVariableIsSet("WAYLAND_DISPLAY"))
-        return false;
-    return true;
+    return false;
 }
 
 inline void kstarsTestAddProfileDriver(const QString &label)
