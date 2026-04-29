@@ -146,6 +146,10 @@ Reframe the planetarium role as a supporting target-selection workflow.
 - Start by wrapping the existing KStars object search and selected-object state.
 - Show capture-relevant target context first: visibility, altitude window,
   current framing suitability, and available actions.
+- Drive visibility windows from the active capture site's IANA time zone ID,
+  not the host system time zone or `TZrules.dat`.
+- Add a narrow boundary for resolving GPS coordinates to an IANA time zone ID;
+  keep the resolver separable from the offset/DST calculator.
 - Keep the full interactive sky map available as a detail or advanced view.
 
 ### Acceptance Criteria
@@ -154,6 +158,8 @@ Reframe the planetarium role as a supporting target-selection workflow.
 - Target search exposes `Go To`, `Center Target`, and `Add to Capture Plan`
   actions.
 - The selected target becomes visible to the capture workspace/session state.
+- The same target search can be evaluated for a site that differs from the
+  computer's current system time zone.
 
 ## Phase 4: Center Target
 
@@ -190,6 +196,8 @@ Make the first screen communicate that Star Studio is a capture application.
 - Make the image workspace the dominant first-screen surface.
 - Move task labels toward `Find Target`, `Center Target`, `Capture Preview`,
   `Start Sequence`, and `Open Advanced Viewer`.
+- Show active capture site and local site time as compact session context, not
+  as planetarium-first chrome.
 - Keep advanced Ekos module controls reachable without making them the primary
   path.
 - Add screenshot-based or artifact-based review for supported window sizes.

@@ -16,6 +16,11 @@ defines the user-facing shift from a planetarium-first KStars experience toward
 Star Studio as an image-capture-first workspace where the planetarium role
 becomes a supporting target-finding workflow.
 
+Star Studio also treats the active capture site as workflow state. Site
+location, IANA time zone ID, GPS-derived updates, and per-frame UTC timestamps
+are product-level concerns because target visibility, capture planning, and
+session continuity depend on them.
+
 The phased implementation order is documented in
 [`Star Studio Implementation Blueprint`](star-studio-implementation-blueprint.md).
 
@@ -66,7 +71,9 @@ The following are explicitly out of scope for `fgstars v1`:
 2. Capture a preview or frame and inspect it without switching to an external viewer.
 3. Switch between Capture and other image-aware modules while retaining a coherent visual context.
 4. Use zoom, pan, selection, overlay toggles, and frame history from one workspace-first path.
-5. Open an advanced detached FITS Viewer only when explicitly requested.
+5. Continue an imaging project after moving from one capture site to another,
+   with new target visibility and local-time labels based on the active site.
+6. Open an advanced detached FITS Viewer only when explicitly requested.
 
 ## Existing Architecture
 
@@ -206,6 +213,22 @@ Acceptance criteria:
 - The new behavior can be gated through an option, feature flag, or migration toggle.
 - Existing behavior can remain available during the transition.
 - The rollout path does not require a flag day rewrite.
+
+### FR8: Capture-site time context
+
+Star Studio shall keep local-time interpretation tied to the active capture site
+rather than the host system time zone.
+
+Acceptance criteria:
+
+- Capture-site data can carry an IANA time zone ID independently of the host
+  system time zone.
+- Captured frames keep UTC timestamps and enough site context to display the
+  local capture time later, even after the user moves to another site.
+- GPS latitude and longitude can feed a dedicated time-zone resolver boundary
+  instead of relying on the host system time zone.
+- New Star Studio workflows do not depend on `TZrules.dat` as an authoritative
+  DST source.
 
 ## UX Requirements
 

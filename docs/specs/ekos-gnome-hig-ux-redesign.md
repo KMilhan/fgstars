@@ -28,6 +28,20 @@ The first-screen signal should be:
 - Alignment, solving, guiding, and focusing are contextual assistants around
   capture, not separate destinations the user must manually assemble.
 
+## Application Boundary
+
+KStars remains a planetarium application: its primary job is sky simulation,
+object browsing, and full-map exploration for arbitrary locations and times.
+
+Star Studio is an astrophotography application. Its primary job is planning,
+centering, capturing, and reviewing images for an active capture session. The
+planetarium engine remains available, but in Star Studio it should appear as
+`Target Finder` or `Advanced Sky Map`, not as the default first screen.
+
+This boundary should guide both navigation and data modeling. Star Studio starts
+from the active capture site, target, optical train, and latest frame; the
+planetarium view supports those tasks instead of owning the workflow.
+
 ## Problem Statement
 
 Current KStars/Ekos exposes internal modules directly as the user's workflow.
@@ -109,6 +123,39 @@ Recommended hierarchy:
 The first screen should answer "what am I shooting and what did the camera just
 see?" before it answers "where is this object on the whole sky map?"
 
+## Capture Site Time Context
+
+Star Studio must treat time zone as part of the capture site, not as a property
+of the computer running the application.
+
+Required use cases:
+
+- The application must remain cross-platform beyond Linux. Qt 6 remains a good
+  platform layer, and the C++26 standard library is available for domain code
+  where it improves clarity and portability.
+- A user can continue an imaging project from site A at site B. Existing frames
+  keep their original site and time context, while new captures use the active
+  site's time zone.
+- GPS-derived latitude and longitude can identify the active site and should
+  resolve to an IANA time zone ID when enough data is available.
+
+The durable model should store an IANA time zone ID such as
+`America/Los_Angeles`, `Europe/Berlin`, or `Asia/Tokyo` with each capture site.
+Frame timestamps should remain UTC instants for scientific and device
+interoperability, while local labels, target visibility windows, schedule
+boundaries, and night summaries derive from the capture site's time zone.
+
+The current `TZrules.dat` table is not an authoritative time zone database. It
+can remain as a legacy compatibility fallback while the new path lands, but Star
+Studio should not build new workflows around its abbreviated DST rules.
+
+Neither Qt nor the C++ standard library maps GPS coordinates directly to IANA
+time zone IDs. Star Studio therefore needs a small `coordinates -> IANA time
+zone` resolver boundary backed by bundled data, platform services, or a
+documented optional provider. Once the IANA ID is known, offset and DST
+calculation should use Qt `QTimeZone`, C++ `std::chrono` time-zone facilities, or
+a narrow wrapper that can switch between them per platform.
+
 ## Information Architecture
 
 Star Studio should rename user-facing destinations around capture tasks.
@@ -133,8 +180,8 @@ The former planetarium role should become `Target Finder`.
 `Target Finder` is a supporting workflow for answering:
 
 - What can I shoot tonight?
-- Is this target visible from my location?
-- When is it high enough?
+- Is this target visible from my active capture site?
+- When is it high enough in that site's local night?
 - How will it fit my camera and telescope?
 - Can I slew and center it now?
 
