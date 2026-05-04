@@ -97,20 +97,23 @@ void TestStarStudioTargetFinder::testTargetFinderSelectsImagingTarget()
     KTRY_EKOS_GADGET(QPushButton, addTargetPlanB);
     KTRY_EKOS_GADGET(QPushButton, openSkyMapB);
     KTRY_EKOS_GADGET(QPushButton, advancedEkosB);
+    KTRY_EKOS_GADGET(QLabel, workspaceTitleL);
     KTRY_EKOS_GADGET(QLabel, starStudioTargetStatusL);
     KTRY_EKOS_GADGET(QLabel, starStudioCenterStatusL);
 
     QCOMPARE(toolsWidget->currentWidget(), manager->captureModule());
-    QVERIFY(globalSearchB->text().contains("Find Target") || globalSearchB->text().contains("Target:"));
+    QVERIFY(globalSearchB->text().contains("Find Target"));
     QVERIFY(QString(openSkyMapB->text()).remove(QLatin1Char('&')).contains("Map"));
     QVERIFY(advancedEkosB->text().contains("Advanced"));
     QVERIFY(!advancedEkosB->isChecked());
+    QCOMPARE(workspaceTitleL->text(), QString("Image Workspace"));
     QCOMPARE(starStudioTargetStatusL->text(), QString("No target"));
     QCOMPARE(starStudioCenterStatusL->text(), QString("Center idle"));
 
     QVERIFY(manager->selectStarStudioTarget("Altair"));
 
-    QTRY_VERIFY_WITH_TIMEOUT(globalSearchB->text().contains("Altair"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(globalSearchB->text().contains("Find Target"), 5000);
+    QTRY_VERIFY_WITH_TIMEOUT(starStudioTargetStatusL->text().contains("Altair"), 5000);
     QTRY_VERIFY_WITH_TIMEOUT(starStudioTargetStatusL->text().contains("Alt"), 5000);
     auto * const session = manager->workspaceSession();
     QVERIFY(session != nullptr);
@@ -171,6 +174,7 @@ void TestStarStudioTargetFinder::testShellKeepsImageWorkspacePrimary()
     KTRY_EKOS_GADGET(QPushButton, addTargetPlanB);
     KTRY_EKOS_GADGET(QPushButton, openSkyMapB);
     KTRY_EKOS_GADGET(QPushButton, advancedEkosB);
+    KTRY_EKOS_GADGET(QLabel, workspaceTitleL);
     KTRY_EKOS_GADGET(QLabel, starStudioTargetStatusL);
     KTRY_EKOS_GADGET(QLabel, starStudioCenterStatusL);
     KTRY_EKOS_GADGET(QWidget, layoutWidget);
@@ -178,6 +182,7 @@ void TestStarStudioTargetFinder::testShellKeepsImageWorkspacePrimary()
 
     const QList<QWidget *> headerWidgets
     {
+        workspaceTitleL,
         globalSearchB,
         goToTargetB,
         centerSelectedTargetB,
@@ -224,6 +229,7 @@ void TestStarStudioTargetFinder::testShellKeepsImageWorkspacePrimary()
         }
 
         QVERIFY(textFits(globalSearchB, globalSearchB->text()));
+        QVERIFY(textFits(workspaceTitleL, workspaceTitleL->text()));
         QVERIFY(textFits(goToTargetB, goToTargetB->text()));
         QVERIFY(textFits(centerSelectedTargetB, centerSelectedTargetB->text()));
         QVERIFY(textFits(addTargetPlanB, addTargetPlanB->text()));

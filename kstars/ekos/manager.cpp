@@ -154,16 +154,18 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     connect(addTargetPlanB, &QPushButton::clicked, this, &Manager::addStarStudioTargetToCapturePlan);
     connect(openSkyMapB, &QPushButton::clicked, this, &Manager::openStarStudioSkyMap);
     connect(advancedEkosB, &QPushButton::toggled, this, &Manager::setStarStudioAdvancedVisible);
+    workspaceTitleL->setAccessibleName(i18n("Image Workspace"));
+    workspaceTitleL->setAccessibleDescription(i18n("Primary workspace for capture preview and frame inspection."));
     globalSearchB->setAccessibleName(i18n("Find Target"));
-    globalSearchB->setAccessibleDescription(i18n("Search for an imaging target without leaving the capture workspace."));
+    globalSearchB->setAccessibleDescription(i18n("Open Target Finder without leaving the capture workspace."));
     goToTargetB->setAccessibleName(i18n("Go To Target"));
     goToTargetB->setAccessibleDescription(i18n("Slew the mount to the selected target."));
     centerSelectedTargetB->setAccessibleName(i18n("Center Target"));
     centerSelectedTargetB->setAccessibleDescription(i18n("Capture, plate solve, and correct the mount for the selected target."));
     addTargetPlanB->setAccessibleName(i18n("Add to Capture Plan"));
     addTargetPlanB->setAccessibleDescription(i18n("Add the selected target to the capture plan."));
-    openSkyMapB->setAccessibleName(i18n("Open Sky Map"));
-    openSkyMapB->setAccessibleDescription(i18n("Open the full planetarium sky map as a secondary target-finding view."));
+    openSkyMapB->setAccessibleName(i18n("Open Advanced Sky Map"));
+    openSkyMapB->setAccessibleDescription(i18n("Open the full planetarium sky map as a supporting target-finding view."));
     advancedEkosB->setAccessibleName(i18n("Advanced Controls"));
     advancedEkosB->setAccessibleDescription(i18n("Show or hide expert module controls and diagnostics."));
     updateStarStudioHeaderForWidth();
@@ -3488,7 +3490,7 @@ void Manager::setStarStudioTarget(const SkyObject &object)
     m_starStudioTarget->EquatorialToHorizontal(data->lst(), data->geo()->lat());
 
     const QString targetName = m_starStudioTarget->name();
-    globalSearchB->setText(i18n("Target: %1", targetName));
+    updateStarStudioHeaderForWidth();
     setTarget(targetName);
 
     if (captureModule())
@@ -3538,8 +3540,10 @@ void Manager::updateStarStudioTargetSummary()
         altitude > 0,
         altitude > 0,
     });
-    starStudioTargetStatusL->setText(i18n("Alt %1 %2",
-                                          QString::number(altitude, 'f', 1), visibility));
+    const QString altitudeText = QString::number(altitude, 'f', 1);
+    starStudioTargetStatusL->setText(width() < 1100
+                                     ? i18n("%1 Alt %2", m_starStudioTarget->name(), altitudeText)
+                                     : i18n("%1 - Alt %2 %3", m_starStudioTarget->name(), altitudeText, visibility));
 }
 
 void Manager::handleStarStudioAlignStatus(Ekos::AlignState state)
@@ -3665,13 +3669,15 @@ void Manager::setStarStudioAdvancedVisible(bool visible)
 void Manager::updateStarStudioHeaderForWidth()
 {
     const bool compact = width() < 1100;
+    globalSearchB->setText(i18n("Find Target"));
     goToTargetB->setText(compact ? i18n("Slew") : i18n("Go To"));
     centerSelectedTargetB->setText(compact ? i18n("Center") : i18n("Center Target"));
     addTargetPlanB->setText(i18n("Plan"));
-    openSkyMapB->setText(i18n("Map"));
+    openSkyMapB->setText(compact ? i18n("Map") : i18n("Sky Map"));
     advancedEkosB->setText(advancedEkosB->isChecked()
                            ? (compact ? i18n("Hide") : i18n("Hide Advanced"))
                            : i18n("Advanced"));
+    updateStarStudioTargetSummary();
 }
 
 void Manager::showEkosOptions()

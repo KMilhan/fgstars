@@ -64,7 +64,7 @@
      <item>
       <widget class="QLabel" name="captureLabel">
        <property name="text">
-        <string>Capture</string>
+        <string>Capture Preview</string>
        </property>
       </widget>
      </item>
