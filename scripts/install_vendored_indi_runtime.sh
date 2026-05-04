@@ -42,6 +42,7 @@ copy_binary "$build_dir/drivers/weather/indi_simulator_weather" "$prefix/bin/ind
 copy_binary "$build_dir/drivers/rotator/indi_simulator_rotator" "$prefix/bin/indi_simulator_rotator"
 copy_binary "$build_dir/drivers/dome/indi_simulator_dome" "$prefix/bin/indi_simulator_dome"
 copy_binary "$build_dir/drivers/auxiliary/indi_simulator_lightpanel" "$prefix/bin/indi_simulator_lightpanel"
+copy_binary "$build_dir/drivers/auxiliary/indi_simulator_gps" "$prefix/bin/indi_simulator_gps"
 
 copy_library_family "$build_dir/libs/indibase/libindidriver.so*"
 copy_library_family "$build_dir/libs/alignment/libindiAlignmentDriver.so*"

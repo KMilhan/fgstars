@@ -280,6 +280,7 @@ if(BUILD_TESTING AND UNIX AND NOT APPLE AND KSTARS_BUILD_VENDORED_INDI_TEST_RUNT
             indi_simulator_rotator
             indi_simulator_dome
             indi_simulator_lightpanel
+            indi_simulator_gps
         BUILD_BYPRODUCTS
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indiserver"
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_telescope"
@@ -291,6 +292,7 @@ if(BUILD_TESTING AND UNIX AND NOT APPLE AND KSTARS_BUILD_VENDORED_INDI_TEST_RUNT
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_rotator"
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_dome"
             "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_lightpanel"
+            "${KSTARS_VENDORED_INDI_PREFIX}/bin/indi_simulator_gps"
             "${KSTARS_VENDORED_INDI_PREFIX}/lib/libindidriver.so"
             "${KSTARS_VENDORED_INDI_PREFIX}/lib/libindiAlignmentDriver.so"
             "${KSTARS_VENDORED_INDI_PREFIX}/lib/libindilx200.so"

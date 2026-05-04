@@ -28,6 +28,7 @@ class TestStarStudioTargetFinder : public QObject
         void testTargetFinderSelectsImagingTarget();
         void testCenterTargetStartsFromCaptureContext();
         void testShellKeepsImageWorkspacePrimary();
+        void testEssentialSimulatorControlsRespond();
         void testCenterTargetRequiresSelectedTarget();
         void testCenterTargetRejectsTargetBelowHorizon();
 };

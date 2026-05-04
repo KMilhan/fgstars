@@ -135,6 +135,11 @@ ADD_TEST(
             testShellKeepsImageWorkspacePrimary
 )
 ADD_TEST(
+    NAME TestStarStudioEssentialSimulator
+    COMMAND test_starstudio_targetfinder
+            testEssentialSimulatorControlsRespond
+)
+ADD_TEST(
     NAME TestStarStudioFailureStates
     COMMAND test_starstudio_targetfinder
             testCenterTargetRequiresSelectedTarget
@@ -147,11 +152,13 @@ ADD_TEST(
 SET_TESTS_PROPERTIES(TestStarStudioTargetFinderJourney PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
 SET_TESTS_PROPERTIES(TestStarStudioCenterTargetJourney PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
 SET_TESTS_PROPERTIES(TestStarStudioShellJourney PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
+SET_TESTS_PROPERTIES(TestStarStudioEssentialSimulator PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
 SET_TESTS_PROPERTIES(TestStarStudioFailureStates PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
 SET_TESTS_PROPERTIES(TestStarStudioTargetVisibilityFailure PROPERTIES LABELS "ui;star-studio" TIMEOUT 300 RESOURCE_LOCK "kstars-ui")
 set_tests_properties(TestStarStudioTargetFinderJourney PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 set_tests_properties(TestStarStudioCenterTargetJourney PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 set_tests_properties(TestStarStudioShellJourney PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
+set_tests_properties(TestStarStudioEssentialSimulator PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 set_tests_properties(TestStarStudioFailureStates PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 set_tests_properties(TestStarStudioTargetVisibilityFailure PROPERTIES ENVIRONMENT "${KSTARS_UI_TEST_RUNTIME_ENVIRONMENT}")
 if(TARGET kstars_indi_test_runtime)

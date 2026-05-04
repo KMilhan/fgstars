@@ -18,12 +18,15 @@
 #include "ekos/mount/mount.h"
 #include "ekos/workspacesession.h"
 
+#include <QCheckBox>
+#include <QComboBox>
 #include <QDir>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPixmap>
 #include <QPushButton>
 #include <QSplitter>
+#include <QSpinBox>
 #include <QTabWidget>
 
 namespace
@@ -251,6 +254,75 @@ void TestStarStudioTargetFinder::testShellKeepsImageWorkspacePrimary()
                                        .arg(size.width()).arg(size.height()));
         QVERIFY(manager->grab().save(screenshotPath));
     }
+}
+
+void TestStarStudioTargetFinder::testEssentialSimulatorControlsRespond()
+{
+    auto * const manager = Ekos::Manager::Instance();
+    QVERIFY(manager != nullptr);
+
+    KTRY_EKOS_GADGET(CapturePreviewWidget, capturePreview);
+
+    auto * const panel = capturePreview->findChild<QWidget *>(QStringLiteral("essentialSimulatorPanel"));
+    auto * const gain = capturePreview->findChild<QSpinBox *>(QStringLiteral("essentialSimulatorGainSB"));
+    auto * const focus = capturePreview->findChild<QSpinBox *>(QStringLiteral("essentialSimulatorFocusSB"));
+    auto * const cameraStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorCameraStatusL"));
+    auto * const tracking = capturePreview->findChild<QCheckBox *>(QStringLiteral("essentialSimulatorTrackingCB"));
+    auto * const mountMode = capturePreview->findChild<QComboBox *>(QStringLiteral("essentialSimulatorMountModeCB"));
+    auto * const mountStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorMountStatusL"));
+    auto * const train = capturePreview->findChild<QComboBox *>(QStringLiteral("essentialSimulatorTrainCB"));
+    auto * const trainStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorTrainStatusL"));
+    auto * const gpsd = capturePreview->findChild<QCheckBox *>(QStringLiteral("essentialSimulatorGpsdCB"));
+    auto * const gpsdStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorGpsdStatusL"));
+    auto * const guide = capturePreview->findChild<QCheckBox *>(QStringLiteral("essentialSimulatorGuideCB"));
+    auto * const guideMode = capturePreview->findChild<QComboBox *>(QStringLiteral("essentialSimulatorGuideModeCB"));
+    auto * const guideStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorGuideStatusL"));
+
+    QVERIFY(panel != nullptr);
+    QVERIFY(gain != nullptr);
+    QVERIFY(focus != nullptr);
+    QVERIFY(cameraStatus != nullptr);
+    QVERIFY(tracking != nullptr);
+    QVERIFY(mountMode != nullptr);
+    QVERIFY(mountStatus != nullptr);
+    QVERIFY(train != nullptr);
+    QVERIFY(trainStatus != nullptr);
+    QVERIFY(gpsd != nullptr);
+    QVERIFY(gpsdStatus != nullptr);
+    QVERIFY(guide != nullptr);
+    QVERIFY(guideMode != nullptr);
+    QVERIFY(guideStatus != nullptr);
+    QVERIFY(panel->isVisibleTo(manager));
+
+    gain->setValue(20);
+    focus->setValue(80);
+    QTRY_VERIFY_WITH_TIMEOUT(cameraStatus->text().contains(QStringLiteral("Noise 3.6")), 1000);
+    QVERIFY(cameraStatus->text().contains(QStringLiteral("Focus blur 1.2")));
+
+    tracking->setChecked(false);
+    mountMode->setCurrentText(QStringLiteral("Move"));
+    QTRY_VERIFY_WITH_TIMEOUT(mountStatus->text().contains(QStringLiteral("Tracking off")), 1000);
+    QVERIFY(mountStatus->text().contains(QStringLiteral("8.0")));
+
+    train->setCurrentText(QStringLiteral("GuideVia"));
+    QTRY_VERIFY_WITH_TIMEOUT(trainStatus->text().contains(QStringLiteral("GuideVia:")), 1000);
+    QVERIFY(trainStatus->text().contains(QStringLiteral("pulse source")));
+    train->setCurrentText(QStringLiteral("GPS"));
+    QTRY_VERIFY_WITH_TIMEOUT(trainStatus->text().contains(QStringLiteral("site and time source")), 1000);
+
+    gpsd->setChecked(false);
+    QTRY_VERIFY_WITH_TIMEOUT(gpsdStatus->text().contains(QStringLiteral("disconnected")), 1000);
+    gpsd->setChecked(true);
+    QTRY_VERIFY_WITH_TIMEOUT(gpsdStatus->text().contains(QStringLiteral("GPSD fixed")), 1000);
+
+    guide->setChecked(true);
+    guideMode->setCurrentText(QStringLiteral("Dither"));
+    QTRY_VERIFY_WITH_TIMEOUT(guideStatus->text().contains(QStringLiteral("PHD2 Dither")), 1000);
+    QVERIFY(guideStatus->text().contains(QStringLiteral("0.72")));
+
+    QDir artifacts(QStringLiteral(".artifacts/star-studio-essential-simulator"));
+    QVERIFY(artifacts.mkpath(QStringLiteral(".")));
+    QVERIFY(manager->grab().save(artifacts.filePath(QStringLiteral("essential-simulator.png"))));
 }
 
 void TestStarStudioTargetFinder::testCenterTargetRequiresSelectedTarget()
