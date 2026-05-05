@@ -21,6 +21,7 @@
 #include <QCheckBox>
 #include <QComboBox>
 #include <QDir>
+#include <QHash>
 #include <QLabel>
 #include <QLineEdit>
 #include <QPixmap>
@@ -28,6 +29,8 @@
 #include <QSplitter>
 #include <QSpinBox>
 #include <QTabWidget>
+
+#include <cmath>
 
 namespace
 {
@@ -323,6 +326,152 @@ void TestStarStudioTargetFinder::testEssentialSimulatorControlsRespond()
     QDir artifacts(QStringLiteral(".artifacts/star-studio-essential-simulator"));
     QVERIFY(artifacts.mkpath(QStringLiteral(".")));
     QVERIFY(manager->grab().save(artifacts.filePath(QStringLiteral("essential-simulator.png"))));
+}
+
+void TestStarStudioTargetFinder::testEssentialSimulatorAllCombinations()
+{
+    auto * const manager = Ekos::Manager::Instance();
+    QVERIFY(manager != nullptr);
+
+    KTRY_EKOS_GADGET(CapturePreviewWidget, capturePreview);
+
+    auto * const gain = capturePreview->findChild<QSpinBox *>(QStringLiteral("essentialSimulatorGainSB"));
+    auto * const focus = capturePreview->findChild<QSpinBox *>(QStringLiteral("essentialSimulatorFocusSB"));
+    auto * const cameraStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorCameraStatusL"));
+    auto * const tracking = capturePreview->findChild<QCheckBox *>(QStringLiteral("essentialSimulatorTrackingCB"));
+    auto * const mountMode = capturePreview->findChild<QComboBox *>(QStringLiteral("essentialSimulatorMountModeCB"));
+    auto * const mountStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorMountStatusL"));
+    auto * const train = capturePreview->findChild<QComboBox *>(QStringLiteral("essentialSimulatorTrainCB"));
+    auto * const trainStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorTrainStatusL"));
+    auto * const gpsd = capturePreview->findChild<QCheckBox *>(QStringLiteral("essentialSimulatorGpsdCB"));
+    auto * const gpsdStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorGpsdStatusL"));
+    auto * const guide = capturePreview->findChild<QCheckBox *>(QStringLiteral("essentialSimulatorGuideCB"));
+    auto * const guideMode = capturePreview->findChild<QComboBox *>(QStringLiteral("essentialSimulatorGuideModeCB"));
+    auto * const guideStatus = capturePreview->findChild<QLabel *>(QStringLiteral("essentialSimulatorGuideStatusL"));
+
+    QVERIFY(gain != nullptr);
+    QVERIFY(focus != nullptr);
+    QVERIFY(cameraStatus != nullptr);
+    QVERIFY(tracking != nullptr);
+    QVERIFY(mountMode != nullptr);
+    QVERIFY(mountStatus != nullptr);
+    QVERIFY(train != nullptr);
+    QVERIFY(trainStatus != nullptr);
+    QVERIFY(gpsd != nullptr);
+    QVERIFY(gpsdStatus != nullptr);
+    QVERIFY(guide != nullptr);
+    QVERIFY(guideMode != nullptr);
+    QVERIFY(guideStatus != nullptr);
+
+    const QList<int> gainValues { 0, 15, 30 };
+    const QList<int> focusValues { 0, 50, 100 };
+    const QList<bool> trackingValues { false, true };
+    const QStringList mountModes { QStringLiteral("Sidereal"), QStringLiteral("Move"), QStringLiteral("Slew"), QStringLiteral("Parked") };
+    const QStringList trainRoles
+    {
+        QStringLiteral("Mount"),
+        QStringLiteral("Camera"),
+        QStringLiteral("Rotator"),
+        QStringLiteral("GuideVia"),
+        QStringLiteral("DustCap"),
+        QStringLiteral("Scope"),
+        QStringLiteral("FilterWheel"),
+        QStringLiteral("Focuser"),
+        QStringLiteral("Reducer"),
+        QStringLiteral("LightBox"),
+        QStringLiteral("Dome"),
+        QStringLiteral("Weather"),
+        QStringLiteral("GPS"),
+        QStringLiteral("PAC"),
+    };
+    const QHash<QString, QString> trainSummaries
+    {
+        { QStringLiteral("Mount"), QStringLiteral("Mount: telescope simulator") },
+        { QStringLiteral("Camera"), QStringLiteral("Camera: CCD, gain, noise") },
+        { QStringLiteral("Rotator"), QStringLiteral("Rotator: angle simulator") },
+        { QStringLiteral("GuideVia"), QStringLiteral("GuideVia: pulse source") },
+        { QStringLiteral("DustCap"), QStringLiteral("DustCap: cover state") },
+        { QStringLiteral("Scope"), QStringLiteral("Scope: aperture, focal length") },
+        { QStringLiteral("FilterWheel"), QStringLiteral("FilterWheel: filter slot") },
+        { QStringLiteral("Focuser"), QStringLiteral("Focuser: focus position") },
+        { QStringLiteral("Reducer"), QStringLiteral("Reducer: focal ratio") },
+        { QStringLiteral("LightBox"), QStringLiteral("LightBox: flat panel") },
+        { QStringLiteral("Dome"), QStringLiteral("Dome: parked or slaved") },
+        { QStringLiteral("Weather"), QStringLiteral("Weather: safe or alert") },
+        { QStringLiteral("GPS"), QStringLiteral("GPS: site and time source") },
+        { QStringLiteral("PAC"), QStringLiteral("PAC: alignment correction") },
+    };
+    const QList<bool> gpsdValues { false, true };
+    const QList<bool> guideValues { false, true };
+    const QStringList guideModes { QStringLiteral("Looping"), QStringLiteral("Guiding"), QStringLiteral("Dither") };
+
+    int combinations = 0;
+    for (const int gainValue : gainValues)
+    {
+        for (const int focusValue : focusValues)
+        {
+            for (const bool trackingEnabled : trackingValues)
+            {
+                for (const QString &mountModeName : mountModes)
+                {
+                    for (const QString &trainRole : trainRoles)
+                    {
+                        for (const bool gpsdEnabled : gpsdValues)
+                        {
+                            for (const bool guideEnabled : guideValues)
+                            {
+                                for (const QString &guideModeName : guideModes)
+                                {
+                                    gain->setValue(gainValue);
+                                    focus->setValue(focusValue);
+                                    tracking->setChecked(trackingEnabled);
+                                    mountMode->setCurrentText(mountModeName);
+                                    train->setCurrentText(trainRole);
+                                    gpsd->setChecked(gpsdEnabled);
+                                    guide->setChecked(guideEnabled);
+                                    guideMode->setCurrentText(guideModeName);
+
+                                    const double expectedNoise = 1.2 + gainValue * 0.12;
+                                    const double expectedBlur = std::abs(focusValue - 50) * 0.04;
+                                    QCOMPARE(cameraStatus->text(),
+                                             QStringLiteral("Noise %1 e- - Focus blur %2 px")
+                                             .arg(QString::number(expectedNoise, 'f', 1),
+                                                  QString::number(expectedBlur, 'f', 1)));
+
+                                    const double expectedDrift = trackingEnabled && mountModeName == QStringLiteral("Sidereal") ? 0.2 : 8.0;
+                                    QCOMPARE(mountStatus->text(),
+                                             QStringLiteral("%1 - drift %2")
+                                             .arg(trackingEnabled ? mountModeName : QStringLiteral("Tracking off"),
+                                                  QString::number(expectedDrift, 'f', 1)));
+                                    QCOMPARE(trainStatus->text(), trainSummaries.value(trainRole));
+                                    QCOMPARE(gpsdStatus->text(),
+                                             gpsdEnabled ? QStringLiteral("GPSD fixed: 35.7N 139.7E") : QStringLiteral("GPSD disconnected"));
+
+                                    if (guideEnabled)
+                                    {
+                                        const double expectedRms = guideModeName == QStringLiteral("Guiding") ? 0.38
+                                                                   : guideModeName == QStringLiteral("Dither") ? 0.72
+                                                                   : 1.10;
+                                        QCOMPARE(guideStatus->text(),
+                                                 QStringLiteral("PHD2 %1 RMS %2 px")
+                                                 .arg(guideModeName, QString::number(expectedRms, 'f', 2)));
+                                    }
+                                    else
+                                    {
+                                        QCOMPARE(guideStatus->text(), QStringLiteral("PHD2 idle"));
+                                    }
+
+                                    ++combinations;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    QCOMPARE(combinations, 12096);
 }
 
 void TestStarStudioTargetFinder::testCenterTargetRequiresSelectedTarget()
