@@ -70,6 +70,7 @@
 #include <QFutureWatcher>
 #include <QComboBox>
 #include <QDesktopServices>
+#include <QDoubleSpinBox>
 #include <QFrame>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -3701,6 +3702,35 @@ void Manager::initializeStarStudioEquipmentPanel()
         return label;
     };
 
+    const auto stateLabel = [panel](const QString & objectName)
+    {
+        auto *label = new QLabel(panel);
+        label->setObjectName(objectName);
+        QFont stateFont = label->font();
+        stateFont.setBold(true);
+        label->setFont(stateFont);
+        label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        return label;
+    };
+
+    m_simulatorCameraStateL = stateLabel(QStringLiteral("essentialSimulatorCameraStateL"));
+
+    m_simulatorCoolerCB = new QCheckBox(i18n("Cool camera"), panel);
+    m_simulatorCoolerCB->setObjectName(QStringLiteral("essentialSimulatorCoolerCB"));
+    m_simulatorCoolerCB->setChecked(true);
+    m_simulatorCoolerCB->setToolTip(i18n("Cool the simulated camera sensor toward the target temperature."));
+
+    m_simulatorCameraTargetTempSB = new QDoubleSpinBox(panel);
+    m_simulatorCameraTargetTempSB->setObjectName(QStringLiteral("essentialSimulatorCameraTargetTempSB"));
+    m_simulatorCameraTargetTempSB->setRange(-40.0, 20.0);
+    m_simulatorCameraTargetTempSB->setDecimals(1);
+    m_simulatorCameraTargetTempSB->setSingleStep(1.0);
+    m_simulatorCameraTargetTempSB->setValue(-10.0);
+    m_simulatorCameraTargetTempSB->setSuffix(i18n(" C"));
+    m_simulatorCameraTargetTempSB->setMaximumWidth(92);
+    m_simulatorCameraTargetTempSB->setAccessibleName(i18n("Camera Target Temperature"));
+    m_simulatorCameraTargetTempSB->setToolTip(i18n("Target sensor temperature for the simulated camera."));
+
     m_simulatorGainSB = new QSpinBox(panel);
     m_simulatorGainSB->setObjectName(QStringLiteral("essentialSimulatorGainSB"));
     m_simulatorGainSB->setRange(0, 30);
@@ -3720,6 +3750,8 @@ void Manager::initializeStarStudioEquipmentPanel()
     m_simulatorCameraStatusL->setObjectName(QStringLiteral("essentialSimulatorCameraStatusL"));
     m_simulatorCameraStatusL->setWordWrap(true);
     m_simulatorCameraStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    m_simulatorMountStateL = stateLabel(QStringLiteral("essentialSimulatorMountStateL"));
 
     m_simulatorTrackingCB = new QCheckBox(i18n("Track sky"), panel);
     m_simulatorTrackingCB->setObjectName(QStringLiteral("essentialSimulatorTrackingCB"));
@@ -3763,6 +3795,8 @@ void Manager::initializeStarStudioEquipmentPanel()
     m_simulatorTrainStatusL->setWordWrap(true);
     m_simulatorTrainStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
+    m_simulatorSiteStateL = stateLabel(QStringLiteral("essentialSimulatorSiteStateL"));
+
     m_simulatorGpsdCB = new QCheckBox(i18n("Use site fix"), panel);
     m_simulatorGpsdCB->setObjectName(QStringLiteral("essentialSimulatorGpsdCB"));
     m_simulatorGpsdCB->setChecked(true);
@@ -3772,6 +3806,8 @@ void Manager::initializeStarStudioEquipmentPanel()
     m_simulatorGpsdStatusL->setObjectName(QStringLiteral("essentialSimulatorGpsdStatusL"));
     m_simulatorGpsdStatusL->setWordWrap(true);
     m_simulatorGpsdStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    m_simulatorGuideStateL = stateLabel(QStringLiteral("essentialSimulatorGuideStateL"));
 
     m_simulatorGuideCB = new QCheckBox(i18n("Use guiding input"), panel);
     m_simulatorGuideCB->setObjectName(QStringLiteral("essentialSimulatorGuideCB"));
@@ -3790,13 +3826,18 @@ void Manager::initializeStarStudioEquipmentPanel()
     m_simulatorGuideStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
     auto *cameraControls = new QWidget(panel);
-    auto *cameraControlsLayout = new QHBoxLayout(cameraControls);
+    auto *cameraControlsLayout = new QGridLayout(cameraControls);
     cameraControlsLayout->setContentsMargins(0, 0, 0, 0);
-    cameraControlsLayout->setSpacing(6);
-    cameraControlsLayout->addWidget(fieldLabel(i18n("Gain"), QStringLiteral("essentialSimulatorGainLabelL")));
-    cameraControlsLayout->addWidget(m_simulatorGainSB);
-    cameraControlsLayout->addWidget(fieldLabel(i18n("Focus"), QStringLiteral("essentialSimulatorFocusLabelL")));
-    cameraControlsLayout->addWidget(m_simulatorFocusSB);
+    cameraControlsLayout->setHorizontalSpacing(6);
+    cameraControlsLayout->setVerticalSpacing(4);
+    cameraControlsLayout->addWidget(m_simulatorCoolerCB, 0, 0, 1, 2);
+    cameraControlsLayout->addWidget(fieldLabel(i18n("Target temp"), QStringLiteral("essentialSimulatorTargetTempLabelL")), 0,
+                                    2);
+    cameraControlsLayout->addWidget(m_simulatorCameraTargetTempSB, 0, 3);
+    cameraControlsLayout->addWidget(fieldLabel(i18n("Gain"), QStringLiteral("essentialSimulatorGainLabelL")), 1, 0);
+    cameraControlsLayout->addWidget(m_simulatorGainSB, 1, 1);
+    cameraControlsLayout->addWidget(fieldLabel(i18n("Focus"), QStringLiteral("essentialSimulatorFocusLabelL")), 1, 2);
+    cameraControlsLayout->addWidget(m_simulatorFocusSB, 1, 3);
 
     auto *mountControls = new QWidget(panel);
     auto *mountControlsLayout = new QHBoxLayout(mountControls);
@@ -3813,20 +3854,24 @@ void Manager::initializeStarStudioEquipmentPanel()
     guideControlsLayout->addWidget(m_simulatorGuideModeCB, 1);
 
     layout->addWidget(sectionLabel(i18n("Camera"), QStringLiteral("essentialSimulatorCameraSectionL")), 0, 0);
-    layout->addWidget(cameraControls, 1, 0);
-    layout->addWidget(m_simulatorCameraStatusL, 2, 0);
-    layout->addWidget(sectionLabel(i18n("Mount"), QStringLiteral("essentialSimulatorMountSectionL")), 3, 0);
-    layout->addWidget(mountControls, 4, 0);
-    layout->addWidget(m_simulatorMountStatusL, 5, 0);
-    layout->addWidget(sectionLabel(i18n("Optical train"), QStringLiteral("essentialSimulatorTrainSectionL")), 6, 0);
-    layout->addWidget(m_simulatorTrainCB, 7, 0);
-    layout->addWidget(m_simulatorTrainStatusL, 8, 0);
-    layout->addWidget(sectionLabel(i18n("Site"), QStringLiteral("essentialSimulatorSiteSectionL")), 9, 0);
-    layout->addWidget(m_simulatorGpsdCB, 10, 0);
-    layout->addWidget(m_simulatorGpsdStatusL, 11, 0);
-    layout->addWidget(sectionLabel(i18n("Guiding"), QStringLiteral("essentialSimulatorGuideSectionL")), 12, 0);
-    layout->addWidget(guideControls, 13, 0);
-    layout->addWidget(m_simulatorGuideStatusL, 14, 0);
+    layout->addWidget(m_simulatorCameraStateL, 1, 0);
+    layout->addWidget(cameraControls, 2, 0);
+    layout->addWidget(m_simulatorCameraStatusL, 3, 0);
+    layout->addWidget(sectionLabel(i18n("Mount"), QStringLiteral("essentialSimulatorMountSectionL")), 4, 0);
+    layout->addWidget(m_simulatorMountStateL, 5, 0);
+    layout->addWidget(mountControls, 6, 0);
+    layout->addWidget(m_simulatorMountStatusL, 7, 0);
+    layout->addWidget(sectionLabel(i18n("Optical train"), QStringLiteral("essentialSimulatorTrainSectionL")), 8, 0);
+    layout->addWidget(m_simulatorTrainCB, 9, 0);
+    layout->addWidget(m_simulatorTrainStatusL, 10, 0);
+    layout->addWidget(sectionLabel(i18n("Site"), QStringLiteral("essentialSimulatorSiteSectionL")), 11, 0);
+    layout->addWidget(m_simulatorSiteStateL, 12, 0);
+    layout->addWidget(m_simulatorGpsdCB, 13, 0);
+    layout->addWidget(m_simulatorGpsdStatusL, 14, 0);
+    layout->addWidget(sectionLabel(i18n("Guiding"), QStringLiteral("essentialSimulatorGuideSectionL")), 15, 0);
+    layout->addWidget(m_simulatorGuideStateL, 16, 0);
+    layout->addWidget(guideControls, 17, 0);
+    layout->addWidget(m_simulatorGuideStatusL, 18, 0);
     layout->setColumnStretch(0, 1);
 
     rightLayout->insertWidget(0, panel);
@@ -3837,6 +3882,8 @@ void Manager::initializeStarStudioEquipmentPanel()
     {
         updateStarStudioEquipmentPanel();
     };
+    connect(m_simulatorCoolerCB, &QCheckBox::toggled, this, refresh);
+    connect(m_simulatorCameraTargetTempSB, qOverload<double>(&QDoubleSpinBox::valueChanged), this, refresh);
     connect(m_simulatorGainSB, qOverload<int>(&QSpinBox::valueChanged), this, refresh);
     connect(m_simulatorFocusSB, qOverload<int>(&QSpinBox::valueChanged), this, refresh);
     connect(m_simulatorTrackingCB, &QCheckBox::toggled, this, refresh);
@@ -3850,18 +3897,51 @@ void Manager::initializeStarStudioEquipmentPanel()
 
 void Manager::updateStarStudioEquipmentPanel()
 {
+    const double targetTemp = m_simulatorCameraTargetTempSB->value();
+    const bool coolerEnabled = m_simulatorCoolerCB->isChecked();
+    m_simulatorCameraTargetTempSB->setEnabled(coolerEnabled);
+    const double sensorTemp = coolerEnabled ? targetTemp + 0.2 + m_simulatorGainSB->value() * 0.02
+                              : 18.0 + m_simulatorGainSB->value() * 0.05;
+    const int coolerPower = coolerEnabled
+                            ? std::clamp(static_cast<int>(std::lround((18.0 - targetTemp) * 2.0 + m_simulatorGainSB->value())), 0, 100)
+                            : 0;
     const double cameraNoise = 1.2 + m_simulatorGainSB->value() * 0.12;
     const double focusBlur = std::abs(m_simulatorFocusSB->value() - 50) * 0.04;
-    m_simulatorCameraStatusL->setText(i18n("Noise %1 e-, focus blur %2 px",
-                                           QString::number(cameraNoise, 'f', 1),
-                                           QString::number(focusBlur, 'f', 1)));
+    const bool cameraAtTarget = coolerEnabled && std::abs(sensorTemp - targetTemp) <= 0.5;
+    m_simulatorCameraStateL->setText(!coolerEnabled ? i18n("Cooling off")
+                                     : cameraAtTarget ? i18n("Camera at target")
+                                     : i18n("Camera cooling"));
+    m_simulatorCameraStatusL->setText(coolerEnabled
+                                      ? i18n("Sensor %1 C - target %2 C - cooler %3 percent - noise %4 e- - focus blur %5 px",
+                                              QString::number(sensorTemp, 'f', 1),
+                                              QString::number(targetTemp, 'f', 1),
+                                              QString::number(coolerPower),
+                                              QString::number(cameraNoise, 'f', 1),
+                                              QString::number(focusBlur, 'f', 1))
+                                      : i18n("Sensor %1 C - cooling off - noise %2 e- - focus blur %3 px",
+                                              QString::number(sensorTemp, 'f', 1),
+                                              QString::number(cameraNoise, 'f', 1),
+                                              QString::number(focusBlur, 'f', 1)));
 
     const bool tracking = m_simulatorTrackingCB->isChecked();
     const QString mountMode = m_simulatorMountModeCB->currentText();
-    const double drift = tracking && mountMode == i18n("Sidereal") ? 0.2 : 8.0;
-    m_simulatorMountStatusL->setText(i18n("%1, drift %2 arcsec/min",
-                                          tracking ? mountMode : i18n("Tracking off"),
-                                          QString::number(drift, 'f', 1)));
+    m_simulatorTrackingCB->setEnabled(mountMode != i18n("Parked"));
+    if (mountMode == i18n("Parked"))
+    {
+        m_simulatorMountStateL->setText(i18n("Parked"));
+        m_simulatorMountStatusL->setText(i18n("Tracking unavailable"));
+    }
+    else
+    {
+        const double drift = tracking && mountMode == i18n("Sidereal") ? 0.2 : 8.0;
+        m_simulatorMountStateL->setText(!tracking ? i18n("Tracking off")
+                                        : mountMode == i18n("Slew") ? i18n("Slewing")
+                                        : mountMode == i18n("Move") ? i18n("Moving")
+                                        : i18n("Tracking"));
+        m_simulatorMountStatusL->setText(i18n("%1 - unparked - drift %2 arcsec/min",
+                                              tracking ? mountMode : i18n("Manual"),
+                                              QString::number(drift, 'f', 1)));
+    }
 
     const QHash<QString, QString> trainSummary
     {
@@ -3882,19 +3962,26 @@ void Manager::updateStarStudioEquipmentPanel()
     };
     m_simulatorTrainStatusL->setText(trainSummary.value(m_simulatorTrainCB->currentText()));
 
+    m_simulatorSiteStateL->setText(m_simulatorGpsdCB->isChecked() ? i18n("GPSD fix") : i18n("Manual site"));
     m_simulatorGpsdStatusL->setText(m_simulatorGpsdCB->isChecked()
-                                    ? i18n("Site fixed: 35.7N 139.7E")
-                                    : i18n("Site source disconnected"));
+                                    ? i18n("Resolved site - 35.7N 139.7E")
+                                    : i18n("Manual coordinates - 35.7N 139.7E"));
 
     if (!m_simulatorGuideCB->isChecked())
     {
-        m_simulatorGuideStatusL->setText(i18n("Guiding idle"));
+        m_simulatorGuideModeCB->setEnabled(false);
+        m_simulatorGuideStateL->setText(i18n("Idle"));
+        m_simulatorGuideStatusL->setText(i18n("No guiding input"));
         return;
     }
 
+    m_simulatorGuideModeCB->setEnabled(true);
     const QString guideMode = m_simulatorGuideModeCB->currentText();
     const double rms = guideMode == i18n("Guiding") ? 0.38 : guideMode == i18n("Dither") ? 0.72 : 1.10;
-    m_simulatorGuideStatusL->setText(i18n("%1, RMS %2 px", guideMode, QString::number(rms, 'f', 2)));
+    m_simulatorGuideStateL->setText(guideMode == i18n("Dither") ? i18n("Dithering")
+                                    : guideMode == i18n("Looping") ? i18n("Looping")
+                                    : i18n("Active"));
+    m_simulatorGuideStatusL->setText(i18n("%1 - RMS %2 px", guideMode, QString::number(rms, 'f', 2)));
 }
 
 void Manager::setStarStudioAdvancedVisible(bool visible)
