@@ -39,6 +39,11 @@ class ProfileInfo;
 class KPageWidgetItem;
 class OpsEkos;
 class SkyObject;
+class QCheckBox;
+class QComboBox;
+class QLabel;
+class QSpinBox;
+class QWidget;
 
 /**
  * @class Manager
@@ -570,6 +575,8 @@ class Manager : public QDialog, public Ui::Manager
         void openStarStudioSkyMap();
         void setStarStudioAdvancedVisible(bool visible);
         void updateStarStudioHeaderForWidth();
+        void initializeStarStudioEquipmentPanel();
+        void updateStarStudioEquipmentPanel();
 
         void loadDrivers();
         void loadProfiles();
@@ -685,6 +692,20 @@ class Manager : public QDialog, public Ui::Manager
         std::unique_ptr<SkyObject> m_starStudioTarget;
         double m_workspacePriorityRatio { 0.8 };
         bool m_workspaceRepairQueued { false };
+        QWidget *m_starStudioEquipmentPanel { nullptr };
+        QSpinBox *m_simulatorGainSB { nullptr };
+        QSpinBox *m_simulatorFocusSB { nullptr };
+        QLabel *m_simulatorCameraStatusL { nullptr };
+        QCheckBox *m_simulatorTrackingCB { nullptr };
+        QComboBox *m_simulatorMountModeCB { nullptr };
+        QLabel *m_simulatorMountStatusL { nullptr };
+        QComboBox *m_simulatorTrainCB { nullptr };
+        QLabel *m_simulatorTrainStatusL { nullptr };
+        QCheckBox *m_simulatorGpsdCB { nullptr };
+        QLabel *m_simulatorGpsdStatusL { nullptr };
+        QCheckBox *m_simulatorGuideCB { nullptr };
+        QComboBox *m_simulatorGuideModeCB { nullptr };
+        QLabel *m_simulatorGuideStatusL { nullptr };
 
         friend class EkosLive::Client;
         friend class EkosLive::Message;

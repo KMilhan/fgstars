@@ -22,13 +22,6 @@
 
 #include <QCheckBox>
 #include <QComboBox>
-#include <QFrame>
-#include <QGridLayout>
-#include <QHash>
-#include <QLabel>
-#include <QSpinBox>
-
-#include <cmath>
 
 using Ekos::SequenceJob;
 
@@ -57,7 +50,6 @@ CapturePreviewWidget::CapturePreviewWidget(QWidget *parent) : QWidget(parent)
     // make invisible until we have at least two cameras active
     trainSelectionCB->setVisible(false);
 
-    initializeEssentialSimulator();
     initializeSummaryFITSView();
 }
 
@@ -290,184 +282,6 @@ void CapturePreviewWidget::deleteCurrentFrame()
             fileinfo.fileName()),
             i18n("Delete %1", fileinfo.fileName()), 0, false, i18n("Delete"));
 
-}
-
-void CapturePreviewWidget::initializeEssentialSimulator()
-{
-    if (m_essentialSimulatorPanel != nullptr)
-        return;
-
-    auto *panel = new QFrame(this);
-    panel->setObjectName(QStringLiteral("essentialSimulatorPanel"));
-    panel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-    panel->setAccessibleName(i18n("Essential Simulator"));
-    panel->setAccessibleDescription(i18n("Simulates camera, focus, mount, optical train, GPSD, and PHD2 guiding input."));
-
-    auto *layout = new QGridLayout(panel);
-    layout->setContentsMargins(0, 2, 0, 2);
-    layout->setHorizontalSpacing(8);
-    layout->setVerticalSpacing(2);
-
-    auto *title = new QLabel(i18n("Essential Simulator"), panel);
-    title->setObjectName(QStringLiteral("essentialSimulatorTitleL"));
-    title->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
-
-    m_simulatorGainSB = new QSpinBox(panel);
-    m_simulatorGainSB->setObjectName(QStringLiteral("essentialSimulatorGainSB"));
-    m_simulatorGainSB->setRange(0, 30);
-    m_simulatorGainSB->setSuffix(i18n(" gain"));
-    m_simulatorGainSB->setAccessibleName(i18n("Camera Gain"));
-
-    m_simulatorFocusSB = new QSpinBox(panel);
-    m_simulatorFocusSB->setObjectName(QStringLiteral("essentialSimulatorFocusSB"));
-    m_simulatorFocusSB->setRange(0, 100);
-    m_simulatorFocusSB->setValue(50);
-    m_simulatorFocusSB->setSuffix(i18n(" focus"));
-    m_simulatorFocusSB->setAccessibleName(i18n("Focuser Position"));
-
-    m_simulatorCameraStatusL = new QLabel(panel);
-    m_simulatorCameraStatusL->setObjectName(QStringLiteral("essentialSimulatorCameraStatusL"));
-    m_simulatorCameraStatusL->setMinimumWidth(210);
-
-    m_simulatorTrackingCB = new QCheckBox(i18n("Tracking"), panel);
-    m_simulatorTrackingCB->setObjectName(QStringLiteral("essentialSimulatorTrackingCB"));
-    m_simulatorTrackingCB->setChecked(true);
-
-    m_simulatorMountModeCB = new QComboBox(panel);
-    m_simulatorMountModeCB->setObjectName(QStringLiteral("essentialSimulatorMountModeCB"));
-    m_simulatorMountModeCB->addItems(QStringList { i18n("Sidereal"), i18n("Move"), i18n("Slew"), i18n("Parked") });
-
-    m_simulatorMountStatusL = new QLabel(panel);
-    m_simulatorMountStatusL->setObjectName(QStringLiteral("essentialSimulatorMountStatusL"));
-    m_simulatorMountStatusL->setMinimumWidth(150);
-
-    m_simulatorTrainCB = new QComboBox(panel);
-    m_simulatorTrainCB->setObjectName(QStringLiteral("essentialSimulatorTrainCB"));
-    m_simulatorTrainCB->addItems(QStringList
-    {
-        i18n("Mount"),
-        i18n("Camera"),
-        i18n("Rotator"),
-        i18n("GuideVia"),
-        i18n("DustCap"),
-        i18n("Scope"),
-        i18n("FilterWheel"),
-        i18n("Focuser"),
-        i18n("Reducer"),
-        i18n("LightBox"),
-        i18n("Dome"),
-        i18n("Weather"),
-        i18n("GPS"),
-        i18n("PAC"),
-    });
-    m_simulatorTrainCB->setCurrentText(i18n("Camera"));
-
-    m_simulatorTrainStatusL = new QLabel(panel);
-    m_simulatorTrainStatusL->setObjectName(QStringLiteral("essentialSimulatorTrainStatusL"));
-    m_simulatorTrainStatusL->setMinimumWidth(240);
-
-    m_simulatorGpsdCB = new QCheckBox(i18n("GPSD"), panel);
-    m_simulatorGpsdCB->setObjectName(QStringLiteral("essentialSimulatorGpsdCB"));
-    m_simulatorGpsdCB->setChecked(true);
-
-    m_simulatorGpsdStatusL = new QLabel(panel);
-    m_simulatorGpsdStatusL->setObjectName(QStringLiteral("essentialSimulatorGpsdStatusL"));
-    m_simulatorGpsdStatusL->setMinimumWidth(150);
-
-    m_simulatorGuideCB = new QCheckBox(i18n("PHD2"), panel);
-    m_simulatorGuideCB->setObjectName(QStringLiteral("essentialSimulatorGuideCB"));
-    m_simulatorGuideCB->setChecked(true);
-
-    m_simulatorGuideModeCB = new QComboBox(panel);
-    m_simulatorGuideModeCB->setObjectName(QStringLiteral("essentialSimulatorGuideModeCB"));
-    m_simulatorGuideModeCB->addItems(QStringList { i18n("Looping"), i18n("Guiding"), i18n("Dither") });
-    m_simulatorGuideModeCB->setCurrentText(i18n("Guiding"));
-
-    m_simulatorGuideStatusL = new QLabel(panel);
-    m_simulatorGuideStatusL->setObjectName(QStringLiteral("essentialSimulatorGuideStatusL"));
-    m_simulatorGuideStatusL->setMinimumWidth(140);
-
-    layout->addWidget(title, 0, 0);
-    layout->addWidget(m_simulatorGainSB, 0, 1);
-    layout->addWidget(m_simulatorFocusSB, 0, 2);
-    layout->addWidget(m_simulatorCameraStatusL, 0, 3, 1, 2);
-    layout->addWidget(m_simulatorTrackingCB, 1, 0);
-    layout->addWidget(m_simulatorMountModeCB, 1, 1);
-    layout->addWidget(m_simulatorMountStatusL, 1, 2);
-    layout->addWidget(m_simulatorTrainCB, 1, 3);
-    layout->addWidget(m_simulatorTrainStatusL, 1, 4);
-    layout->addWidget(m_simulatorGpsdCB, 2, 0);
-    layout->addWidget(m_simulatorGpsdStatusL, 2, 1, 1, 2);
-    layout->addWidget(m_simulatorGuideCB, 2, 3);
-    layout->addWidget(m_simulatorGuideModeCB, 2, 4);
-    layout->addWidget(m_simulatorGuideStatusL, 2, 5);
-    layout->setColumnStretch(6, 1);
-
-    verticalLayout->insertWidget(2, panel);
-    m_essentialSimulatorPanel = panel;
-
-    const auto refresh = [this]
-    {
-        updateEssentialSimulator();
-    };
-    connect(m_simulatorGainSB, qOverload<int>(&QSpinBox::valueChanged), this, refresh);
-    connect(m_simulatorFocusSB, qOverload<int>(&QSpinBox::valueChanged), this, refresh);
-    connect(m_simulatorTrackingCB, &QCheckBox::toggled, this, refresh);
-    connect(m_simulatorMountModeCB, &QComboBox::currentTextChanged, this, refresh);
-    connect(m_simulatorTrainCB, &QComboBox::currentTextChanged, this, refresh);
-    connect(m_simulatorGpsdCB, &QCheckBox::toggled, this, refresh);
-    connect(m_simulatorGuideCB, &QCheckBox::toggled, this, refresh);
-    connect(m_simulatorGuideModeCB, &QComboBox::currentTextChanged, this, refresh);
-    updateEssentialSimulator();
-}
-
-void CapturePreviewWidget::updateEssentialSimulator()
-{
-    const double cameraNoise = 1.2 + m_simulatorGainSB->value() * 0.12;
-    const double focusBlur = std::abs(m_simulatorFocusSB->value() - 50) * 0.04;
-    m_simulatorCameraStatusL->setText(i18n("Noise %1 e- - Focus blur %2 px",
-                                           QString::number(cameraNoise, 'f', 1),
-                                           QString::number(focusBlur, 'f', 1)));
-
-    const bool tracking = m_simulatorTrackingCB->isChecked();
-    const QString mountMode = m_simulatorMountModeCB->currentText();
-    const double drift = tracking && mountMode == i18n("Sidereal") ? 0.2 : 8.0;
-    m_simulatorMountStatusL->setText(i18n("%1 - drift %2",
-                                          tracking ? mountMode : i18n("Tracking off"),
-                                          QString::number(drift, 'f', 1)));
-
-    const QHash<QString, QString> trainSummary
-    {
-        { i18n("Mount"), i18n("Mount: telescope simulator") },
-        { i18n("Camera"), i18n("Camera: CCD, gain, noise") },
-        { i18n("Rotator"), i18n("Rotator: angle simulator") },
-        { i18n("GuideVia"), i18n("GuideVia: pulse source") },
-        { i18n("DustCap"), i18n("DustCap: cover state") },
-        { i18n("Scope"), i18n("Scope: aperture, focal length") },
-        { i18n("FilterWheel"), i18n("FilterWheel: filter slot") },
-        { i18n("Focuser"), i18n("Focuser: focus position") },
-        { i18n("Reducer"), i18n("Reducer: focal ratio") },
-        { i18n("LightBox"), i18n("LightBox: flat panel") },
-        { i18n("Dome"), i18n("Dome: parked or slaved") },
-        { i18n("Weather"), i18n("Weather: safe or alert") },
-        { i18n("GPS"), i18n("GPS: site and time source") },
-        { i18n("PAC"), i18n("PAC: alignment correction") },
-    };
-    m_simulatorTrainStatusL->setText(trainSummary.value(m_simulatorTrainCB->currentText()));
-
-    m_simulatorGpsdStatusL->setText(m_simulatorGpsdCB->isChecked()
-                                    ? i18n("GPSD fixed: 35.7N 139.7E")
-                                    : i18n("GPSD disconnected"));
-
-    if (!m_simulatorGuideCB->isChecked())
-    {
-        m_simulatorGuideStatusL->setText(i18n("PHD2 idle"));
-        return;
-    }
-
-    const QString guideMode = m_simulatorGuideModeCB->currentText();
-    const double rms = guideMode == i18n("Guiding") ? 0.38 : guideMode == i18n("Dither") ? 0.72 : 1.10;
-    m_simulatorGuideStatusL->setText(i18n("PHD2 %1 RMS %2 px", guideMode, QString::number(rms, 'f', 2)));
 }
 
 void CapturePreviewWidget::initializeSummaryFITSView()

@@ -66,10 +66,17 @@
 #include <KActionCollection>
 #include <knotification.h>
 
+#include <QCheckBox>
 #include <QFutureWatcher>
 #include <QComboBox>
 #include <QDesktopServices>
+#include <QFrame>
+#include <QGridLayout>
+#include <QHBoxLayout>
+#include <QLabel>
 #include <QSignalBlocker>
+#include <QSpinBox>
+#include <QVBoxLayout>
 
 #include <ekos_debug.h>
 
@@ -128,7 +135,8 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
 
     connect(capturePreview, &CapturePreviewWidget::centerTargetRequested, this, &Manager::centerStarStudioTarget);
 
-    connect(capturePreview, &CapturePreviewWidget::centerTargetSettingsRequested, this, []() {
+    connect(capturePreview, &CapturePreviewWidget::centerTargetSettingsRequested, this, []()
+    {
         KConfigDialog * alignSettings = KConfigDialog::exists("alignsettings");
         if (alignSettings)
         {
@@ -138,7 +146,8 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
         }
     });
 
-    connect(globalSearchB, &QPushButton::clicked, this, [this]() {
+    connect(globalSearchB, &QPushButton::clicked, this, [this]()
+    {
         if (FindDialog::Instance()->execWithParent(this) == QDialog::Accepted)
         {
             auto object = FindDialog::Instance()->targetObject();
@@ -161,7 +170,8 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     goToTargetB->setAccessibleName(i18n("Go To Target"));
     goToTargetB->setAccessibleDescription(i18n("Slew the mount to the selected target."));
     centerSelectedTargetB->setAccessibleName(i18n("Center Target"));
-    centerSelectedTargetB->setAccessibleDescription(i18n("Capture, plate solve, and correct the mount for the selected target."));
+    centerSelectedTargetB->setAccessibleDescription(
+        i18n("Capture, plate solve, and correct the mount for the selected target."));
     addTargetPlanB->setAccessibleName(i18n("Add to Capture Plan"));
     addTargetPlanB->setAccessibleDescription(i18n("Add the selected target to the capture plan."));
     openSkyMapB->setAccessibleName(i18n("Open Advanced Sky Map"));
@@ -197,6 +207,7 @@ Manager::Manager(QWidget * parent) : QDialog(parent), m_networkManager(this)
     capturePreview->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     rightLayoutWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Expanding);
     rightLayoutWidget->setMaximumWidth(480);
+    initializeStarStudioEquipmentPanel();
 
     qRegisterMetaType<Ekos::CommunicationStatus>("Ekos::CommunicationStatus");
     qDBusRegisterMetaType<Ekos::CommunicationStatus>();
@@ -831,9 +842,9 @@ void Manager::repairWorkspacePriorityAfterResize()
     }
 
     const int preferredWorkspaceWidth = std::clamp(
-        static_cast<int>(std::lround(totalWidth * m_workspacePriorityRatio)),
-        minimumWorkspaceWidth,
-        totalWidth - 1);
+                                            static_cast<int>(std::lround(totalWidth * m_workspacePriorityRatio)),
+                                            minimumWorkspaceWidth,
+                                            totalWidth - 1);
 
     QSignalBlocker blocker(deviceSplitter);
     deviceSplitter->setSizes(QList<int>({preferredWorkspaceWidth, totalWidth - preferredWorkspaceWidth}));
@@ -3534,7 +3545,8 @@ void Manager::updateStarStudioTargetSummary()
 
     const double altitude = m_starStudioTarget->alt().Degrees();
     const QString visibility = altitude > 0 ? i18n("Ready") : i18n("Low");
-    m_workspaceSession->setTargetContext(Ekos::WorkspaceSession::TargetContext {
+    m_workspaceSession->setTargetContext(Ekos::WorkspaceSession::TargetContext
+    {
         m_starStudioTarget->name(),
         altitude,
         altitude > 0,
@@ -3643,11 +3655,256 @@ void Manager::openStarStudioSkyMap()
     kstars->activateWindow();
 }
 
+void Manager::initializeStarStudioEquipmentPanel()
+{
+    if (m_starStudioEquipmentPanel != nullptr)
+        return;
+
+    auto *panel = new QFrame(rightLayoutWidget);
+    panel->setObjectName(QStringLiteral("essentialSimulatorPanel"));
+    panel->setFrameShape(QFrame::NoFrame);
+    panel->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+    panel->setAccessibleName(i18n("Star Studio Equipment"));
+    panel->setAccessibleDescription(i18n("Session equipment controls for the image workspace."));
+
+    auto *outerLayout = new QVBoxLayout(panel);
+    outerLayout->setContentsMargins(8, 6, 8, 6);
+    outerLayout->setSpacing(6);
+
+    auto *title = new QLabel(i18n("Equipment"), panel);
+    title->setObjectName(QStringLiteral("essentialSimulatorTitleL"));
+    QFont titleFont = title->font();
+    titleFont.setBold(true);
+    title->setFont(titleFont);
+    title->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+    outerLayout->addWidget(title);
+
+    auto *layout = new QGridLayout();
+    layout->setContentsMargins(0, 0, 0, 0);
+    layout->setHorizontalSpacing(0);
+    layout->setVerticalSpacing(6);
+    outerLayout->addLayout(layout);
+
+    const auto sectionLabel = [panel](const QString & text, const QString & objectName)
+    {
+        auto *label = new QLabel(text, panel);
+        label->setObjectName(objectName);
+        label->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+        return label;
+    };
+
+    const auto fieldLabel = [panel](const QString & text, const QString & objectName)
+    {
+        auto *label = new QLabel(text, panel);
+        label->setObjectName(objectName);
+        label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+        return label;
+    };
+
+    m_simulatorGainSB = new QSpinBox(panel);
+    m_simulatorGainSB->setObjectName(QStringLiteral("essentialSimulatorGainSB"));
+    m_simulatorGainSB->setRange(0, 30);
+    m_simulatorGainSB->setMaximumWidth(72);
+    m_simulatorGainSB->setAccessibleName(i18n("Camera Gain"));
+    m_simulatorGainSB->setToolTip(i18n("Camera gain used for the simulated frame."));
+
+    m_simulatorFocusSB = new QSpinBox(panel);
+    m_simulatorFocusSB->setObjectName(QStringLiteral("essentialSimulatorFocusSB"));
+    m_simulatorFocusSB->setRange(0, 100);
+    m_simulatorFocusSB->setValue(50);
+    m_simulatorFocusSB->setMaximumWidth(72);
+    m_simulatorFocusSB->setAccessibleName(i18n("Focuser Position"));
+    m_simulatorFocusSB->setToolTip(i18n("Focuser position used for the simulated frame."));
+
+    m_simulatorCameraStatusL = new QLabel(panel);
+    m_simulatorCameraStatusL->setObjectName(QStringLiteral("essentialSimulatorCameraStatusL"));
+    m_simulatorCameraStatusL->setWordWrap(true);
+    m_simulatorCameraStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    m_simulatorTrackingCB = new QCheckBox(i18n("Track sky"), panel);
+    m_simulatorTrackingCB->setObjectName(QStringLiteral("essentialSimulatorTrackingCB"));
+    m_simulatorTrackingCB->setChecked(true);
+    m_simulatorTrackingCB->setToolTip(i18n("Keep the simulated mount tracking the sky."));
+
+    m_simulatorMountModeCB = new QComboBox(panel);
+    m_simulatorMountModeCB->setObjectName(QStringLiteral("essentialSimulatorMountModeCB"));
+    m_simulatorMountModeCB->addItems(QStringList { i18n("Sidereal"), i18n("Move"), i18n("Slew"), i18n("Parked") });
+    m_simulatorMountModeCB->setAccessibleName(i18n("Mount Mode"));
+
+    m_simulatorMountStatusL = new QLabel(panel);
+    m_simulatorMountStatusL->setObjectName(QStringLiteral("essentialSimulatorMountStatusL"));
+    m_simulatorMountStatusL->setWordWrap(true);
+    m_simulatorMountStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    m_simulatorTrainCB = new QComboBox(panel);
+    m_simulatorTrainCB->setObjectName(QStringLiteral("essentialSimulatorTrainCB"));
+    m_simulatorTrainCB->addItems(QStringList
+    {
+        i18n("Mount"),
+        i18n("Camera"),
+        i18n("Rotator"),
+        i18n("Guide Port"),
+        i18n("Dust Cap"),
+        i18n("Telescope"),
+        i18n("Filter Wheel"),
+        i18n("Focuser"),
+        i18n("Reducer"),
+        i18n("Flat Panel"),
+        i18n("Dome"),
+        i18n("Weather"),
+        i18n("Site Source"),
+        i18n("Polar Alignment"),
+    });
+    m_simulatorTrainCB->setCurrentText(i18n("Camera"));
+    m_simulatorTrainCB->setAccessibleName(i18n("Optical Train Role"));
+
+    m_simulatorTrainStatusL = new QLabel(panel);
+    m_simulatorTrainStatusL->setObjectName(QStringLiteral("essentialSimulatorTrainStatusL"));
+    m_simulatorTrainStatusL->setWordWrap(true);
+    m_simulatorTrainStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    m_simulatorGpsdCB = new QCheckBox(i18n("Use site fix"), panel);
+    m_simulatorGpsdCB->setObjectName(QStringLiteral("essentialSimulatorGpsdCB"));
+    m_simulatorGpsdCB->setChecked(true);
+    m_simulatorGpsdCB->setToolTip(i18n("Use the simulated GPS site and time source."));
+
+    m_simulatorGpsdStatusL = new QLabel(panel);
+    m_simulatorGpsdStatusL->setObjectName(QStringLiteral("essentialSimulatorGpsdStatusL"));
+    m_simulatorGpsdStatusL->setWordWrap(true);
+    m_simulatorGpsdStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    m_simulatorGuideCB = new QCheckBox(i18n("Use guiding input"), panel);
+    m_simulatorGuideCB->setObjectName(QStringLiteral("essentialSimulatorGuideCB"));
+    m_simulatorGuideCB->setChecked(true);
+    m_simulatorGuideCB->setToolTip(i18n("Use simulated external guiding corrections."));
+
+    m_simulatorGuideModeCB = new QComboBox(panel);
+    m_simulatorGuideModeCB->setObjectName(QStringLiteral("essentialSimulatorGuideModeCB"));
+    m_simulatorGuideModeCB->addItems(QStringList { i18n("Looping"), i18n("Guiding"), i18n("Dither") });
+    m_simulatorGuideModeCB->setCurrentText(i18n("Guiding"));
+    m_simulatorGuideModeCB->setAccessibleName(i18n("Guiding Mode"));
+
+    m_simulatorGuideStatusL = new QLabel(panel);
+    m_simulatorGuideStatusL->setObjectName(QStringLiteral("essentialSimulatorGuideStatusL"));
+    m_simulatorGuideStatusL->setWordWrap(true);
+    m_simulatorGuideStatusL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+    auto *cameraControls = new QWidget(panel);
+    auto *cameraControlsLayout = new QHBoxLayout(cameraControls);
+    cameraControlsLayout->setContentsMargins(0, 0, 0, 0);
+    cameraControlsLayout->setSpacing(6);
+    cameraControlsLayout->addWidget(fieldLabel(i18n("Gain"), QStringLiteral("essentialSimulatorGainLabelL")));
+    cameraControlsLayout->addWidget(m_simulatorGainSB);
+    cameraControlsLayout->addWidget(fieldLabel(i18n("Focus"), QStringLiteral("essentialSimulatorFocusLabelL")));
+    cameraControlsLayout->addWidget(m_simulatorFocusSB);
+
+    auto *mountControls = new QWidget(panel);
+    auto *mountControlsLayout = new QHBoxLayout(mountControls);
+    mountControlsLayout->setContentsMargins(0, 0, 0, 0);
+    mountControlsLayout->setSpacing(6);
+    mountControlsLayout->addWidget(m_simulatorTrackingCB);
+    mountControlsLayout->addWidget(m_simulatorMountModeCB, 1);
+
+    auto *guideControls = new QWidget(panel);
+    auto *guideControlsLayout = new QHBoxLayout(guideControls);
+    guideControlsLayout->setContentsMargins(0, 0, 0, 0);
+    guideControlsLayout->setSpacing(6);
+    guideControlsLayout->addWidget(m_simulatorGuideCB);
+    guideControlsLayout->addWidget(m_simulatorGuideModeCB, 1);
+
+    layout->addWidget(sectionLabel(i18n("Camera"), QStringLiteral("essentialSimulatorCameraSectionL")), 0, 0);
+    layout->addWidget(cameraControls, 1, 0);
+    layout->addWidget(m_simulatorCameraStatusL, 2, 0);
+    layout->addWidget(sectionLabel(i18n("Mount"), QStringLiteral("essentialSimulatorMountSectionL")), 3, 0);
+    layout->addWidget(mountControls, 4, 0);
+    layout->addWidget(m_simulatorMountStatusL, 5, 0);
+    layout->addWidget(sectionLabel(i18n("Optical train"), QStringLiteral("essentialSimulatorTrainSectionL")), 6, 0);
+    layout->addWidget(m_simulatorTrainCB, 7, 0);
+    layout->addWidget(m_simulatorTrainStatusL, 8, 0);
+    layout->addWidget(sectionLabel(i18n("Site"), QStringLiteral("essentialSimulatorSiteSectionL")), 9, 0);
+    layout->addWidget(m_simulatorGpsdCB, 10, 0);
+    layout->addWidget(m_simulatorGpsdStatusL, 11, 0);
+    layout->addWidget(sectionLabel(i18n("Guiding"), QStringLiteral("essentialSimulatorGuideSectionL")), 12, 0);
+    layout->addWidget(guideControls, 13, 0);
+    layout->addWidget(m_simulatorGuideStatusL, 14, 0);
+    layout->setColumnStretch(0, 1);
+
+    rightLayout->insertWidget(0, panel);
+    rightLayout->setAlignment(panel, Qt::AlignTop);
+    m_starStudioEquipmentPanel = panel;
+
+    const auto refresh = [this]
+    {
+        updateStarStudioEquipmentPanel();
+    };
+    connect(m_simulatorGainSB, qOverload<int>(&QSpinBox::valueChanged), this, refresh);
+    connect(m_simulatorFocusSB, qOverload<int>(&QSpinBox::valueChanged), this, refresh);
+    connect(m_simulatorTrackingCB, &QCheckBox::toggled, this, refresh);
+    connect(m_simulatorMountModeCB, &QComboBox::currentTextChanged, this, refresh);
+    connect(m_simulatorTrainCB, &QComboBox::currentTextChanged, this, refresh);
+    connect(m_simulatorGpsdCB, &QCheckBox::toggled, this, refresh);
+    connect(m_simulatorGuideCB, &QCheckBox::toggled, this, refresh);
+    connect(m_simulatorGuideModeCB, &QComboBox::currentTextChanged, this, refresh);
+    updateStarStudioEquipmentPanel();
+}
+
+void Manager::updateStarStudioEquipmentPanel()
+{
+    const double cameraNoise = 1.2 + m_simulatorGainSB->value() * 0.12;
+    const double focusBlur = std::abs(m_simulatorFocusSB->value() - 50) * 0.04;
+    m_simulatorCameraStatusL->setText(i18n("Noise %1 e-, focus blur %2 px",
+                                           QString::number(cameraNoise, 'f', 1),
+                                           QString::number(focusBlur, 'f', 1)));
+
+    const bool tracking = m_simulatorTrackingCB->isChecked();
+    const QString mountMode = m_simulatorMountModeCB->currentText();
+    const double drift = tracking && mountMode == i18n("Sidereal") ? 0.2 : 8.0;
+    m_simulatorMountStatusL->setText(i18n("%1, drift %2 arcsec/min",
+                                          tracking ? mountMode : i18n("Tracking off"),
+                                          QString::number(drift, 'f', 1)));
+
+    const QHash<QString, QString> trainSummary
+    {
+        { i18n("Mount"), i18n("Mount controls pointing and tracking") },
+        { i18n("Camera"), i18n("Camera captures frames with gain and noise") },
+        { i18n("Rotator"), i18n("Rotator sets the camera angle") },
+        { i18n("Guide Port"), i18n("Guide port receives pulse corrections") },
+        { i18n("Dust Cap"), i18n("Dust cap reports cover state") },
+        { i18n("Telescope"), i18n("Telescope provides aperture and focal length") },
+        { i18n("Filter Wheel"), i18n("Filter wheel selects filters") },
+        { i18n("Focuser"), i18n("Focuser changes focus position") },
+        { i18n("Reducer"), i18n("Reducer changes focal ratio") },
+        { i18n("Flat Panel"), i18n("Flat panel provides flat-field light") },
+        { i18n("Dome"), i18n("Dome reports park and slave state") },
+        { i18n("Weather"), i18n("Weather reports safe or alert") },
+        { i18n("Site Source"), i18n("Site source provides position and time") },
+        { i18n("Polar Alignment"), i18n("Polar alignment reports correction") },
+    };
+    m_simulatorTrainStatusL->setText(trainSummary.value(m_simulatorTrainCB->currentText()));
+
+    m_simulatorGpsdStatusL->setText(m_simulatorGpsdCB->isChecked()
+                                    ? i18n("Site fixed: 35.7N 139.7E")
+                                    : i18n("Site source disconnected"));
+
+    if (!m_simulatorGuideCB->isChecked())
+    {
+        m_simulatorGuideStatusL->setText(i18n("Guiding idle"));
+        return;
+    }
+
+    const QString guideMode = m_simulatorGuideModeCB->currentText();
+    const double rms = guideMode == i18n("Guiding") ? 0.38 : guideMode == i18n("Dither") ? 0.72 : 1.10;
+    m_simulatorGuideStatusL->setText(i18n("%1, RMS %2 px", guideMode, QString::number(rms, 'f', 2)));
+}
+
 void Manager::setStarStudioAdvancedVisible(bool visible)
 {
     toolsWidget->setVisible(visible);
     layoutWidget->setVisible(visible);
-    rightLayoutWidget->setVisible(visible);
+    rightLayoutWidget->setVisible(true);
+    mountGroup->setVisible(visible);
+    focusProgressWidget->setVisible(visible);
+    guideManager->setVisible(visible);
 
     if (advancedEkosB->isChecked() != visible)
     {
@@ -3659,9 +3916,9 @@ void Manager::setStarStudioAdvancedVisible(bool visible)
     splitter->setStretchFactor(1, visible ? 3 : 0);
     splitter->setStretchFactor(2, visible ? 1 : 0);
     splitter->setSizes(visible ? QList<int>({36000, 18000, 7000}) : QList<int>({1, 0, 0}));
-    deviceSplitter->setStretchFactor(0, visible ? 4 : 1);
-    deviceSplitter->setStretchFactor(1, visible ? 1 : 0);
-    deviceSplitter->setSizes(visible ? QList<int>({36000, 9000}) : QList<int>({1, 0}));
+    deviceSplitter->setStretchFactor(0, 4);
+    deviceSplitter->setStretchFactor(1, 1);
+    deviceSplitter->setSizes(QList<int>({36000, 9000}));
     updateStarStudioHeaderForWidth();
     repairWorkspacePriorityAfterResize();
 }

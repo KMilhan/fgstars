@@ -16,10 +16,6 @@
 
 class FITSData;
 class SummaryFITSView;
-class QCheckBox;
-class QComboBox;
-class QLabel;
-class QSpinBox;
 
 namespace Ekos
 {
@@ -121,9 +117,7 @@ class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
         void selectedTrainChanged(QString newName);
 
     private:
-        void initializeEssentialSimulator();
         void initializeSummaryFITSView();
-        void updateEssentialSimulator();
 
         void updateExposureProgress(const QSharedPointer<Ekos::SequenceJob> &job, const QString &devicename);
         void updateDownloadProgress(double downloadTimeLeft, const QString &devicename);
@@ -149,19 +143,4 @@ class CapturePreviewWidget : public QWidget, public Ui::CapturePreviewWidget
 
         // move to trash or delete finally
         bool m_permanentlyDelete {false};
-
-        QWidget *m_essentialSimulatorPanel { nullptr };
-        QSpinBox *m_simulatorGainSB { nullptr };
-        QSpinBox *m_simulatorFocusSB { nullptr };
-        QLabel *m_simulatorCameraStatusL { nullptr };
-        QCheckBox *m_simulatorTrackingCB { nullptr };
-        QComboBox *m_simulatorMountModeCB { nullptr };
-        QLabel *m_simulatorMountStatusL { nullptr };
-        QComboBox *m_simulatorTrainCB { nullptr };
-        QLabel *m_simulatorTrainStatusL { nullptr };
-        QCheckBox *m_simulatorGpsdCB { nullptr };
-        QLabel *m_simulatorGpsdStatusL { nullptr };
-        QCheckBox *m_simulatorGuideCB { nullptr };
-        QComboBox *m_simulatorGuideModeCB { nullptr };
-        QLabel *m_simulatorGuideStatusL { nullptr };
 };
